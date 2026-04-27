@@ -1,0 +1,94 @@
+name: Fetch Stock Prices
+
+on:
+  schedule:
+    # 台灣時間 09:30, 11:00, 13:30, 14:30, 18:00 各跑一次
+    # （cron 用 UTC，台灣 = UTC+8）
+    - cron: '30 1 * * 1-5'
+    - cron: '0 3 * * 1-5'
+    - cron: '30 5 * * 1-5'
+    - cron: '30 6 * * 1-5'
+    - cron: '0 10 * * *'
+  workflow_dispatch:  # 手動觸發
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch prices from Yahoo Finance
+        run: |
+          cat > fetch.mjs <<'EOF'
+          const tickers = {
+            '0056': '0056.TW',
+            '00919': '00919.TW',
+            '00878': '00878.TW',
+            '0050': '0050.TW',
+            '台積電': '2330.TW',
+            '00918': '00918.TW',
+            '中鋼': '2002.TW',
+            '00757': '00757.TW',
+            '00662': '00662.TW'
+          };
+
+          async function fetchPrice(name, ticker) {
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+            try {
+              const res = await fetch(url, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                  'Accept': 'application/json'
+                }
+              });
+              if (!res.ok) {
+                console.log(`✗ ${name} (${ticker}): HTTP ${res.status}`);
+                return null;
+              }
+              const data = await res.json();
+              const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+              if (typeof price === 'number') {
+                console.log(`✓ ${name} (${ticker}): ${price}`);
+                return price;
+              }
+              console.log(`✗ ${name} (${ticker}): no price in response`);
+              return null;
+            } catch (e) {
+              console.log(`✗ ${name} (${ticker}): ${e.message}`);
+              return null;
+            }
+          }
+
+          const result = {
+            updatedAt: new Date().toISOString(),
+            prices: {}
+          };
+
+          for (const [name, ticker] of Object.entries(tickers)) {
+            result.prices[name] = await fetchPrice(name, ticker);
+            // 短暫延遲避免被 rate limit
+            await new Promise(r => setTimeout(r, 500));
+          }
+
+          // 過濾掉 null 值（保留欄位但記錄為 null）
+          const fs = await import('fs');
+          fs.writeFileSync('prices.json', JSON.stringify(result, null, 2));
+          console.log('\n=== prices.json ===');
+          console.log(JSON.stringify(result, null, 2));
+          EOF
+          node fetch.mjs
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prices.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update prices.json [skip ci]"
+            git push
+          fi

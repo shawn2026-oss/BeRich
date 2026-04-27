@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>發財三本柱 · Shawn 2026</title>
+<title>三本柱儀表板 · Shawn 2026</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -2950,13 +2950,118 @@ function init() {
     reader.readAsText(file);
   });
   
-  // 買入紀錄
+// === 提示是否同步張數到三本柱 ===
+function promptSyncShares(newPurchases) {
+  // 只同步三本柱（0056/00919/00878）
+  const pillarEtfs = ['0056', '00919', '00878'];
+  const grouped = {};
+  newPurchases.forEach(p => {
+    if (pillarEtfs.includes(p.etf)) {
+      if (!grouped[p.etf]) grouped[p.etf] = 0;
+      grouped[p.etf] += p.shares;
+    }
+  });
+  
+  if (Object.keys(grouped).length === 0) return;
+  
+  // 組成提示文字
+  const lines = Object.entries(grouped).map(([etf, sharesAdded]) => {
+    const cur = state.pillars[etf].shares;
+    const lotsAdded = sharesAdded / 1000;
+    const newTotal = cur + lotsAdded;
+    return `${etf}: ${fmt2(cur)} → ${fmt2(newTotal)} 張（+${fmt2(lotsAdded)}）`;
+  });
+  
+  if (confirm(
+    `✓ 已登記 ${newPurchases.length} 筆買入\n\n` +
+    `是否同步更新三本柱「現有張數」？\n\n` +
+    lines.join('\n') + '\n\n' +
+    `（按「確定」更新；按「取消」只保留買入紀錄不更新張數）`
+  )) {
+    Object.entries(grouped).forEach(([etf, sharesAdded]) => {
+      state.pillars[etf].shares += sharesAdded / 1000;
+    });
+    saveState();
+    renderPillars();
+    renderSimPillars();
+    updateAll();
+  }
+}
+
+  // 買入紀錄：自訂一筆（依序問標的、日期、股數、單價、備註）
   document.getElementById('add-purchase').addEventListener('click', () => {
     const today = new Date().toISOString().split('T')[0];
-    state.purchases.push({ date: today, etf: '00878', shares: 1000, price: 25, note: '' });
+    
+    const etf = prompt(
+      '📝 自訂買入登記\n\n' +
+      '步驟 1/4：標的代號？\n' +
+      '（例如：0056、00919、00878、0050、台積電）',
+      '00878'
+    );
+    if (etf === null || !etf.trim()) return;
+    const etfClean = etf.trim();
+    
+    const dateStr = prompt(
+      `標的：${etfClean}\n\n` +
+      '步驟 2/4：買入日期？',
+      today
+    );
+    if (dateStr === null || !dateStr.trim()) return;
+    
+    const sharesStr = prompt(
+      `標的：${etfClean}　日期：${dateStr}\n\n` +
+      '步驟 3/4：買入股數？\n（注意：1 張 = 1000 股，請填股數）',
+      '1000'
+    );
+    if (sharesStr === null) return;
+    const shares = parseFloat(sharesStr);
+    if (!shares || shares <= 0) {
+      alert('股數無效');
+      return;
+    }
+    
+    // 嘗試帶預設股價
+    const defaultPrice = state.latestPrices[etfClean] || state.pillars[etfClean]?.price || '';
+    const priceStr = prompt(
+      `標的：${etfClean}　日期：${dateStr}　股數：${fmt(shares)}\n\n` +
+      '步驟 4/4：買入單價？',
+      defaultPrice ? fmt2(defaultPrice) : ''
+    );
+    if (priceStr === null) return;
+    const price = parseFloat(priceStr);
+    if (!price || price <= 0) {
+      alert('單價無效');
+      return;
+    }
+    
+    const note = prompt(
+      '備註？（可留空）\n例如：除息加碼、年終獎金、機動加碼',
+      ''
+    );
+    if (note === null) return; // 取消
+    
+    const cost = shares * price;
+    if (!confirm(
+      `確認登記：\n` +
+      `日期：${dateStr}\n` +
+      `標的：${etfClean}\n` +
+      `股數：${fmt(shares)} 股（${fmt2(shares/1000)} 張）\n` +
+      `單價：$${fmt2(price)}\n` +
+      `成本：$${fmt(cost)}` +
+      (note ? `\n備註：${note}` : '')
+    )) return;
+    
+    state.purchases.push({
+      date: dateStr,
+      etf: etfClean,
+      shares: shares,
+      price: price,
+      note: note
+    });
     saveState();
     renderPurchases();
     renderPurchaseSummary();
+    promptSyncShares([{ etf: etfClean, shares: shares }]);
   });
   
   // 快捷登記按鈕
@@ -3027,6 +3132,7 @@ function openQuickSingleDialog(etf) {
   saveState();
   renderPurchases();
   renderPurchaseSummary();
+  promptSyncShares([{ etf: etf, shares: shares }]);
 }
 
 function openQuickAllDialog() {
@@ -3088,6 +3194,7 @@ function openQuickAllDialog() {
   saveState();
   renderPurchases();
   renderPurchaseSummary();
+  promptSyncShares(newPurchases);
 }
   document.getElementById('apply-shares').addEventListener('click', () => {
     const summary = computePurchaseSummary();

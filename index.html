@@ -49,6 +49,8 @@ html, body {
   color: var(--text);
   font-family: 'Noto Serif TC', serif;
   min-height: 100vh;
+  font-size: 16px;
+  line-height: 1.6;
 }
 body {
   padding-top: env(safe-area-inset-top);
@@ -98,7 +100,7 @@ body {
 .section { margin-bottom: 32px; }
 .section-title {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -507,13 +509,12 @@ details.collapsible {
   box-shadow: var(--shadow-sm);
 }
 details.collapsible summary {
-  padding: 16px 22px;
+  padding: 18px 24px;
   cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  color: var(--text);
   font-weight: 700;
   list-style: none;
   display: flex;
@@ -523,7 +524,7 @@ details.collapsible summary {
 details.collapsible summary::-webkit-details-marker { display: none; }
 details.collapsible summary::after {
   content: '＋';
-  font-size: 18px;
+  font-size: 22px;
   color: var(--accent);
   font-weight: 400;
   font-family: 'Noto Serif TC', serif;
@@ -542,15 +543,15 @@ details.collapsible summary:hover { color: var(--accent); }
   min-width: 880px;
   border-collapse: collapse;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 14px;
 }
 .records-table th {
   background: var(--bg-input);
   color: var(--text-muted);
   font-weight: 700;
   text-align: right;
-  padding: 10px 8px;
-  font-size: 10px;
+  padding: 12px 10px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border-strong);
@@ -560,7 +561,7 @@ details.collapsible summary:hover { color: var(--accent); }
 .records-table th:nth-child(2),
 .records-table th:nth-child(3) { text-align: left; }
 .records-table td {
-  padding: 7px 8px;
+  padding: 9px 10px;
   text-align: right;
   border-bottom: 1px solid var(--border-soft);
   vertical-align: middle;
@@ -574,8 +575,8 @@ details.collapsible summary:hover { color: var(--accent); }
   border: 1px solid transparent;
   color: var(--text);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  padding: 4px 6px;
+  font-size: 14px;
+  padding: 6px 8px;
   text-align: right;
   border-radius: 4px;
 }
@@ -672,6 +673,85 @@ details.collapsible summary:hover { color: var(--accent); }
   box-shadow: var(--shadow-sm);
 }
 .footer-note strong { color: var(--text); }
+
+/* === 配息紀錄 YTD 摘要 bar === */
+.records-summary-bar {
+  display: flex;
+  gap: 24px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #fffaf0 0%, #f5e9d0 100%);
+  border: 1px solid rgba(212, 168, 87, 0.3);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.records-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+.records-summary-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.records-summary-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.records-summary-value.secondary {
+  color: var(--text);
+  font-size: 22px;
+}
+
+/* === 大型 CTA 按鈕 === */
+.records-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.btn-cta {
+  background: white;
+  border: 1.5px solid var(--border-strong);
+  color: var(--text);
+  padding: 12px 22px;
+  border-radius: 9px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+  box-shadow: var(--shadow-sm);
+}
+.btn-cta:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.btn-cta-primary {
+  background: linear-gradient(135deg, #d4a857 0%, #b8924e 100%);
+  border-color: var(--accent);
+  color: white;
+  font-size: 16px;
+  padding: 13px 26px;
+}
+.btn-cta-primary:hover {
+  background: linear-gradient(135deg, #e8c478 0%, #d4a857 100%);
+  border-color: var(--accent-bright);
+  color: white;
+  box-shadow: 0 4px 12px rgba(184, 146, 78, 0.35);
+}
 
 /* === ETF 可編輯標的 === */
 .etf-input {
@@ -923,203 +1003,7 @@ details.collapsible summary:hover { color: var(--accent); }
   font-weight: 700;
 }
 
-/* === 快速登錄 DCA 區塊 === */
-.quick-dca-card {
-  background: linear-gradient(135deg, #fffaf0 0%, #f5e9d0 100%);
-  border: 1px solid rgba(212, 168, 87, 0.4);
-  border-radius: 14px;
-  padding: 22px 24px;
-  box-shadow: var(--shadow-sm);
-}
-.quick-dca-info {
-  font-size: 13px;
-  color: var(--text);
-  line-height: 1.6;
-  margin-bottom: 14px;
-}
-.btn-quick-dca {
-  background: linear-gradient(135deg, #d4a857 0%, #b8924e 100%);
-  color: white;
-  border: none;
-  padding: 13px 28px;
-  border-radius: 10px;
-  font-family: 'Noto Serif TC', serif;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  box-shadow: 0 2px 6px rgba(184, 146, 78, 0.35);
-  transition: all 0.15s;
-}
-.btn-quick-dca:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(184, 146, 78, 0.45);
-}
-.quick-dca-history {
-  margin-top: 14px;
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
-}
 
-/* === Modal === */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(20, 23, 31, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 20px;
-}
-.modal-card {
-  background: white;
-  border-radius: 16px;
-  max-width: 520px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-.modal-header {
-  padding: 18px 22px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.modal-header h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0;
-}
-.modal-close {
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  color: var(--text-muted);
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-close:hover { background: var(--bg-input); color: var(--text); }
-.modal-body { padding: 20px 22px; }
-.modal-footer {
-  padding: 14px 22px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-.modal-label {
-  display: block;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-.modal-input {
-  width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 9px 11px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  color: var(--text);
-}
-.modal-input:focus { outline: none; border-color: var(--accent); background: white; }
-
-.quick-dca-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.qdca-row {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--qc);
-  border-radius: 10px;
-  padding: 14px 16px;
-}
-.qdca-row[data-etf="0056"] { --qc: var(--p-0056); }
-.qdca-row[data-etf="00919"] { --qc: var(--p-00919); }
-.qdca-row[data-etf="00878"] { --qc: var(--p-00878); }
-
-.qdca-row-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.qdca-name {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--qc);
-}
-.qdca-budget {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-family: 'JetBrains Mono', monospace;
-}
-.qdca-budget strong { color: var(--text); }
-.qdca-row-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.qdca-row-inputs label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-.qdca-row-inputs input {
-  width: 100%;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  color: var(--text);
-  text-align: right;
-}
-.qdca-row-inputs input:focus {
-  outline: none;
-  border-color: var(--qc);
-}
-.qdca-row-result {
-  margin-top: 8px;
-  font-size: 11px;
-  color: var(--text-muted);
-  text-align: right;
-  font-family: 'JetBrains Mono', monospace;
-}
-.qdca-row-result strong {
-  color: var(--qc);
-  font-weight: 700;
-}
-.quick-dca-summary {
-  margin-top: 16px;
-  padding: 12px 14px;
-  background: var(--accent-bg);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--text);
-  font-family: 'JetBrains Mono', monospace;
-  display: flex;
-  justify-content: space-between;
-}
-.quick-dca-summary strong { color: var(--accent); font-size: 15px; }
 .etf-mini {
   display: inline-block;
   padding: 1px 7px;
@@ -1380,6 +1264,50 @@ details.collapsible summary:hover { color: var(--accent); }
     <p class="header-sub">輸入「現有張數」與「本季每股配息」，自動推算每月可領、年化收入與目標達成進度。資料自動保存於瀏覽器。</p>
   </header>
 
+  <!-- ============ 配息紀錄（置頂，預設收合）============ -->
+  <section class="section">
+    <details class="collapsible">
+      <summary>💰 2026 配息紀錄（YTD 實際入帳）</summary>
+      <div class="collapsible-body" style="padding-bottom: 0;">
+        <div class="records-summary-bar">
+          <div class="records-summary-item">
+            <div class="records-summary-label">YTD 已領</div>
+            <div class="records-summary-value" id="records-ytd-display">—</div>
+          </div>
+          <div class="records-summary-item">
+            <div class="records-summary-label">月均</div>
+            <div class="records-summary-value secondary" id="records-monthly-display">—</div>
+          </div>
+        </div>
+        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 10px;">
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th style="width:40px;"></th>
+                <th>日期</th>
+                <th>標的</th>
+                <th>成本價</th>
+                <th>股數</th>
+                <th>每股配息</th>
+                <th>配息入帳</th>
+                <th>年化殖利率</th>
+                <th>該支累計</th>
+              </tr>
+            </thead>
+            <tbody id="records-tbody"></tbody>
+          </table>
+        </div>
+        <div class="records-actions">
+          <button class="btn-cta btn-cta-primary" id="add-record">＋ 新增一筆配息</button>
+          <button class="btn-cta" id="reset-records">↻ 重設預設</button>
+          <button class="btn-cta" id="export-data">↓ 匯出JSON</button>
+          <button class="btn-cta" id="import-data">↑ 匯入JSON</button>
+          <input type="file" id="file-input" accept=".json" style="display:none;">
+        </div>
+      </div>
+    </details>
+  </section>
+
   <!-- ============ 三本柱現況 ============ -->
   <section class="section">
     <div class="section-row">
@@ -1407,7 +1335,7 @@ details.collapsible summary:hover { color: var(--accent); }
       <button class="quick-btn quick-00919" data-quick="00919">00919 月投 $8,000</button>
       <button class="quick-btn quick-00878" data-quick="00878">00878 月投 $14,000</button>
       <button class="quick-btn quick-all" data-quick="all">📅 本月全套 DCA $32,000</button>
-      <button class="btn" id="add-purchase" style="margin-left:auto;">+ 自訂一筆</button>
+      <button class="btn-cta btn-cta-primary" id="add-purchase" style="margin-left:auto;">＋ 自訂一筆買入</button>
     </div>
     
     <!-- 摘要區（有資料才顯示）-->
@@ -1590,79 +1518,6 @@ details.collapsible summary:hover { color: var(--accent); }
       </div>
     </div>
   </section>
-
-  <!-- ============ 快速登錄當月 DCA ============ -->
-  <section class="section">
-    <div class="section-title">每月 DCA 快速登錄</div>
-    <div class="quick-dca-card">
-      <div class="quick-dca-info">
-        每月 DCA 入帳後，點下方按鈕一次登錄三本柱新增張數，<strong>自動加到「現有張數」與買入紀錄</strong>。
-      </div>
-      <button class="btn-quick-dca" id="open-quick-dca">⚡ 登錄本月 DCA 入帳</button>
-      <div class="quick-dca-history" id="quick-dca-history"></div>
-    </div>
-  </section>
-
-  <!-- Modal: 快速登錄表單 -->
-  <div class="modal-overlay" id="quick-dca-modal" style="display:none;">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>登錄本月 DCA 入帳</h3>
-        <button class="modal-close" id="quick-dca-close">×</button>
-      </div>
-      <div class="modal-body">
-        <div style="margin-bottom: 16px;">
-          <label class="modal-label">入帳日期</label>
-          <input type="date" id="quick-dca-date" class="modal-input">
-        </div>
-        <div class="quick-dca-rows" id="quick-dca-rows"></div>
-        <div class="quick-dca-summary" id="quick-dca-summary"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" id="quick-dca-cancel">取消</button>
-        <button class="btn btn-primary" id="quick-dca-submit">✓ 確認登錄</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ 配息紀錄（摺疊） ============ -->
-  <section class="section">
-    <details class="collapsible">
-      <summary>2026 配息紀錄（YTD實際入帳）</summary>
-      <div class="collapsible-body" style="padding-bottom: 0;">
-        <div style="margin-bottom: 12px; color: var(--text-muted); font-size: 12px; line-height: 1.6;">
-          <strong style="color: var(--text);">YTD 已領：</strong><span id="records-ytd-display" style="color: var(--accent); font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 16px;">—</span>　
-          <strong style="color: var(--text);">月均：</strong><span id="records-monthly-display" style="color: var(--text); font-family: 'JetBrains Mono', monospace;">—</span>
-        </div>
-        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
-          <table class="records-table">
-            <thead>
-              <tr>
-                <th style="width:40px;"></th>
-                <th>日期</th>
-                <th>標的</th>
-                <th>成本價</th>
-                <th>股數</th>
-                <th>每股配息</th>
-                <th>配息入帳</th>
-                <th>年化殖利率</th>
-                <th>該支累計</th>
-              </tr>
-            </thead>
-            <tbody id="records-tbody"></tbody>
-          </table>
-        </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
-          <button class="btn btn-primary" id="add-record">+ 新增一筆</button>
-          <button class="btn" id="reset-records">↻ 重設預設值</button>
-          <button class="btn" id="export-data">↓ 匯出JSON</button>
-          <button class="btn" id="import-data">↑ 匯入JSON</button>
-          <input type="file" id="file-input" accept=".json" style="display:none;">
-        </div>
-      </div>
-    </details>
-  </section>
-
   <div class="footer-note">
     <strong>主畫面邏輯：</strong>「本季每股配息」× 4 ÷ 12 ÷ 1 = 月均（假設配息率不變）。<br>
     <strong>試算邏輯：</strong>每月以 DCA ÷ 股價買入；配息再投入由開關控制（預設關閉，符合實際）；除息加碼直接加到該檔；年終獎金 12 月全給 00878。<br>
@@ -2358,149 +2213,6 @@ function renderRecords() {
   });
 }
 
-// === 快速登錄當月 DCA ===
-function openQuickDCAModal() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('quick-dca-date').value = today;
-  
-  const rowsContainer = document.getElementById('quick-dca-rows');
-  rowsContainer.innerHTML = '';
-  
-  ['0056', '00919', '00878'].forEach(etf => {
-    const p = state.pillars[etf];
-    const latestPrice = state.latestPrices[etf] || p.price;
-    const expectedShares = p.dca / latestPrice; // 預估股數（不是張）
-    
-    const row = document.createElement('div');
-    row.className = 'qdca-row';
-    row.dataset.etf = etf;
-    row.innerHTML = `
-      <div class="qdca-row-head">
-        <div class="qdca-name">${etf}</div>
-        <div class="qdca-budget">月預算 <strong>$${fmt(p.dca)}</strong></div>
-      </div>
-      <div class="qdca-row-inputs">
-        <div>
-          <label>實際買入股數</label>
-          <input type="number" step="1" value="${Math.round(expectedShares)}" data-qdca-etf="${etf}" data-qdca-field="shares">
-        </div>
-        <div>
-          <label>實際成交均價</label>
-          <input type="number" step="0.01" value="${fmt2(latestPrice)}" data-qdca-etf="${etf}" data-qdca-field="price">
-        </div>
-      </div>
-      <div class="qdca-row-result" id="qdca-result-${etf}">花費 $0　·　約 0 張</div>
-    `;
-    rowsContainer.appendChild(row);
-  });
-  
-  // 綁定即時計算
-  rowsContainer.querySelectorAll('input[data-qdca-etf]').forEach(inp => {
-    inp.addEventListener('input', updateQuickDCASummary);
-  });
-  
-  updateQuickDCASummary();
-  document.getElementById('quick-dca-modal').style.display = 'flex';
-}
-
-function updateQuickDCASummary() {
-  let totalCost = 0;
-  ['0056', '00919', '00878'].forEach(etf => {
-    const sharesInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="shares"]`);
-    const priceInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="price"]`);
-    const shares = parseFloat(sharesInp?.value) || 0;
-    const price = parseFloat(priceInp?.value) || 0;
-    const cost = shares * price;
-    const lots = shares / 1000;
-    totalCost += cost;
-    const resultEl = document.getElementById(`qdca-result-${etf}`);
-    if (resultEl) {
-      resultEl.innerHTML = `花費 <strong>$${fmt(cost)}</strong>　·　約 ${fmt2(lots)} 張`;
-    }
-  });
-  
-  const summary = document.getElementById('quick-dca-summary');
-  summary.innerHTML = `<span>本月 DCA 合計花費</span><strong>$${fmt(totalCost)}</strong>`;
-}
-
-function closeQuickDCAModal() {
-  document.getElementById('quick-dca-modal').style.display = 'none';
-}
-
-function submitQuickDCA() {
-  const date = document.getElementById('quick-dca-date').value;
-  if (!date) { alert('請選擇日期'); return; }
-  
-  const newEntries = [];
-  ['0056', '00919', '00878'].forEach(etf => {
-    const sharesInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="shares"]`);
-    const priceInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="price"]`);
-    const shares = parseFloat(sharesInp?.value) || 0;
-    const price = parseFloat(priceInp?.value) || 0;
-    if (shares > 0 && price > 0) {
-      newEntries.push({ etf, shares, price });
-    }
-  });
-  
-  if (newEntries.length === 0) {
-    alert('沒有任何要登錄的買入紀錄');
-    return;
-  }
-  
-  // 1. 加入買入紀錄
-  newEntries.forEach(e => {
-    state.purchases.push({
-      date,
-      etf: e.etf,
-      shares: e.shares,
-      price: e.price,
-      note: '月 DCA'
-    });
-  });
-  
-  // 2. 自動更新三本柱「現有張數」（加上新買入的張數）
-  newEntries.forEach(e => {
-    state.pillars[e.etf].shares += e.shares / 1000;
-  });
-  
-  saveState();
-  closeQuickDCAModal();
-  
-  renderPillars();
-  renderSimPillars();
-  renderPurchases();
-  renderPurchaseSummary();
-  updateAll();
-  renderQuickDCAHistory();
-  
-  // 顯示確認訊息
-  const summary = newEntries.map(e => `${e.etf} +${fmt2(e.shares/1000)}張`).join('、');
-  alert(`✓ 已登錄 ${date} 的 DCA：\n${summary}\n\n三本柱「現有張數」已自動更新。`);
-}
-
-function renderQuickDCAHistory() {
-  // 顯示最近 3 筆 DCA 紀錄（從 purchases 中找 note='月 DCA' 的）
-  const dcaRecords = state.purchases.filter(p => p.note === '月 DCA');
-  // 按日期分組
-  const byDate = {};
-  dcaRecords.forEach(p => {
-    if (!byDate[p.date]) byDate[p.date] = [];
-    byDate[p.date].push(p);
-  });
-  const dates = Object.keys(byDate).sort().reverse().slice(0, 3);
-  
-  const container = document.getElementById('quick-dca-history');
-  if (dates.length === 0) {
-    container.innerHTML = '尚無登錄紀錄';
-    return;
-  }
-  
-  container.innerHTML = '<strong style="color:var(--text);">最近 DCA 紀錄：</strong><br>' +
-    dates.map(date => {
-      const items = byDate[date].map(p => `${p.etf} ${fmt2(p.shares/1000)}張`).join('、');
-      return `<span style="color:var(--text-muted);">${date}</span> · ${items}`;
-    }).join('<br>');
-}
 
 // === 買入紀錄 ===
 function renderPurchases() {
@@ -3250,16 +2962,6 @@ function openQuickAllDialog() {
   document.getElementById('update-prices-btn').addEventListener('click', updateAllPrices);
   const topBtn = document.getElementById('update-prices-btn-top');
   if (topBtn) topBtn.addEventListener('click', updateAllPrices);
-  
-  // 快速 DCA 登錄
-  document.getElementById('open-quick-dca').addEventListener('click', openQuickDCAModal);
-  document.getElementById('quick-dca-close').addEventListener('click', closeQuickDCAModal);
-  document.getElementById('quick-dca-cancel').addEventListener('click', closeQuickDCAModal);
-  document.getElementById('quick-dca-submit').addEventListener('click', submitQuickDCA);
-  document.getElementById('quick-dca-modal').addEventListener('click', e => {
-    if (e.target.id === 'quick-dca-modal') closeQuickDCAModal();
-  });
-  renderQuickDCAHistory();
   
   // 自訂 proxy URL
   const proxyInput = document.getElementById('custom-proxy');

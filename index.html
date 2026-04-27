@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>三本柱儀表板 · Shawn 2026</title>
+<title>發財三本柱 · Shawn 2026</title>
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -802,6 +802,127 @@ details.collapsible summary:hover { color: var(--accent); }
   color: var(--text);
 }
 
+/* === 配息再投入 toggle === */
+.reinvest-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.reinvest-toggle:hover {
+  background: var(--bg-input);
+}
+.reinvest-toggle input[type="checkbox"] {
+  display: none;
+}
+.reinvest-track {
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  background: var(--border-strong);
+  border-radius: 12px;
+  position: relative;
+  transition: background 0.2s;
+  margin-top: 2px;
+}
+.reinvest-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.reinvest-toggle input:checked + .reinvest-track {
+  background: var(--success);
+}
+.reinvest-toggle input:checked + .reinvest-track .reinvest-thumb {
+  left: 22px;
+}
+.reinvest-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.reinvest-text strong {
+  font-size: 14px;
+  color: var(--text);
+}
+.reinvest-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* === 快捷登記區 === */
+.quick-buy-row {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+.quick-buy-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.quick-btn {
+  background: white;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 600;
+}
+.quick-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.quick-btn.quick-0056 { border-color: var(--p-0056); color: var(--p-0056); }
+.quick-btn.quick-0056:hover { background: var(--p-0056); color: white; }
+.quick-btn.quick-00919 { border-color: var(--p-00919); color: var(--p-00919); }
+.quick-btn.quick-00919:hover { background: var(--p-00919); color: white; }
+.quick-btn.quick-00878 { border-color: var(--p-00878); color: var(--p-00878); }
+.quick-btn.quick-00878:hover { background: var(--p-00878); color: white; }
+.quick-btn.quick-all {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+  font-weight: 700;
+}
+.quick-btn.quick-all:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.subsection-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
 /* === 快速登錄 DCA 區塊 === */
 .quick-dca-card {
   background: linear-gradient(135deg, #fffaf0 0%, #f5e9d0 100%);
@@ -1263,9 +1384,75 @@ details.collapsible summary:hover { color: var(--accent); }
   <section class="section">
     <div class="section-row">
       <div class="section-title">三本柱現況快照</div>
-      <button class="btn" id="reset-pillars">↻ 重設預設值</button>
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span id="price-status-top" style="font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted);"></span>
+        <button class="btn" id="update-prices-btn-top">↻ 更新股價</button>
+        <button class="btn" id="reset-pillars">↻ 重設預設值</button>
+      </div>
     </div>
     <div class="pillars-grid" id="pillars-grid"></div>
+  </section>
+
+  <!-- ============ 買入登記（合併區）============ -->
+  <section class="section">
+    <div class="section-row">
+      <div class="section-title">📝 買入登記（DCA／加碼／一次性買進）</div>
+      <button class="btn" id="apply-shares" title="套用買入累計到三本柱「現有張數」">↑ 套用到現有張數</button>
+    </div>
+    
+    <!-- 快捷加碼按鈕區 -->
+    <div class="quick-buy-row">
+      <span class="quick-buy-label">⚡ 快捷登記：</span>
+      <button class="quick-btn quick-0056" data-quick="0056">0056 月投 $10,000</button>
+      <button class="quick-btn quick-00919" data-quick="00919">00919 月投 $8,000</button>
+      <button class="quick-btn quick-00878" data-quick="00878">00878 月投 $14,000</button>
+      <button class="quick-btn quick-all" data-quick="all">📅 本月全套 DCA $32,000</button>
+      <button class="btn" id="add-purchase" style="margin-left:auto;">+ 自訂一筆</button>
+    </div>
+    
+    <!-- 摘要區（有資料才顯示）-->
+    <div id="purchases-summary-wrap" style="display:none; margin-top: 16px;">
+      <div class="subsection-label">📊 自動摘要（按標的分組）</div>
+      <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+        <table class="records-table" style="min-width: 720px;">
+          <thead>
+            <tr>
+              <th>標的</th>
+              <th>累計張數</th>
+              <th>總成本</th>
+              <th>平均成本價</th>
+              <th>最新股價</th>
+              <th>含息報酬</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="purchases-summary-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- 明細表 -->
+    <div class="subsection-label" style="margin-top: 16px;">📋 明細紀錄</div>
+    <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+      <table class="records-table" style="min-width: 720px;">
+        <thead>
+          <tr>
+            <th style="width:40px;"></th>
+            <th>日期</th>
+            <th>標的</th>
+            <th>買入股數</th>
+            <th>買入單價</th>
+            <th>成本</th>
+            <th>備註</th>
+          </tr>
+        </thead>
+        <tbody id="purchases-tbody"></tbody>
+      </table>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+      <button class="btn" id="apply-prices">↑ 套用最新股價到試算</button>
+      <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空買入紀錄</button>
+    </div>
   </section>
 
   <!-- ============ 每月可領推估 ============ -->
@@ -1355,6 +1542,16 @@ details.collapsible summary:hover { color: var(--accent); }
         </details>
         <div class="pillars-grid" id="sim-pillars"></div>
         <div class="global-controls" style="margin-top: 16px;">
+          <div class="field" style="grid-column: 1 / -1;">
+            <label class="reinvest-toggle">
+              <input type="checkbox" id="reinvest-dividend">
+              <span class="reinvest-track"><span class="reinvest-thumb"></span></span>
+              <span class="reinvest-text">
+                <strong>配息再投入</strong>
+                <span class="reinvest-desc">勾選後試算會自動把每季配息再買回該檔ETF（複利效應）。預設關閉，符合「配息進現金帳戶不主動加買」的實際情況。</span>
+              </span>
+            </label>
+          </div>
           <div class="field">
             <div class="field-label"><span>除息後機動加碼（每次）</span></div>
             <input type="number" id="quarterly-boost" value="0" min="0" step="5000">
@@ -1428,64 +1625,6 @@ details.collapsible summary:hover { color: var(--accent); }
     </div>
   </div>
 
-  <!-- ============ 買入紀錄（摺疊） ============ -->
-  <section class="section">
-    <details class="collapsible" id="purchases-section">
-      <summary>持股買入紀錄（自動算平均成本）</summary>
-      <div class="collapsible-body" style="padding-bottom: 0;">
-        <div style="margin-bottom: 14px; padding: 12px; background: var(--bg-input); border-radius: 8px; font-size: 12px; line-height: 1.6; color: var(--text-muted);">
-          <strong style="color: var(--text);">用途：</strong>每次 DCA 買進後在這裡新增一筆，系統自動累計、算平均成本。下方摘要表顯示每支標的的累計張數、平均成本、最新股價，可一鍵套用到三本柱「現有張數」與「股價假設」。
-        </div>
-        
-        <!-- 摘要表 -->
-        <div style="margin-bottom: 16px;">
-          <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">摘要</div>
-          <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
-            <table class="records-table" style="min-width: 720px;">
-              <thead>
-                <tr>
-                  <th>標的</th>
-                  <th>累計張數</th>
-                  <th>總成本</th>
-                  <th>平均成本價</th>
-                  <th>最新股價</th>
-                  <th>含息報酬</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody id="purchases-summary-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-        
-        <!-- 明細表 -->
-        <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">明細</div>
-        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
-          <table class="records-table" style="min-width: 720px;">
-            <thead>
-              <tr>
-                <th style="width:40px;"></th>
-                <th>日期</th>
-                <th>標的</th>
-                <th>買入股數</th>
-                <th>買入單價</th>
-                <th>成本</th>
-                <th>備註</th>
-              </tr>
-            </thead>
-            <tbody id="purchases-tbody"></tbody>
-          </table>
-        </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
-          <button class="btn btn-primary" id="add-purchase">+ 新增買入</button>
-          <button class="btn" id="apply-shares">↑ 套用累計到「現有張數」</button>
-          <button class="btn" id="apply-prices">↑ 套用最新股價到「試算股價」</button>
-          <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空買入紀錄</button>
-        </div>
-      </div>
-    </details>
-  </section>
-
   <!-- ============ 配息紀錄（摺疊） ============ -->
   <section class="section">
     <details class="collapsible">
@@ -1526,7 +1665,7 @@ details.collapsible summary:hover { color: var(--accent); }
 
   <div class="footer-note">
     <strong>主畫面邏輯：</strong>「本季每股配息」× 4 ÷ 12 ÷ 1 = 月均（假設配息率不變）。<br>
-    <strong>試算邏輯：</strong>每月以 DCA ÷ 股價買入；季配息再投入；除息加碼直接加到該檔；年終獎金 12 月全給 00878。<br>
+    <strong>試算邏輯：</strong>每月以 DCA ÷ 股價買入；配息再投入由開關控制（預設關閉，符合實際）；除息加碼直接加到該檔；年終獎金 12 月全給 00878。<br>
     <strong>資料儲存：</strong>所有輸入自動存於瀏覽器 localStorage，重開不會遺失。建議每月匯出 JSON 備份。
   </div>
 
@@ -1590,7 +1729,8 @@ function loadState() {
         goals: parsed.goals || { ...DEFAULT_GOALS },
         quarterlyBoost: parsed.quarterlyBoost || 0,
         annualBonus: parsed.annualBonus || 0,
-        customProxy: parsed.customProxy || ''
+        customProxy: parsed.customProxy || '',
+        reinvestDividend: parsed.reinvestDividend === true  // 預設 false
       };
     }
   } catch(e) { console.warn(e); }
@@ -1603,7 +1743,8 @@ function loadState() {
     goals: { ...DEFAULT_GOALS },
     quarterlyBoost: 0,
     annualBonus: 0,
-    customProxy: ''
+    customProxy: '',
+    reinvestDividend: false
   };
 }
 
@@ -1845,9 +1986,10 @@ function updateGoals(monthly) {
       // DCA 達標時間預估
       const dcaMonths = computeDCATime(g.target);
       const totalDCA = state.pillars['0056'].dca + state.pillars['00919'].dca + state.pillars['00878'].dca;
+      const reinvestNote = state.reinvestDividend ? '含配息再投入複利' : '配息不再投入';
       let dcaText = '';
       if (dcaMonths < 0) {
-        dcaText = `<div class="dca-estimate dca-warn">每月 DCA $${fmt(totalDCA)}，30 年內無法達標。考慮增加 DCA 或分次加碼。</div>`;
+        dcaText = `<div class="dca-estimate dca-warn">每月 DCA $${fmt(totalDCA)}（${reinvestNote}），30 年內無法達標。考慮增加 DCA 或開啟配息再投入。</div>`;
       } else if (dcaMonths > 0) {
         const y = Math.floor(dcaMonths / 12);
         const mo = dcaMonths % 12;
@@ -1856,7 +1998,7 @@ function updateGoals(monthly) {
           <div class="dca-estimate">
             <span class="dca-or">或</span>
             <div class="dca-content">
-              照目前每月 DCA <strong>$${fmt(totalDCA)}</strong>（含配息再投入複利），<br>
+              照目前每月 DCA <strong>$${fmt(totalDCA)}</strong>（${reinvestNote}），<br>
               預估 <strong class="dca-time">${timeStr}</strong> 後自然達成 — <strong>不用一次掏出 $${fmt(info.totalCost)}</strong>
             </div>
           </div>
@@ -1922,8 +2064,10 @@ function computeDCATime(targetMonthly, maxYears = 30) {
       const p = state.pillars[etf];
       if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
       if (p.dividendMonths.includes(monthInYear)) {
-        const dividendCash = shares[etf] * 1000 * p.dividend;
-        if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
+        if (state.reinvestDividend) {
+          const dividendCash = shares[etf] * 1000 * p.dividend;
+          if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
+        }
         if (state.quarterlyBoost > 0 && p.price > 0) {
           shares[etf] += state.quarterlyBoost / (p.price * 1000);
         }
@@ -1999,10 +2143,12 @@ function simulate(maxYears = 30) {
       if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
       // 配息月：配息 = 張數 × 1000 × 每股配息
       if (p.dividendMonths.includes(monthInYear)) {
-        const dividendCash = shares[etf] * 1000 * p.dividend;
-        // 配息再投入買回張數
-        if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
-        // 除息後機動加碼
+        if (state.reinvestDividend) {
+          // 配息再投入買回張數
+          const dividendCash = shares[etf] * 1000 * p.dividend;
+          if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
+        }
+        // 除息後機動加碼（不論是否再投入都會加碼）
         if (state.quarterlyBoost > 0 && p.price > 0) {
           shares[etf] += state.quarterlyBoost / (p.price * 1000);
         }
@@ -2429,15 +2575,15 @@ function computePurchaseSummary() {
 
 function renderPurchaseSummary() {
   const tbody = document.getElementById('purchases-summary-tbody');
+  const wrap = document.getElementById('purchases-summary-wrap');
   tbody.innerHTML = '';
   const summary = computePurchaseSummary();
   
   if (Object.keys(summary).length === 0) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="7" style="text-align:center;padding:14px;color:var(--text-muted);font-size:12px;">尚無資料。新增買入紀錄後此處會自動匯總。</td>`;
-    tbody.appendChild(tr);
+    if (wrap) wrap.style.display = 'none';
     return;
   }
+  if (wrap) wrap.style.display = 'block';
   
   Object.entries(summary).forEach(([etf, s]) => {
     const latestPrice = state.latestPrices[etf];
@@ -2563,11 +2709,24 @@ async function fetchYahooPrice(symbol) {
 
 async function updateAllPrices() {
   const btn = document.getElementById('update-prices-btn');
-  const status = document.getElementById('price-status');
-  btn.disabled = true;
-  btn.textContent = '更新中…';
-  status.textContent = '正在抓取股價...';
-  status.style.color = 'var(--text-muted)';
+  const topBtn = document.getElementById('update-prices-btn-top');
+  const setStatus = (text, color) => {
+    ['price-status', 'price-status-top'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = text;
+        el.style.color = color;
+      }
+    });
+  };
+  
+  [btn, topBtn].forEach(b => {
+    if (b) {
+      b.disabled = true;
+      b.textContent = '更新中…';
+    }
+  });
+  setStatus('正在抓取股價...', 'var(--text-muted)');
   
   // 重置本地 prices.json 的快取（強制重新抓取）
   _localPricesCache = null;
@@ -2606,25 +2765,27 @@ async function updateAllPrices() {
   let source = '';
   if (local && local.prices && local.updatedAt) {
     const dt = new Date(local.updatedAt);
-    source = ` · 來源：本地 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+    source = ` (本地 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })})`;
   } else if (successes.length > 0) {
-    source = ' · 來源：CORS proxy';
+    source = ' (CORS proxy)';
   }
   
   if (failures.length === 0) {
-    status.textContent = `✓ 已更新${source}`;
-    status.style.color = 'var(--success)';
+    setStatus(`✓ 已更新${source}`, 'var(--success)');
   } else if (successes.length > 0) {
-    status.textContent = `⚠ ${successes.length}/${successes.length + failures.length} 成功${source}`;
-    status.style.color = 'var(--warning)';
+    setStatus(`⚠ ${successes.length}/${successes.length + failures.length} 成功${source}`, 'var(--warning)');
     console.warn('Failed symbols:', failures.map(([k]) => k).join(', '));
   } else {
-    status.textContent = '✗ 全部失敗（請設定 GitHub Actions 自動抓股價）';
-    status.style.color = 'var(--danger)';
+    setStatus('✗ 全部失敗', 'var(--danger)');
   }
   
-  btn.disabled = false;
-  btn.textContent = '↻ 更新股價';
+  [btn, topBtn].forEach(b => {
+    if (b) {
+      b.disabled = false;
+      b.textContent = '↻ 更新股價';
+    }
+  });
+  renderPillars();
   renderSimPillars();
   renderPurchaseSummary();
   updateAll();
@@ -2649,13 +2810,16 @@ async function autoLoadLocalPrices() {
       if (updated > 0) {
         state.priceUpdatedAt = local.updatedAt;
         saveState();
-        // 顯示時間
-        const status = document.getElementById('price-status');
-        if (status) {
-          const dt = new Date(local.updatedAt);
-          status.textContent = `自動載入 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
-          status.style.color = 'var(--success)';
-        }
+        // 顯示時間（兩個status同步）
+        const dt = new Date(local.updatedAt);
+        const txt = `✓ ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+        ['price-status', 'price-status-top'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.textContent = txt;
+            el.style.color = 'var(--success)';
+          }
+        });
         // 重新渲染
         renderPillars();
         renderSimPillars();
@@ -2709,6 +2873,15 @@ function init() {
     state.annualBonus = parseFloat(e.target.value) || 0;
     saveState();
     updateSimulation();
+  });
+  
+  // 配息再投入
+  const reinvestEl = document.getElementById('reinvest-dividend');
+  reinvestEl.checked = state.reinvestDividend === true;
+  reinvestEl.addEventListener('change', e => {
+    state.reinvestDividend = e.target.checked;
+    saveState();
+    updateAll();
   });
   
   // Reset pillars
@@ -2785,6 +2958,137 @@ function init() {
     renderPurchases();
     renderPurchaseSummary();
   });
+  
+  // 快捷登記按鈕
+  document.querySelectorAll('.quick-btn[data-quick]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const which = e.currentTarget.dataset.quick;
+      
+      if (which === 'all') {
+        // 全套 DCA：開啟對話框讓使用者填三支實際成交價
+        openQuickAllDialog();
+      } else {
+        // 單支 DCA
+        openQuickSingleDialog(which);
+      }
+    });
+  });
+
+function openQuickSingleDialog(etf) {
+  const p = state.pillars[etf];
+  const today = new Date().toISOString().split('T')[0];
+  const monthStr = today.substring(0, 7);
+  const defaultPrice = state.latestPrices[etf] || p.price;
+  
+  const priceStr = prompt(
+    `登記 ${etf} 月投 $${fmt(p.dca)}\n\n` +
+    `請輸入「實際買入單價」：\n` +
+    `（預設帶最新股價 $${fmt2(defaultPrice)}，可改成你實際成交的股價）`,
+    fmt2(defaultPrice)
+  );
+  if (priceStr === null) return; // 使用者取消
+  
+  const price = parseFloat(priceStr);
+  if (!price || price <= 0) {
+    alert('股價輸入無效');
+    return;
+  }
+  
+  const dateStr = prompt(
+    `買入日期？\n（預設今天 ${today}，可改）`,
+    today
+  );
+  if (dateStr === null) return;
+  
+  const shares = Math.floor(p.dca / price);
+  if (shares <= 0) {
+    alert('股價過高或DCA金額過低，無法買到任何股數');
+    return;
+  }
+  const actualCost = shares * price;
+  
+  if (!confirm(
+    `確認登記：\n` +
+    `日期：${dateStr}\n` +
+    `標的：${etf}\n` +
+    `買入單價：$${fmt2(price)}\n` +
+    `買入股數：${fmt(shares)} 股\n` +
+    `實際成本：$${fmt(actualCost)}（預算 $${fmt(p.dca)}）\n` +
+    `剩餘現金：$${fmt(p.dca - actualCost)}`
+  )) return;
+  
+  state.purchases.push({
+    date: dateStr,
+    etf: etf,
+    shares: shares,
+    price: price,
+    note: `DCA ${monthStr.replace('-', '/')}`
+  });
+  saveState();
+  renderPurchases();
+  renderPurchaseSummary();
+}
+
+function openQuickAllDialog() {
+  const today = new Date().toISOString().split('T')[0];
+  const monthStr = today.substring(0, 7);
+  
+  const dateStr = prompt(
+    `登記本月全套 DCA $${fmt(state.pillars['0056'].dca + state.pillars['00919'].dca + state.pillars['00878'].dca)}\n\n` +
+    `買入日期？（預設今天 ${today}）`,
+    today
+  );
+  if (dateStr === null) return;
+  
+  const newPurchases = [];
+  for (const etf of ['0056', '00919', '00878']) {
+    const p = state.pillars[etf];
+    const defaultPrice = state.latestPrices[etf] || p.price;
+    const priceStr = prompt(
+      `${etf}：請輸入「實際買入單價」\n` +
+      `月 DCA：$${fmt(p.dca)}\n` +
+      `預設帶最新股價 $${fmt2(defaultPrice)}`,
+      fmt2(defaultPrice)
+    );
+    if (priceStr === null) {
+      if (newPurchases.length > 0) {
+        if (confirm(`已輸入 ${newPurchases.length} 筆，要儲存已輸入的嗎？\n（按取消則放棄全部）`)) {
+          break;
+        }
+      }
+      return;
+    }
+    const price = parseFloat(priceStr);
+    if (!price || price <= 0) {
+      alert(`${etf} 股價無效，跳過`);
+      continue;
+    }
+    const shares = Math.floor(p.dca / price);
+    if (shares > 0) {
+      newPurchases.push({
+        date: dateStr,
+        etf: etf,
+        shares: shares,
+        price: price,
+        note: `DCA ${monthStr.replace('-', '/')}`
+      });
+    }
+  }
+  
+  if (newPurchases.length === 0) return;
+  
+  const summary = newPurchases.map(p => 
+    `${p.etf}: ${fmt(p.shares)} 股 × $${fmt2(p.price)} = $${fmt(p.shares * p.price)}`
+  ).join('\n');
+  const totalCost = newPurchases.reduce((s, p) => s + p.shares * p.price, 0);
+  
+  if (!confirm(`確認登記 ${newPurchases.length} 筆：\n\n${summary}\n\n總成本：$${fmt(totalCost)}`)) return;
+  
+  state.purchases.push(...newPurchases);
+  saveState();
+  renderPurchases();
+  renderPurchaseSummary();
+}
   document.getElementById('apply-shares').addEventListener('click', () => {
     const summary = computePurchaseSummary();
     const applied = [];
@@ -2835,8 +3139,10 @@ function init() {
     }
   });
   
-  // 股價更新
+  // 股價更新（頂部按鈕和試算參數區的按鈕都觸發同一個函數）
   document.getElementById('update-prices-btn').addEventListener('click', updateAllPrices);
+  const topBtn = document.getElementById('update-prices-btn-top');
+  if (topBtn) topBtn.addEventListener('click', updateAllPrices);
   
   // 快速 DCA 登錄
   document.getElementById('open-quick-dca').addEventListener('click', openQuickDCAModal);
@@ -2861,11 +3167,17 @@ function init() {
     saveState();
   });
   
-  // 顯示上次更新時間
+  // 顯示上次更新時間（autoLoadLocalPrices 會覆蓋）
   if (state.priceUpdatedAt) {
     const dt = new Date(state.priceUpdatedAt);
-    document.getElementById('price-status').textContent = `上次更新：${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
-    document.getElementById('price-status').style.color = 'var(--text-dim)';
+    const txt = `上次：${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+    ['price-status', 'price-status-top'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = txt;
+        el.style.color = 'var(--text-dim)';
+      }
+    });
   }
 }
 

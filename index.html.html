@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>三本柱整合儀表板 · Shawn 2026</title>
+
+<!-- iOS Web App 模式（加到主畫面像 App 一樣全螢幕）-->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="三本柱">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#14171f">
+<meta name="format-detection" content="telephone=no">
+
+<!-- SVG Favicon（inline data URL，無需額外檔案）-->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171f'/%3E%3Crect x='20' y='30' width='12' height='50' fill='%23d4a857'/%3E%3Crect x='44' y='40' width='12' height='40' fill='%236ab0e8'/%3E%3Crect x='68' y='50' width='12' height='30' fill='%23b88dc7'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base: #14171f;
+    --bg-card: #1c2030;
+    --bg-card-hi: #232838;
+    --border: #2a3045;
+    --border-soft: rgba(42, 48, 69, 0.5);
+    --text: #e8e6e0;
+    --text-muted: #8a8f9e;
+    --text-dim: #5a6072;
+    --accent: #d4a857;
+    --accent-bright: #e8c478;
+    --success: #5ec97a;
+    --warning: #e8916a;
+    --danger: #e76f6f;
+    --p-0056: #d4a857;
+    --p-00919: #6ab0e8;
+    --p-00878: #b88dc7;
+    --p-0050: #7ba889;
+    --p-other: #8a8f9e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg-base);
+    color: var(--text);
+    font-family: 'Noto Serif TC', serif;
+    min-height: 100vh;
+  }
+
+  body {
+    /* iOS 瀏海/底部安全區處理 */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at top left, rgba(212, 168, 87, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(106, 176, 232, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 18px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* === Header === */
+  .header {
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+  }
+  .header-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .header h1 .accent { color: var(--accent); font-style: italic; }
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* === Section === */
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .section-title-row .section-title { margin-bottom: 0; }
+
+  /* === YTD 大數字儀表板 === */
+  .ytd-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 800px) {
+    .ytd-grid { grid-template-columns: 1fr 1fr; }
+    .ytd-card-main { grid-column: 1 / -1; }
+  }
+
+  .ytd-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ytd-card-main {
+    background: linear-gradient(135deg, #1c2030 0%, #2a2538 100%);
+    border-color: rgba(212, 168, 87, 0.3);
+  }
+  .ytd-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .ytd-card-main .ytd-label { color: var(--accent); }
+  .ytd-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--text);
+  }
+  .ytd-card-main .ytd-value {
+    color: var(--accent-bright);
+    font-size: 48px;
+  }
+  .ytd-unit { font-size: 16px; color: var(--text-muted); margin-left: 6px; }
+  .ytd-detail {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* === Progress to Goal === */
+  .goal-progress {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    margin-top: 14px;
+  }
+  .goal-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .goal-progress-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .goal-bars {
+    display: grid;
+    gap: 10px;
+  }
+  .goal-bar-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 130px;
+    gap: 12px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .goal-bar-label {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .goal-bar-track {
+    height: 8px;
+    background: var(--bg-base);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .goal-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .goal-bar-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: right;
+  }
+  .goal-bar-meta strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* === Records Table === */
+  .records-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .records-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .records-table th {
+    background: var(--bg-base);
+    color: var(--text-muted);
+    font-weight: 500;
+    text-align: right;
+    padding: 10px 8px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .records-table th:first-child,
+  .records-table th:nth-child(2) { text-align: left; }
+  .records-table td {
+    padding: 8px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .records-table td:first-child,
+  .records-table td:nth-child(2) { text-align: left; }
+  .records-table tr:last-child td { border-bottom: none; }
+  .records-table input {
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 4px 6px;
+    text-align: right;
+    border-radius: 4px;
+  }
+  .records-table input.text-l { text-align: left; }
+  .records-table input:hover { border-color: var(--border); background: var(--bg-card-hi); }
+  .records-table input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-card-hi);
+  }
+  .records-table .etf-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--bg-card-hi);
+  }
+  .records-table .etf-0056 { color: var(--p-0056); border: 1px solid var(--p-0056); }
+  .records-table .etf-00919 { color: var(--p-00919); border: 1px solid var(--p-00919); }
+  .records-table .etf-00878 { color: var(--p-00878); border: 1px solid var(--p-00878); }
+  .records-table .etf-0050 { color: var(--p-0050); border: 1px solid var(--p-0050); }
+  .records-table .etf-other { color: var(--p-other); border: 1px solid var(--p-other); }
+
+  .records-table tr.computed-total {
+    background: rgba(212, 168, 87, 0.08);
+    font-weight: 700;
+  }
+  .records-table tr.computed-total td { padding: 12px 8px; color: var(--accent-bright); }
+
+  .row-actions { width: 30px; text-align: center !important; }
+  .delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+  .delete-btn:hover { color: var(--danger); background: rgba(231, 111, 111, 0.1); }
+
+  .table-actions {
+    padding: 12px 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: var(--bg-base);
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-primary {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .btn-primary:hover {
+    background: var(--accent);
+    color: var(--bg-base);
+  }
+
+  /* === Pillar Cards === */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .pillar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--pillar-color);
+  }
+  .pillar-card[data-etf="0056"] { --pillar-color: var(--p-0056); }
+  .pillar-card[data-etf="00919"] { --pillar-color: var(--p-00919); }
+  .pillar-card[data-etf="00878"] { --pillar-color: var(--p-00878); }
+
+  .pillar-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--pillar-color);
+    margin-bottom: 2px;
+  }
+  .pillar-month {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 14px;
+  }
+  .field { margin-bottom: 10px; }
+  .field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .field-value {
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .field input[type="number"] {
+    width: 100%;
+    background: var(--bg-base);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 9px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .field input[type="number"]:focus { outline: none; border-color: var(--accent); }
+
+  /* === Global Controls === */
+  .global-controls {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+
+  /* === Result Cards === */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 720px) {
+    .results-grid { grid-template-columns: 1fr; }
+  }
+  .result-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-hi) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 22px;
+  }
+  .result-card.primary { border-color: rgba(212, 168, 87, 0.3); }
+  .result-card.secondary { border-color: rgba(106, 176, 232, 0.2); }
+  .result-target {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .result-card.primary .result-target { color: var(--accent); }
+  .result-card.secondary .result-target { color: var(--p-00919); }
+  .result-headline {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  .result-headline .big-num {
+    font-size: 48px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+  .result-card.secondary .result-headline .big-num { color: var(--p-00919); }
+  .result-detail {
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 10px;
+  }
+  .result-bottleneck {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .result-bottleneck strong {
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* === Progress Table === */
+  .progress-table-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .progress-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .progress-table th {
+    background: var(--bg-base);
+    color: var(--text-muted);
+    font-weight: 500;
+    text-align: right;
+    padding: 10px 12px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .progress-table th:first-child { text-align: left; }
+  .progress-table td {
+    padding: 9px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .progress-table td:first-child {
+    text-align: left;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .progress-table tr.milestone-7w { background: rgba(212, 168, 87, 0.08); }
+  .progress-table tr.milestone-8w { background: rgba(106, 176, 232, 0.08); }
+  .progress-table tr.milestone-7w td:first-child::after {
+    content: ' ◆ 7萬';
+    color: var(--accent);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  .progress-table tr.milestone-8w td:first-child::after {
+    content: ' ◆ 8萬';
+    color: var(--p-00919);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  .cell-reached { color: var(--success); }
+
+  /* === Footer === */
+  .footer-note {
+    margin-top: 36px;
+    padding: 18px;
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .footer-note strong { color: var(--text); }
+
+  /* === Helpers === */
+  .text-success { color: var(--success); }
+  .text-warning { color: var(--warning); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="header">
+    <div class="header-eyebrow">Three-Pillar Dashboard · 2026</div>
+    <h1>三本柱<span class="accent">整合儀表板</span></h1>
+    <p class="header-sub">YTD 配息實績 · 配息紀錄管理 · 月領 7／8 萬達標試算。資料自動保存於瀏覽器（localStorage）。</p>
+  </header>
+
+  <!-- ============ YTD 概覽 ============ -->
+  <section class="section">
+    <div class="section-title">2026 YTD 概覽</div>
+    <div class="ytd-grid">
+      <div class="ytd-card ytd-card-main">
+        <div class="ytd-label">YTD 已領配息</div>
+        <div class="ytd-value"><span id="ytd-total">—</span><span class="ytd-unit">元</span></div>
+        <div class="ytd-detail" id="ytd-total-detail">—</div>
+      </div>
+      <div class="ytd-card">
+        <div class="ytd-label">YTD 月均</div>
+        <div class="ytd-value"><span id="ytd-monthly">—</span></div>
+        <div class="ytd-detail" id="ytd-monthly-detail">—</div>
+      </div>
+      <div class="ytd-card">
+        <div class="ytd-label">全年化推估</div>
+        <div class="ytd-value"><span id="ytd-projection">—</span></div>
+        <div class="ytd-detail" id="ytd-projection-detail">—</div>
+      </div>
+    </div>
+
+    <div class="goal-progress">
+      <div class="goal-progress-header">
+        <span class="goal-progress-title">vs 月領目標（年化推估月均）</span>
+      </div>
+      <div class="goal-bars" id="goal-bars"></div>
+    </div>
+  </section>
+
+  <!-- ============ 配息紀錄 ============ -->
+  <section class="section">
+    <div class="section-title-row">
+      <div class="section-title">2026 配息紀錄</div>
+    </div>
+    <div class="records-wrapper">
+      <table class="records-table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>標的</th>
+            <th>成本價</th>
+            <th>股數</th>
+            <th>每股配息</th>
+            <th>配息入帳</th>
+            <th>年化殖利率</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="records-tbody"></tbody>
+      </table>
+      <div class="table-actions">
+        <button class="btn btn-primary" id="add-record">+ 新增一筆</button>
+        <button class="btn" id="reset-records">↻ 重設為Excel預設</button>
+        <button class="btn" id="export-data">↓ 匯出JSON</button>
+        <button class="btn" id="import-data">↑ 匯入JSON</button>
+        <input type="file" id="file-input" accept=".json" style="display:none;">
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 三本柱參數 ============ -->
+  <section class="section">
+    <div class="section-title-row">
+      <div class="section-title">三本柱參數（試算用）</div>
+      <button class="btn" id="reset-pillars">↻ 重設</button>
+    </div>
+    <div class="pillars-grid" id="pillars-grid"></div>
+  </section>
+
+  <!-- ============ 加速槓桿 ============ -->
+  <section class="section">
+    <div class="section-title">加速槓桿（選填）</div>
+    <div class="global-controls">
+      <div class="field">
+        <div class="field-label">
+          <span>除息後機動加碼（每次）</span>
+          <span class="field-value" id="boost-display">0</span>
+        </div>
+        <input type="number" id="quarterly-boost" value="0" min="0" step="5000">
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">每次除息加碼到該檔ETF</div>
+      </div>
+      <div class="field">
+        <div class="field-label">
+          <span>年終獎金一次性投入</span>
+          <span class="field-value" id="bonus-display">0</span>
+        </div>
+        <input type="number" id="annual-bonus" value="0" min="0" step="10000">
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">每年12月，全數投入00878</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 達標時程 ============ -->
+  <section class="section">
+    <div class="section-title">未來達標時程</div>
+    <div class="results-grid">
+      <div class="result-card primary">
+        <div class="result-target">月領 7 萬</div>
+        <div class="result-headline">
+          <span class="big-num" id="result-7w-num">—</span> 年
+          <span style="font-size:16px;color:var(--text-muted);" id="result-7w-month">—</span>
+        </div>
+        <div class="result-detail" id="result-7w-detail">調整參數試算...</div>
+        <div class="result-bottleneck" id="result-7w-bottleneck"></div>
+      </div>
+      <div class="result-card secondary">
+        <div class="result-target">月領 8 萬</div>
+        <div class="result-headline">
+          <span class="big-num" id="result-8w-num">—</span> 年
+          <span style="font-size:16px;color:var(--text-muted);" id="result-8w-month">—</span>
+        </div>
+        <div class="result-detail" id="result-8w-detail">調整參數試算...</div>
+        <div class="result-bottleneck" id="result-8w-bottleneck"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 逐年推進表 ============ -->
+  <section class="section">
+    <div class="section-title">逐年推進表</div>
+    <div class="progress-table-wrapper">
+      <table class="progress-table">
+        <thead>
+          <tr>
+            <th>年末</th>
+            <th>0056（張）</th>
+            <th>00919（張）</th>
+            <th>00878（張）</th>
+            <th>當年月領</th>
+          </tr>
+        </thead>
+        <tbody id="progress-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    <strong>YTD 計算：</strong>YTD月均 = 已領配息 ÷ 已過月份；年化推估 = YTD + 剩餘月份預估配息（基於現有張數×配息率）。<br>
+    <strong>試算邏輯：</strong>每月以 DCA ÷ 股價買入；季配息月將配息再投入買回；除息後機動加碼直接加到該檔；年終獎金 12 月全給 00878。<br>
+    <strong>資料儲存：</strong>配息紀錄與參數自動存於瀏覽器，重開頁面不會遺失。建議偶爾匯出 JSON 備份。
+  </div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'shawn_three_pillar_v1';
+
+const DEFAULT_RECORDS = [
+  { date: '2026-01-13', etf: '00919', costPrice: 21.45, shares: 97942, divPerShare: 0.540 },
+  { date: '2026-01-13', etf: '00918', costPrice: 21.69, shares: 622, divPerShare: 0.664 },
+  { date: '2026-02-10', etf: '0056', costPrice: 32.46, shares: 44163, divPerShare: 0.866 },
+  { date: '2026-02-10', etf: '0050', costPrice: 31.34, shares: 4581, divPerShare: 0.997 },
+  { date: '2026-03-23', etf: '00878', costPrice: 20.69, shares: 93519, divPerShare: 0.420 },
+  { date: '2026-04-09', etf: '台積電', costPrice: 1950, shares: 51, divPerShare: 5.902 },
+  { date: '2026-04-14', etf: '00919', costPrice: 20.94, shares: 98968, divPerShare: 0.78 },
+  { date: '2026-05-14', etf: '0056', costPrice: 33.20, shares: 59943, divPerShare: 1.00 }
+];
+
+const DEFAULT_PILLARS = {
+  '0056':  { shares: 59.943, dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
+  '00919': { shares: 99.323, dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
+  '00878': { shares: 112.136, dca: 14000, price: 25, dividend: 0.42, dividendMonths: [3, 6, 9, 12] }
+};
+
+const TARGETS = {
+  '7w': { '0056': 70, '00919': 90, '00878': 167 },
+  '8w': { '0056': 80, '00919': 103, '00878': 191 }
+};
+
+// State
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { console.warn('Load fail', e); }
+  return {
+    records: JSON.parse(JSON.stringify(DEFAULT_RECORDS)),
+    pillars: JSON.parse(JSON.stringify(DEFAULT_PILLARS)),
+    quarterlyBoost: 0,
+    annualBonus: 0
+  };
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { console.warn('Save fail', e); }
+}
+
+// === Helpers ===
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const fmt1 = n => n.toLocaleString('en-US', { maximumFractionDigits: 1 });
+const fmt2 = n => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+function getEtfClass(etf) {
+  if (etf === '0056') return 'etf-0056';
+  if (etf === '00919') return 'etf-00919';
+  if (etf === '00878') return 'etf-00878';
+  if (etf === '0050') return 'etf-0050';
+  return 'etf-other';
+}
+
+// === Records Table ===
+function renderRecords() {
+  const tbody = document.getElementById('records-tbody');
+  tbody.innerHTML = '';
+  
+  let totalDividend = 0;
+  
+  // Sort by date
+  const sorted = [...state.records].sort((a, b) => a.date.localeCompare(b.date));
+  
+  sorted.forEach((rec, idx) => {
+    const totalDiv = rec.shares * rec.divPerShare;
+    const yieldPct = rec.costPrice > 0 ? (rec.divPerShare * 4 / rec.costPrice * 100) : 0;
+    totalDividend += totalDiv;
+    
+    const realIdx = state.records.indexOf(rec);
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="date" value="${rec.date}" data-idx="${realIdx}" data-field="date" class="text-l"></td>
+      <td><span class="etf-tag ${getEtfClass(rec.etf)}">${rec.etf}</span></td>
+      <td><input type="number" step="0.01" value="${rec.costPrice}" data-idx="${realIdx}" data-field="costPrice"></td>
+      <td><input type="number" step="1" value="${rec.shares}" data-idx="${realIdx}" data-field="shares"></td>
+      <td><input type="number" step="0.001" value="${rec.divPerShare}" data-idx="${realIdx}" data-field="divPerShare"></td>
+      <td>${fmt(totalDiv)}</td>
+      <td>${fmt2(yieldPct)}%</td>
+      <td class="row-actions"><button class="delete-btn" data-idx="${realIdx}">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  // Total row
+  const trTotal = document.createElement('tr');
+  trTotal.className = 'computed-total';
+  trTotal.innerHTML = `
+    <td colspan="5" style="text-align:right;">YTD 合計</td>
+    <td>${fmt(totalDividend)}</td>
+    <td colspan="2"></td>
+  `;
+  tbody.appendChild(trTotal);
+  
+  // Attach listeners
+  tbody.querySelectorAll('input[data-idx]').forEach(input => {
+    input.addEventListener('change', e => {
+      const idx = parseInt(e.target.dataset.idx);
+      const field = e.target.dataset.field;
+      const val = field === 'date' ? e.target.value : parseFloat(e.target.value) || 0;
+      state.records[idx][field] = val;
+      saveState();
+      renderRecords();
+      updateYTD();
+    });
+  });
+  tbody.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const idx = parseInt(e.target.dataset.idx);
+      if (confirm('刪除這筆配息紀錄？')) {
+        state.records.splice(idx, 1);
+        saveState();
+        renderRecords();
+        updateYTD();
+      }
+    });
+  });
+}
+
+// === YTD ===
+function updateYTD() {
+  const records = state.records;
+  let totalDividend = 0;
+  let lastMonth = 0;
+  
+  records.forEach(rec => {
+    totalDividend += rec.shares * rec.divPerShare;
+    const m = parseInt(rec.date.split('-')[1]);
+    if (m > lastMonth) lastMonth = m;
+  });
+  
+  const monthsCovered = lastMonth || 1;
+  const monthlyAvg = totalDividend / monthsCovered;
+  
+  // Year-end projection: YTD + remaining months prediction
+  // Remaining: use current pillar shares × dividend rate × remaining quarters
+  const remainingProjection = computeRemainingProjection(lastMonth);
+  const yearProjection = totalDividend + remainingProjection;
+  const yearMonthlyAvg = yearProjection / 12;
+  
+  document.getElementById('ytd-total').textContent = fmt(totalDividend);
+  document.getElementById('ytd-total-detail').textContent = `截至 ${monthsCovered} 月，共 ${records.length} 筆紀錄`;
+  
+  document.getElementById('ytd-monthly').innerHTML = fmt(monthlyAvg) + '<span class="ytd-unit">元</span>';
+  document.getElementById('ytd-monthly-detail').textContent = `${monthsCovered} 個月平均`;
+  
+  document.getElementById('ytd-projection').innerHTML = fmt(yearProjection) + '<span class="ytd-unit">元</span>';
+  document.getElementById('ytd-projection-detail').textContent = `年化月均約 ${fmt(yearMonthlyAvg)} 元`;
+  
+  // Goal bars
+  renderGoalBars(yearMonthlyAvg);
+}
+
+function computeRemainingProjection(lastCompletedMonth) {
+  // For each pillar, count remaining dividend months (> lastCompletedMonth)
+  let total = 0;
+  Object.entries(state.pillars).forEach(([etf, p]) => {
+    p.dividendMonths.forEach(m => {
+      if (m > lastCompletedMonth) {
+        // Use current shares (in 張) × 1000 × per-share dividend
+        total += p.shares * 1000 * p.dividend;
+      }
+    });
+  });
+  return total;
+}
+
+function renderGoalBars(yearMonthlyAvg) {
+  const goals = [
+    { label: '月領 5 萬', target: 50000, color: 'var(--p-0050)' },
+    { label: '月領 6 萬', target: 60000, color: 'var(--p-00919)' },
+    { label: '月領 7 萬', target: 70000, color: 'var(--accent)' },
+    { label: '月領 8 萬', target: 80000, color: 'var(--p-00878)' }
+  ];
+  
+  const container = document.getElementById('goal-bars');
+  container.innerHTML = '';
+  
+  goals.forEach(g => {
+    const pct = Math.min(100, (yearMonthlyAvg / g.target) * 100);
+    const reached = yearMonthlyAvg >= g.target;
+    const gap = g.target - yearMonthlyAvg;
+    
+    const row = document.createElement('div');
+    row.className = 'goal-bar-row';
+    row.innerHTML = `
+      <div class="goal-bar-label">${g.label}</div>
+      <div class="goal-bar-track">
+        <div class="goal-bar-fill" style="width: ${pct}%; background: ${g.color};"></div>
+      </div>
+      <div class="goal-bar-meta">
+        <strong>${fmt2(pct)}%</strong>
+        ${reached ? '<span class="text-success">已達</span>' : `差 ${fmt(gap)}`}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+// === Pillars ===
+function renderPillars() {
+  const grid = document.getElementById('pillars-grid');
+  grid.innerHTML = '';
+  ['0056', '00919', '00878'].forEach(etf => {
+    const data = state.pillars[etf];
+    const div = document.createElement('div');
+    div.className = 'pillar-card';
+    div.dataset.etf = etf;
+    const monthsStr = data.dividendMonths.join('、') + '月';
+    
+    div.innerHTML = `
+      <div class="pillar-name">${etf}</div>
+      <div class="pillar-month">配息月：${monthsStr}</div>
+      <div class="field">
+        <div class="field-label"><span>現有張數</span><span class="field-value">${fmt1(data.shares)}</span></div>
+        <input type="number" data-etf="${etf}" data-field="shares" value="${data.shares}" min="0" step="0.001">
+      </div>
+      <div class="field">
+        <div class="field-label"><span>月定期定額（元）</span><span class="field-value">${fmt(data.dca)}</span></div>
+        <input type="number" data-etf="${etf}" data-field="dca" value="${data.dca}" min="0" step="1000">
+      </div>
+      <div class="field">
+        <div class="field-label"><span>股價假設</span><span class="field-value">${data.price}</span></div>
+        <input type="number" data-etf="${etf}" data-field="price" value="${data.price}" min="1" step="0.5">
+      </div>
+      <div class="field">
+        <div class="field-label"><span>每股季配</span><span class="field-value">${data.dividend}</span></div>
+        <input type="number" data-etf="${etf}" data-field="dividend" value="${data.dividend}" min="0" step="0.01">
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+  
+  grid.querySelectorAll('input[data-etf]').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const etf = e.target.dataset.etf;
+      const field = e.target.dataset.field;
+      state.pillars[etf][field] = parseFloat(e.target.value) || 0;
+      saveState();
+      const display = e.target.previousElementSibling.querySelector('.field-value');
+      display.textContent = field === 'shares' ? fmt1(state.pillars[etf][field]) :
+                             field === 'dca' ? fmt(state.pillars[etf][field]) :
+                             state.pillars[etf][field];
+      recalc();
+      updateYTD();
+    });
+  });
+}
+
+// === Simulator ===
+function simulate(maxYears = 30) {
+  const etfs = ['0056', '00919', '00878'];
+  const shares = {};
+  etfs.forEach(e => shares[e] = state.pillars[e].shares);
+  const history = [{ month: 0, shares: { ...shares } }];
+
+  let target7w = -1, target8w = -1;
+
+  for (let m = 1; m <= maxYears * 12; m++) {
+    const monthInYear = ((m - 1) % 12) + 1;
+    etfs.forEach(etf => {
+      const p = state.pillars[etf];
+      if (p.price > 0) shares[etf] += p.dca / p.price;
+      if (p.dividendMonths.includes(monthInYear)) {
+        const div = shares[etf] * p.dividend;
+        if (p.price > 0) shares[etf] += div / p.price;
+        if (state.quarterlyBoost > 0 && p.price > 0) {
+          shares[etf] += state.quarterlyBoost / p.price;
+        }
+      }
+    });
+    if (monthInYear === 12 && state.annualBonus > 0 && state.pillars['00878'].price > 0) {
+      shares['00878'] += state.annualBonus / state.pillars['00878'].price;
+    }
+    history.push({ month: m, shares: { ...shares } });
+    if (target7w < 0 && etfs.every(e => shares[e] >= TARGETS['7w'][e])) target7w = m;
+    if (target8w < 0 && etfs.every(e => shares[e] >= TARGETS['8w'][e])) target8w = m;
+  }
+  return { history, target7w, target8w };
+}
+
+function findBottleneck(targetKey, history) {
+  const t = TARGETS[targetKey];
+  const etfs = ['0056', '00919', '00878'];
+  let lastEtf = null, maxMonth = -1;
+  etfs.forEach(etf => {
+    let reached = -1;
+    for (let i = 0; i < history.length; i++) {
+      if (history[i].shares[etf] >= t[etf]) { reached = i; break; }
+    }
+    if (reached > maxMonth) { maxMonth = reached; lastEtf = etf; }
+  });
+  return lastEtf;
+}
+
+function fmtTime(months) {
+  if (months < 0) return { y: '—', m: '', text: '30年內未達標' };
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  return { y, m: m > 0 ? `${m} 個月` : '整', text: `${y}年${m > 0 ? m + '個月' : ''}` };
+}
+
+function recalc() {
+  const { history, target7w, target8w } = simulate(30);
+
+  const t7 = fmtTime(target7w);
+  document.getElementById('result-7w-num').textContent = t7.y;
+  document.getElementById('result-7w-month').textContent = t7.m;
+  if (target7w >= 0) {
+    const s = history[target7w].shares;
+    const monthly = (s['0056'] * state.pillars['0056'].dividend * 4 +
+                     s['00919'] * state.pillars['00919'].dividend * 4 +
+                     s['00878'] * state.pillars['00878'].dividend * 4) / 12;
+    document.getElementById('result-7w-detail').textContent =
+      `達標時月均約 ${fmt(monthly/1000)}K，三支張數 ${fmt1(s['0056'])} / ${fmt1(s['00919'])} / ${fmt1(s['00878'])}`;
+    const bn = findBottleneck('7w', history);
+    document.getElementById('result-7w-bottleneck').innerHTML = `<strong>關鍵卡關：${bn}</strong>（最後達標的ETF）`;
+  } else {
+    document.getElementById('result-7w-detail').textContent = '30年內未達標';
+    document.getElementById('result-7w-bottleneck').innerHTML = '';
+  }
+
+  const t8 = fmtTime(target8w);
+  document.getElementById('result-8w-num').textContent = t8.y;
+  document.getElementById('result-8w-month').textContent = t8.m;
+  if (target8w >= 0) {
+    const s = history[target8w].shares;
+    const monthly = (s['0056'] * state.pillars['0056'].dividend * 4 +
+                     s['00919'] * state.pillars['00919'].dividend * 4 +
+                     s['00878'] * state.pillars['00878'].dividend * 4) / 12;
+    document.getElementById('result-8w-detail').textContent =
+      `達標時月均約 ${fmt(monthly/1000)}K，三支張數 ${fmt1(s['0056'])} / ${fmt1(s['00919'])} / ${fmt1(s['00878'])}`;
+    const bn = findBottleneck('8w', history);
+    document.getElementById('result-8w-bottleneck').innerHTML = `<strong>關鍵卡關：${bn}</strong>（最後達標的ETF）`;
+  } else {
+    document.getElementById('result-8w-detail').textContent = '30年內未達標';
+    document.getElementById('result-8w-bottleneck').innerHTML = '';
+  }
+
+  // Progress table
+  const tbody = document.getElementById('progress-tbody');
+  tbody.innerHTML = '';
+  const t7Y = target7w >= 0 ? Math.ceil(target7w / 12) : -1;
+  const t8Y = target8w >= 0 ? Math.ceil(target8w / 12) : -1;
+  const lastY = Math.max(t8Y > 0 ? t8Y : 0, t7Y > 0 ? t7Y : 0, 8);
+  const showUpTo = Math.min(lastY + 1, 30);
+
+  for (let y = 0; y <= showUpTo; y++) {
+    const idx = y * 12;
+    if (idx >= history.length) break;
+    const s = history[idx].shares;
+    const monthly = (s['0056'] * state.pillars['0056'].dividend * 4 +
+                     s['00919'] * state.pillars['00919'].dividend * 4 +
+                     s['00878'] * state.pillars['00878'].dividend * 4) / 12;
+    const tr = document.createElement('tr');
+    if (target7w >= 0 && y === Math.ceil(target7w / 12)) tr.classList.add('milestone-7w');
+    if (target8w >= 0 && y === Math.ceil(target8w / 12)) tr.classList.add('milestone-8w');
+    const c1 = s['0056'] >= TARGETS['7w']['0056'] ? 'cell-reached' : '';
+    const c2 = s['00919'] >= TARGETS['7w']['00919'] ? 'cell-reached' : '';
+    const c3 = s['00878'] >= TARGETS['7w']['00878'] ? 'cell-reached' : '';
+    tr.innerHTML = `
+      <td>${y === 0 ? '今天' : '第 ' + y + ' 年'}</td>
+      <td class="${c1}">${fmt1(s['0056'])}</td>
+      <td class="${c2}">${fmt1(s['00919'])}</td>
+      <td class="${c3}">${fmt1(s['00878'])}</td>
+      <td>${fmt(monthly)}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// === Wire up controls ===
+function wireUp() {
+  document.getElementById('quarterly-boost').value = state.quarterlyBoost;
+  document.getElementById('annual-bonus').value = state.annualBonus;
+  document.getElementById('boost-display').textContent = fmt(state.quarterlyBoost);
+  document.getElementById('bonus-display').textContent = fmt(state.annualBonus);
+
+  document.getElementById('quarterly-boost').addEventListener('input', e => {
+    state.quarterlyBoost = parseFloat(e.target.value) || 0;
+    document.getElementById('boost-display').textContent = fmt(state.quarterlyBoost);
+    saveState();
+    recalc();
+  });
+  document.getElementById('annual-bonus').addEventListener('input', e => {
+    state.annualBonus = parseFloat(e.target.value) || 0;
+    document.getElementById('bonus-display').textContent = fmt(state.annualBonus);
+    saveState();
+    recalc();
+  });
+
+  document.getElementById('add-record').addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    state.records.push({ date: today, etf: '00878', costPrice: 25, shares: 1000, divPerShare: 0.42 });
+    saveState();
+    renderRecords();
+    updateYTD();
+  });
+
+  document.getElementById('reset-records').addEventListener('click', () => {
+    if (confirm('將配息紀錄重設為Excel預設值？目前資料會被覆蓋。')) {
+      state.records = JSON.parse(JSON.stringify(DEFAULT_RECORDS));
+      saveState();
+      renderRecords();
+      updateYTD();
+    }
+  });
+
+  document.getElementById('reset-pillars').addEventListener('click', () => {
+    if (confirm('重設三本柱參數？')) {
+      state.pillars = JSON.parse(JSON.stringify(DEFAULT_PILLARS));
+      state.quarterlyBoost = 0;
+      state.annualBonus = 0;
+      saveState();
+      renderPillars();
+      document.getElementById('quarterly-boost').value = 0;
+      document.getElementById('annual-bonus').value = 0;
+      document.getElementById('boost-display').textContent = '0';
+      document.getElementById('bonus-display').textContent = '0';
+      recalc();
+      updateYTD();
+    }
+  });
+
+  document.getElementById('export-data').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `three_pillar_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('import-data').addEventListener('click', () => {
+    document.getElementById('file-input').click();
+  });
+  document.getElementById('file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (confirm('匯入此JSON並覆蓋現有資料？')) {
+          state = imported;
+          saveState();
+          renderRecords();
+          renderPillars();
+          document.getElementById('quarterly-boost').value = state.quarterlyBoost || 0;
+          document.getElementById('annual-bonus').value = state.annualBonus || 0;
+          document.getElementById('boost-display').textContent = fmt(state.quarterlyBoost || 0);
+          document.getElementById('bonus-display').textContent = fmt(state.annualBonus || 0);
+          recalc();
+          updateYTD();
+        }
+      } catch (err) {
+        alert('JSON 格式錯誤');
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+// === Init ===
+renderRecords();
+renderPillars();
+wireUp();
+recalc();
+updateYTD();
+</script>
+</body>
+</html>

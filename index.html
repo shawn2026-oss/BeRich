@@ -791,6 +791,214 @@ details.collapsible summary:hover { color: var(--accent); }
   border-top: 2px solid var(--gc, var(--accent));
 }
 .gap-table tr.gap-total-row td { padding: 9px 10px; }
+.loose-hint {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  background: rgba(74, 131, 184, 0.08);
+  border-left: 3px solid var(--p-00919);
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* === 快速登錄 DCA 區塊 === */
+.quick-dca-card {
+  background: linear-gradient(135deg, #fffaf0 0%, #f5e9d0 100%);
+  border: 1px solid rgba(212, 168, 87, 0.4);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
+}
+.quick-dca-info {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.btn-quick-dca {
+  background: linear-gradient(135deg, #d4a857 0%, #b8924e 100%);
+  color: white;
+  border: none;
+  padding: 13px 28px;
+  border-radius: 10px;
+  font-family: 'Noto Serif TC', serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 6px rgba(184, 146, 78, 0.35);
+  transition: all 0.15s;
+}
+.btn-quick-dca:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(184, 146, 78, 0.45);
+}
+.quick-dca-history {
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* === Modal === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 23, 31, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+.modal-card {
+  background: white;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.modal-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: var(--text-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-close:hover { background: var(--bg-input); color: var(--text); }
+.modal-body { padding: 20px 22px; }
+.modal-footer {
+  padding: 14px 22px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.modal-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.modal-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text);
+}
+.modal-input:focus { outline: none; border-color: var(--accent); background: white; }
+
+.quick-dca-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.qdca-row {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--qc);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.qdca-row[data-etf="0056"] { --qc: var(--p-0056); }
+.qdca-row[data-etf="00919"] { --qc: var(--p-00919); }
+.qdca-row[data-etf="00878"] { --qc: var(--p-00878); }
+
+.qdca-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.qdca-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--qc);
+}
+.qdca-budget {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+.qdca-budget strong { color: var(--text); }
+.qdca-row-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.qdca-row-inputs label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.qdca-row-inputs input {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text);
+  text-align: right;
+}
+.qdca-row-inputs input:focus {
+  outline: none;
+  border-color: var(--qc);
+}
+.qdca-row-result {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+.qdca-row-result strong {
+  color: var(--qc);
+  font-weight: 700;
+}
+.quick-dca-summary {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--accent-bg);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  justify-content: space-between;
+}
+.quick-dca-summary strong { color: var(--accent); font-size: 15px; }
 .etf-mini {
   display: inline-block;
   padding: 1px 7px;
@@ -803,6 +1011,231 @@ details.collapsible summary:hover { color: var(--accent); }
 .etf-mini.etf-0056 { color: var(--p-0056); border-color: var(--p-0056); }
 .etf-mini.etf-00919 { color: var(--p-00919); border-color: var(--p-00919); }
 .etf-mini.etf-00878 { color: var(--p-00878); border-color: var(--p-00878); }
+
+/* === 三本柱現況卡片底部的 DCA 行 === */
+.pillar-dca-row {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pillar-dca-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pillar-dca-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.pillar-dca-input {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  width: 100%;
+}
+.pillar-dca-input:focus {
+  outline: none;
+  border-color: var(--pc, var(--accent));
+  background: white;
+}
+
+/* === DCA 預估區塊 === */
+.dca-estimate {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(74, 157, 94, 0.08) 0%, rgba(74, 157, 94, 0.04) 100%);
+  border: 1px solid rgba(74, 157, 94, 0.25);
+  border-left: 4px solid var(--success);
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.dca-or {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--success);
+  font-style: italic;
+  flex-shrink: 0;
+}
+.dca-content { flex: 1; }
+.dca-time {
+  font-size: 16px;
+  color: var(--success);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+.dca-estimate.dca-warn {
+  background: linear-gradient(135deg, rgba(201, 122, 74, 0.08) 0%, rgba(201, 122, 74, 0.04) 100%);
+  border-color: rgba(201, 122, 74, 0.25);
+  border-left-color: var(--warning);
+  color: var(--text);
+}
+
+/* === 已達標的目標卡片：金色慶祝感 === */
+.goal-card.reached {
+  background: linear-gradient(135deg, #fffaf0 0%, #fff4e0 100%);
+  border-left: 4px solid var(--accent-bright);
+  box-shadow: 0 2px 8px rgba(212, 168, 87, 0.15), 0 4px 16px rgba(212, 168, 87, 0.1);
+}
+.reached-banner {
+  text-align: center;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--accent-bg) 0%, rgba(212, 168, 87, 0.2) 100%);
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+/* === 進度條漸層動畫 === */
+.goal-card-fill {
+  background: linear-gradient(90deg, var(--gc) 0%, var(--gc) 70%, color-mix(in srgb, var(--gc) 70%, white) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.goal-card-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* === 大儀表板強化 === */
+.dash-card-main {
+  background: linear-gradient(135deg, #fffaf0 0%, #f5e9d0 60%, #e8d4a8 100%);
+  border-color: rgba(212, 168, 87, 0.5);
+  box-shadow: 0 4px 12px rgba(212, 168, 87, 0.15);
+}
+.dash-card-main .dash-value {
+  background: linear-gradient(135deg, #b8924e 0%, #d4a857 50%, #b8924e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 52px;
+}
+
+/* === 成就徽章區 === */
+.achievement-row {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.achievement-section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+}
+.achievement-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.achievement-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+.achievement-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.badge-achieved {
+  background: linear-gradient(135deg, #d4a857 0%, #b8924e 100%);
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Serif TC', serif;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 4px rgba(184, 146, 78, 0.3);
+}
+.badge-loose {
+  background: white;
+  color: var(--p-00919);
+  border: 1.5px solid var(--p-00919);
+  padding: 4px 11px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Noto Serif TC', serif;
+  letter-spacing: 0.03em;
+}
+.next-milestone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.next-milestone-name {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  flex-shrink: 0;
+}
+.next-milestone-bar {
+  flex: 1;
+  height: 12px;
+  background: var(--bg-input);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  position: relative;
+}
+.next-milestone-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-bright) 100%);
+  border-radius: 6px;
+  transition: width 0.5s ease-out;
+  position: relative;
+}
+.next-milestone-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+.next-milestone-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
 </style>
 </head>
 <body>
@@ -855,6 +1288,7 @@ details.collapsible summary:hover { color: var(--accent); }
         <div class="dash-detail">假設全年配息率不變</div>
       </div>
     </div>
+    <div class="achievement-row" id="achievement-row"></div>
   </section>
 
   <!-- ============ 自訂目標 ============ -->
@@ -959,6 +1393,40 @@ details.collapsible summary:hover { color: var(--accent); }
       </div>
     </div>
   </section>
+
+  <!-- ============ 快速登錄當月 DCA ============ -->
+  <section class="section">
+    <div class="section-title">每月 DCA 快速登錄</div>
+    <div class="quick-dca-card">
+      <div class="quick-dca-info">
+        每月 DCA 入帳後，點下方按鈕一次登錄三本柱新增張數，<strong>自動加到「現有張數」與買入紀錄</strong>。
+      </div>
+      <button class="btn-quick-dca" id="open-quick-dca">⚡ 登錄本月 DCA 入帳</button>
+      <div class="quick-dca-history" id="quick-dca-history"></div>
+    </div>
+  </section>
+
+  <!-- Modal: 快速登錄表單 -->
+  <div class="modal-overlay" id="quick-dca-modal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>登錄本月 DCA 入帳</h3>
+        <button class="modal-close" id="quick-dca-close">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 16px;">
+          <label class="modal-label">入帳日期</label>
+          <input type="date" id="quick-dca-date" class="modal-input">
+        </div>
+        <div class="quick-dca-rows" id="quick-dca-rows"></div>
+        <div class="quick-dca-summary" id="quick-dca-summary"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="quick-dca-cancel">取消</button>
+        <button class="btn btn-primary" id="quick-dca-submit">✓ 確認登錄</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ 買入紀錄（摺疊） ============ -->
   <section class="section">
@@ -1192,6 +1660,16 @@ function renderPillars() {
           <span class="pillar-output-value">${fmt(annual)} 元</span>
         </div>
       </div>
+      <div class="pillar-dca-row">
+        <div class="pillar-dca-item">
+          <span class="pillar-dca-label">月 DCA</span>
+          <input type="number" data-etf="${etf}" data-field="dca" value="${data.dca}" min="0" step="1000" class="pillar-dca-input">
+        </div>
+        <div class="pillar-dca-item">
+          <span class="pillar-dca-label">股價</span>
+          <input type="number" data-etf="${etf}" data-field="price" value="${data.price}" min="1" step="0.5" class="pillar-dca-input">
+        </div>
+      </div>
     `;
     grid.appendChild(card);
   });
@@ -1256,33 +1734,88 @@ function updateDashboard() {
   document.getElementById('dash-quarterly').textContent = fmt(totalQ);
   document.getElementById('dash-annual').textContent = fmt(totalA);
   
+  // 兩種達成標準的里程碑
+  const milestones = [3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20];
+  const achievements = milestones.map(mw => {
+    const target = mw * 10000;
+    const info = computeGoalProgress(target);
+    return { 
+      label: `${mw}萬`,
+      target,
+      strictReached: info.allReached,         // 自然月配進度（嚴格）
+      looseReached: monthly >= target,        // 年化月均（寬鬆）
+      strictPct: info.overallPct,
+      loosePct: Math.min(100, (monthly / target) * 100)
+    };
+  });
+  
+  // 找下一個未達成的（用嚴格標準）
+  const strictAchieved = achievements.filter(a => a.strictReached);
+  const looseAchieved = achievements.filter(a => a.looseReached && !a.strictReached);
+  const nextStrict = achievements.find(a => !a.strictReached);
+  
+  const row = document.getElementById('achievement-row');
+  let html = '';
+  
+  if (strictAchieved.length > 0) {
+    html += `<div class="achievement-section">
+      <div class="achievement-label">🏆 已征服（自然月配每月實領）</div>
+      <div class="achievement-badges">
+        ${strictAchieved.map(a => `<span class="badge-achieved">★ ${a.label}</span>`).join('')}
+      </div>
+    </div>`;
+  }
+  
+  if (looseAchieved.length > 0) {
+    html += `<div class="achievement-section">
+      <div class="achievement-label">✨ 年化月均已達（年配息÷12）</div>
+      <div class="achievement-badges">
+        ${looseAchieved.map(a => `<span class="badge-loose">○ ${a.label}</span>`).join('')}
+      </div>
+      <div class="achievement-hint">這幾個目標年配息加總已足，但因00878配息率較低，自然月配下還沒每月實領到</div>
+    </div>`;
+  }
+  
+  if (nextStrict) {
+    html += `<div class="achievement-section">
+      <div class="achievement-label">🎯 下一個自然月配里程碑</div>
+      <div class="next-milestone">
+        <div class="next-milestone-name">月領 ${nextStrict.label}</div>
+        <div class="next-milestone-bar">
+          <div class="next-milestone-fill" style="width: ${nextStrict.strictPct}%;"></div>
+        </div>
+        <div class="next-milestone-pct">${fmt2(nextStrict.strictPct)}%</div>
+      </div>
+    </div>`;
+  }
+  
+  row.innerHTML = html;
+  
   return monthly;
 }
 
 // === 目標進度 ===
 function updateGoals(monthly) {
-  // 自訂三個目標 + 5-12萬對照
   const customGoals = [
-    { label: `目標 A · ${state.goals.a}萬`, target: state.goals.a * 10000, custom: true, color: 'var(--accent)' },
-    { label: `目標 B · ${state.goals.b}萬`, target: state.goals.b * 10000, custom: true, color: 'var(--p-00919)' },
-    { label: `目標 C · ${state.goals.c}萬`, target: state.goals.c * 10000, custom: true, color: 'var(--p-00878)' }
+    { label: `目標 A · 月領 ${state.goals.a} 萬`, target: state.goals.a * 10000, color: 'var(--accent)' },
+    { label: `目標 B · 月領 ${state.goals.b} 萬`, target: state.goals.b * 10000, color: 'var(--p-00919)' },
+    { label: `目標 C · 月領 ${state.goals.c} 萬`, target: state.goals.c * 10000, color: 'var(--p-00878)' }
   ];
-  const refGoals = [];
-  for (let i = 5; i <= 12; i++) {
-    refGoals.push({ label: `${i}萬`, target: i * 10000, custom: false, color: 'var(--text-dim)' });
-  }
   
   const container = document.getElementById('goal-progress-list');
   container.innerHTML = '';
   
-  // Custom goals: 卡片式，含達標成本明細
   customGoals.forEach(g => {
-    const pct = Math.min(100, (monthly / g.target) * 100);
-    const reached = monthly >= g.target;
-    const gap = g.target - monthly;
+    const info = computeGoalProgress(g.target);
+    const pct = info.overallPct;
+    const reached = info.allReached;
     
-    // 計算三本柱缺口和成本
-    const gapInfo = computeGapCost(g.target);
+    // 找最弱的 ETF
+    let weakest = '0056';
+    Object.entries(info.etfs).forEach(([etf, e]) => {
+      if (!e.reached && e.pct < info.etfs[weakest].pct) weakest = etf;
+      if (info.etfs[weakest].reached && !e.reached) weakest = etf;
+    });
     
     const card = document.createElement('div');
     card.className = `goal-card ${reached ? 'reached' : ''}`;
@@ -1290,35 +1823,66 @@ function updateGoals(monthly) {
     
     let detailHtml = '';
     if (reached) {
-      detailHtml = `<div style="text-align:center; padding: 8px; color: var(--success); font-weight: 600;">✓ 三本柱配息已支撐此目標</div>`;
+      detailHtml = `<div class="reached-banner">✨ 三本柱張數均已達標，每月皆能配出 $${fmt(g.target)} ✨</div>`;
     } else {
       const rows = ['0056', '00919', '00878'].map(etf => {
-        const e = gapInfo.etfs[etf];
+        const e = info.etfs[etf];
         const priceSrc = state.latestPrices[etf] ? '最新' : '假設';
         if (e.reached) {
           return `<tr>
             <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
-            <td colspan="3" style="color: var(--success); font-weight: 600;">✓ 已達標（現有 ${fmt2(state.pillars[etf].shares)} 張 ≥ 需要 ${fmt2(e.required)} 張）</td>
+            <td colspan="3" style="color: var(--success); font-weight: 600;">✓ 已達標（現有 ${fmt2(e.current)} ≥ 需要 ${fmt2(e.required)} 張）</td>
           </tr>`;
         }
         return `<tr>
           <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
-          <td>差 <strong>${fmt2(e.gap)}</strong> 張</td>
+          <td>差 <strong>${fmt2(e.gap)}</strong> 張<br><span style="color:var(--text-dim);font-size:10px;">(${fmt2(e.pct)}%)</span></td>
           <td>× $${fmt2(e.price)} <span style="color:var(--text-dim);font-size:10px;">(${priceSrc})</span></td>
           <td style="text-align:right;">= <strong>$${fmt(e.cost)}</strong></td>
         </tr>`;
       }).join('');
       
+      // DCA 達標時間預估
+      const dcaMonths = computeDCATime(g.target);
+      const totalDCA = state.pillars['0056'].dca + state.pillars['00919'].dca + state.pillars['00878'].dca;
+      let dcaText = '';
+      if (dcaMonths < 0) {
+        dcaText = `<div class="dca-estimate dca-warn">每月 DCA $${fmt(totalDCA)}，30 年內無法達標。考慮增加 DCA 或分次加碼。</div>`;
+      } else if (dcaMonths > 0) {
+        const y = Math.floor(dcaMonths / 12);
+        const mo = dcaMonths % 12;
+        const timeStr = y > 0 ? `${y} 年` + (mo > 0 ? ` ${mo} 個月` : '') : `${mo} 個月`;
+        dcaText = `
+          <div class="dca-estimate">
+            <span class="dca-or">或</span>
+            <div class="dca-content">
+              照目前每月 DCA <strong>$${fmt(totalDCA)}</strong>（含配息再投入複利），<br>
+              預估 <strong class="dca-time">${timeStr}</strong> 後自然達成 — <strong>不用一次掏出 $${fmt(info.totalCost)}</strong>
+            </div>
+          </div>
+        `;
+      }
+      
       detailHtml = `
         <table class="gap-table">
           ${rows}
           <tr class="gap-total-row">
-            <td colspan="3"><strong>合計還需投入</strong></td>
-            <td style="text-align:right;"><strong style="color:var(--gc);font-size:16px;">$${fmt(gapInfo.totalCost)}</strong></td>
+            <td colspan="3"><strong>一次達成需投入</strong></td>
+            <td style="text-align:right;"><strong style="color:var(--gc);font-size:16px;">$${fmt(info.totalCost)}</strong></td>
           </tr>
         </table>
+        ${dcaText}
       `;
     }
+    
+    const looseReached = monthly >= g.target;
+    const looseHint = !reached && looseReached
+      ? `<div class="loose-hint">💡 年化月均（年配息÷12 = $${fmt(monthly)}）已超過此目標，但00878配息較弱，自然月配每月實領還沒到 $${fmt(g.target)}</div>`
+      : '';
+    
+    const metaText = reached 
+      ? '✓ 已達標' 
+      : `整體進度依最弱 ETF（${weakest}）的進度為準`;
     
     card.innerHTML = `
       <div class="goal-card-head">
@@ -1328,47 +1892,59 @@ function updateGoals(monthly) {
       <div class="goal-card-bar">
         <div class="goal-card-fill" style="width:${pct}%; background: ${reached ? 'var(--success)' : g.color};"></div>
       </div>
-      <div class="goal-card-meta">
-        ${reached ? '✓ 已達標' : `月領目標 $${fmt(g.target)}　|　目前差 $${fmt(gap)}/月`}
-      </div>
+      <div class="goal-card-meta">${metaText}</div>
+      ${looseHint}
       ${detailHtml}
     `;
     container.appendChild(card);
   });
-  
-  // Separator
-  const sep = document.createElement('div');
-  sep.style.cssText = 'height:1px;background:var(--border);margin:14px 0 10px;';
-  container.appendChild(sep);
-  
-  const refTitle = document.createElement('div');
-  refTitle.style.cssText = 'font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-family: \'JetBrains Mono\', monospace;';
-  refTitle.textContent = '對照目標（5–12萬）';
-  container.appendChild(refTitle);
-  
-  refGoals.forEach(g => {
-    const pct = Math.min(100, (monthly / g.target) * 100);
-    const reached = monthly >= g.target;
-    const gap = g.target - monthly;
-    const row = document.createElement('div');
-    row.className = `goal-row ${reached ? 'reached' : ''}`;
-    row.style.setProperty('--bar-color', g.color);
-    row.innerHTML = `
-      <div class="goal-row-label">${g.label}</div>
-      <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%;"></div></div>
-      <div class="goal-row-meta">
-        <strong>${fmt2(pct)}%</strong>
-        ${reached ? ' ✓' : ` 差 ${fmt(gap)}`}
-      </div>
-    `;
-    container.appendChild(row);
-  });
 }
 
-// === 計算達到目標的張數缺口和成本 ===
-function computeGapCost(targetMonthly) {
+// === 計算照目前DCA速度達標的時間 ===
+function computeDCATime(targetMonthly, maxYears = 30) {
+  const etfs = ['0056', '00919', '00878'];
+  const targetShares = {};
+  etfs.forEach(etf => {
+    const p = state.pillars[etf];
+    targetShares[etf] = p.dividend > 0 ? targetMonthly / (1000 * p.dividend) : 999;
+  });
+  
+  // shares 單位：張
+  const shares = {};
+  etfs.forEach(etf => shares[etf] = state.pillars[etf].shares);
+  
+  // 已達標
+  if (etfs.every(e => shares[e] >= targetShares[e])) return 0;
+  
+  for (let m = 1; m <= maxYears * 12; m++) {
+    const monthInYear = ((m - 1) % 12) + 1;
+    etfs.forEach(etf => {
+      const p = state.pillars[etf];
+      if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
+      if (p.dividendMonths.includes(monthInYear)) {
+        const dividendCash = shares[etf] * 1000 * p.dividend;
+        if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
+        if (state.quarterlyBoost > 0 && p.price > 0) {
+          shares[etf] += state.quarterlyBoost / (p.price * 1000);
+        }
+      }
+    });
+    if (monthInYear === 12 && state.annualBonus > 0 && state.pillars['00878'].price > 0) {
+      shares['00878'] += state.annualBonus / (state.pillars['00878'].price * 1000);
+    }
+    if (etfs.every(e => shares[e] >= targetShares[e])) {
+      return m;
+    }
+  }
+  return -1;
+}
+
+// === 計算達到目標的張數缺口、成本、整體進度 ===
+function computeGoalProgress(targetMonthly) {
   const result = {};
   let totalCost = 0;
+  let minPct = 100;
+  let allReached = true;
   
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
@@ -1377,22 +1953,30 @@ function computeGapCost(targetMonthly) {
     const gap = requiredShares - p.shares;
     const reached = gap <= 0;
     const gapCost = reached ? 0 : gap * 1000 * price;
+    const pct = requiredShares > 0 ? Math.min(100, (p.shares / requiredShares) * 100) : 100;
+    
+    if (!reached) allReached = false;
+    if (pct < minPct) minPct = pct;
+    
     result[etf] = { 
       required: requiredShares, 
+      current: p.shares,
       gap: Math.max(0, gap), 
       price, 
       cost: gapCost, 
-      reached 
+      reached,
+      pct
     };
     totalCost += gapCost;
   });
   
-  return { etfs: result, totalCost };
+  return { etfs: result, totalCost, overallPct: minPct, allReached };
 }
 
 // === 試算引擎 ===
 function simulate(maxYears = 30) {
   const etfs = ['0056', '00919', '00878'];
+  // shares 單位：張（1 張 = 1000 股）
   const shares = {};
   etfs.forEach(e => shares[e] = state.pillars[e].shares);
   const history = [{ month: 0, shares: { ...shares } }];
@@ -1403,21 +1987,30 @@ function simulate(maxYears = 30) {
   
   let reachedA = -1, reachedB = -1;
   
+  // 已達標的初始檢查
+  if (etfs.every(e => shares[e] >= targetA[e])) reachedA = 0;
+  if (etfs.every(e => shares[e] >= targetB[e])) reachedB = 0;
+  
   for (let m = 1; m <= maxYears * 12; m++) {
     const monthInYear = ((m - 1) % 12) + 1;
     etfs.forEach(etf => {
       const p = state.pillars[etf];
-      if (p.price > 0) shares[etf] += p.dca / p.price;
+      // 每月 DCA：用金額除以「股價×1000」得到買入的張數
+      if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
+      // 配息月：配息 = 張數 × 1000 × 每股配息
       if (p.dividendMonths.includes(monthInYear)) {
-        const div = shares[etf] * p.dividend;
-        if (p.price > 0) shares[etf] += div / p.price;
+        const dividendCash = shares[etf] * 1000 * p.dividend;
+        // 配息再投入買回張數
+        if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
+        // 除息後機動加碼
         if (state.quarterlyBoost > 0 && p.price > 0) {
-          shares[etf] += state.quarterlyBoost / p.price;
+          shares[etf] += state.quarterlyBoost / (p.price * 1000);
         }
       }
     });
+    // 年終獎金一次性投入 00878
     if (monthInYear === 12 && state.annualBonus > 0 && state.pillars['00878'].price > 0) {
-      shares['00878'] += state.annualBonus / state.pillars['00878'].price;
+      shares['00878'] += state.annualBonus / (state.pillars['00878'].price * 1000);
     }
     history.push({ month: m, shares: { ...shares } });
     
@@ -1617,6 +2210,150 @@ function renderRecords() {
       }
     });
   });
+}
+
+// === 快速登錄當月 DCA ===
+function openQuickDCAModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('quick-dca-date').value = today;
+  
+  const rowsContainer = document.getElementById('quick-dca-rows');
+  rowsContainer.innerHTML = '';
+  
+  ['0056', '00919', '00878'].forEach(etf => {
+    const p = state.pillars[etf];
+    const latestPrice = state.latestPrices[etf] || p.price;
+    const expectedShares = p.dca / latestPrice; // 預估股數（不是張）
+    
+    const row = document.createElement('div');
+    row.className = 'qdca-row';
+    row.dataset.etf = etf;
+    row.innerHTML = `
+      <div class="qdca-row-head">
+        <div class="qdca-name">${etf}</div>
+        <div class="qdca-budget">月預算 <strong>$${fmt(p.dca)}</strong></div>
+      </div>
+      <div class="qdca-row-inputs">
+        <div>
+          <label>實際買入股數</label>
+          <input type="number" step="1" value="${Math.round(expectedShares)}" data-qdca-etf="${etf}" data-qdca-field="shares">
+        </div>
+        <div>
+          <label>實際成交均價</label>
+          <input type="number" step="0.01" value="${fmt2(latestPrice)}" data-qdca-etf="${etf}" data-qdca-field="price">
+        </div>
+      </div>
+      <div class="qdca-row-result" id="qdca-result-${etf}">花費 $0　·　約 0 張</div>
+    `;
+    rowsContainer.appendChild(row);
+  });
+  
+  // 綁定即時計算
+  rowsContainer.querySelectorAll('input[data-qdca-etf]').forEach(inp => {
+    inp.addEventListener('input', updateQuickDCASummary);
+  });
+  
+  updateQuickDCASummary();
+  document.getElementById('quick-dca-modal').style.display = 'flex';
+}
+
+function updateQuickDCASummary() {
+  let totalCost = 0;
+  ['0056', '00919', '00878'].forEach(etf => {
+    const sharesInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="shares"]`);
+    const priceInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="price"]`);
+    const shares = parseFloat(sharesInp?.value) || 0;
+    const price = parseFloat(priceInp?.value) || 0;
+    const cost = shares * price;
+    const lots = shares / 1000;
+    totalCost += cost;
+    const resultEl = document.getElementById(`qdca-result-${etf}`);
+    if (resultEl) {
+      resultEl.innerHTML = `花費 <strong>$${fmt(cost)}</strong>　·　約 ${fmt2(lots)} 張`;
+    }
+  });
+  
+  const summary = document.getElementById('quick-dca-summary');
+  summary.innerHTML = `<span>本月 DCA 合計花費</span><strong>$${fmt(totalCost)}</strong>`;
+}
+
+function closeQuickDCAModal() {
+  document.getElementById('quick-dca-modal').style.display = 'none';
+}
+
+function submitQuickDCA() {
+  const date = document.getElementById('quick-dca-date').value;
+  if (!date) { alert('請選擇日期'); return; }
+  
+  const newEntries = [];
+  ['0056', '00919', '00878'].forEach(etf => {
+    const sharesInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="shares"]`);
+    const priceInp = document.querySelector(`input[data-qdca-etf="${etf}"][data-qdca-field="price"]`);
+    const shares = parseFloat(sharesInp?.value) || 0;
+    const price = parseFloat(priceInp?.value) || 0;
+    if (shares > 0 && price > 0) {
+      newEntries.push({ etf, shares, price });
+    }
+  });
+  
+  if (newEntries.length === 0) {
+    alert('沒有任何要登錄的買入紀錄');
+    return;
+  }
+  
+  // 1. 加入買入紀錄
+  newEntries.forEach(e => {
+    state.purchases.push({
+      date,
+      etf: e.etf,
+      shares: e.shares,
+      price: e.price,
+      note: '月 DCA'
+    });
+  });
+  
+  // 2. 自動更新三本柱「現有張數」（加上新買入的張數）
+  newEntries.forEach(e => {
+    state.pillars[e.etf].shares += e.shares / 1000;
+  });
+  
+  saveState();
+  closeQuickDCAModal();
+  
+  renderPillars();
+  renderSimPillars();
+  renderPurchases();
+  renderPurchaseSummary();
+  updateAll();
+  renderQuickDCAHistory();
+  
+  // 顯示確認訊息
+  const summary = newEntries.map(e => `${e.etf} +${fmt2(e.shares/1000)}張`).join('、');
+  alert(`✓ 已登錄 ${date} 的 DCA：\n${summary}\n\n三本柱「現有張數」已自動更新。`);
+}
+
+function renderQuickDCAHistory() {
+  // 顯示最近 3 筆 DCA 紀錄（從 purchases 中找 note='月 DCA' 的）
+  const dcaRecords = state.purchases.filter(p => p.note === '月 DCA');
+  // 按日期分組
+  const byDate = {};
+  dcaRecords.forEach(p => {
+    if (!byDate[p.date]) byDate[p.date] = [];
+    byDate[p.date].push(p);
+  });
+  const dates = Object.keys(byDate).sort().reverse().slice(0, 3);
+  
+  const container = document.getElementById('quick-dca-history');
+  if (dates.length === 0) {
+    container.innerHTML = '尚無登錄紀錄';
+    return;
+  }
+  
+  container.innerHTML = '<strong style="color:var(--text);">最近 DCA 紀錄：</strong><br>' +
+    dates.map(date => {
+      const items = byDate[date].map(p => `${p.etf} ${fmt2(p.shares/1000)}張`).join('、');
+      return `<span style="color:var(--text-muted);">${date}</span> · ${items}`;
+    }).join('<br>');
 }
 
 // === 買入紀錄 ===
@@ -1893,6 +2630,45 @@ async function updateAllPrices() {
   updateAll();
 }
 
+// === 自動載入本地 prices.json（不需要按按鈕） ===
+async function autoLoadLocalPrices() {
+  try {
+    const local = await tryFetchLocalPrices();
+    if (local && local.prices) {
+      let updated = 0;
+      Object.entries(local.prices).forEach(([sym, price]) => {
+        if (typeof price === 'number') {
+          state.latestPrices[sym] = price;
+          // 三本柱自動套用到試算股價
+          if (['0056', '00919', '00878'].includes(sym) && state.pillars[sym]) {
+            state.pillars[sym].price = price;
+          }
+          updated++;
+        }
+      });
+      if (updated > 0) {
+        state.priceUpdatedAt = local.updatedAt;
+        saveState();
+        // 顯示時間
+        const status = document.getElementById('price-status');
+        if (status) {
+          const dt = new Date(local.updatedAt);
+          status.textContent = `自動載入 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+          status.style.color = 'var(--success)';
+        }
+        // 重新渲染
+        renderPillars();
+        renderSimPillars();
+        renderPurchaseSummary();
+        updateAll();
+        console.log(`✓ 自動載入 ${updated} 檔股價`);
+      }
+    }
+  } catch(e) {
+    console.log('autoLoadLocalPrices error:', e);
+  }
+}
+
 // === Master update ===
 function updateAll() {
   const monthly = updateDashboard();
@@ -2062,6 +2838,16 @@ function init() {
   // 股價更新
   document.getElementById('update-prices-btn').addEventListener('click', updateAllPrices);
   
+  // 快速 DCA 登錄
+  document.getElementById('open-quick-dca').addEventListener('click', openQuickDCAModal);
+  document.getElementById('quick-dca-close').addEventListener('click', closeQuickDCAModal);
+  document.getElementById('quick-dca-cancel').addEventListener('click', closeQuickDCAModal);
+  document.getElementById('quick-dca-submit').addEventListener('click', submitQuickDCA);
+  document.getElementById('quick-dca-modal').addEventListener('click', e => {
+    if (e.target.id === 'quick-dca-modal') closeQuickDCAModal();
+  });
+  renderQuickDCAHistory();
+  
   // 自訂 proxy URL
   const proxyInput = document.getElementById('custom-proxy');
   proxyInput.value = state.customProxy || '';
@@ -2084,6 +2870,7 @@ function init() {
 }
 
 init();
+autoLoadLocalPrices();
 </script>
 </body>
 </html>

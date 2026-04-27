@@ -539,7 +539,7 @@ details.collapsible summary:hover { color: var(--accent); }
 }
 .records-table {
   width: 100%;
-  min-width: 800px;
+  min-width: 880px;
   border-collapse: collapse;
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
@@ -672,10 +672,153 @@ details.collapsible summary:hover { color: var(--accent); }
   box-shadow: var(--shadow-sm);
 }
 .footer-note strong { color: var(--text); }
+
+/* === ETF 可編輯標的 === */
+.etf-input {
+  width: 90px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  background: white;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  text-align: center;
+}
+.etf-input:hover { background: var(--bg-input); }
+.etf-input:focus {
+  outline: none;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(184, 146, 78, 0.15);
+}
+.etf-input.etf-0056 { border-color: var(--p-0056); color: var(--p-0056); }
+.etf-input.etf-00919 { border-color: var(--p-00919); color: var(--p-00919); }
+.etf-input.etf-00878 { border-color: var(--p-00878); color: var(--p-00878); }
+.etf-input.etf-other { border-color: var(--border-strong); color: var(--text-muted); }
+
+/* === 摘要表 === */
+.summary-row-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.summary-btn {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+}
+.summary-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.profit-pos { color: var(--success); font-weight: 600; }
+.profit-neg { color: var(--danger); font-weight: 600; }
+
+/* === 目標卡片（含達標成本明細） === */
+.goal-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gc, var(--accent));
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.goal-card.reached {
+  border-left-color: var(--success);
+  background: var(--success-bg);
+}
+.goal-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.goal-card-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.goal-card-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gc, var(--accent));
+}
+.goal-card-pct.reached { color: var(--success); }
+.goal-card-bar {
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-soft);
+}
+.goal-card-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.goal-card-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.gap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-input);
+  border-radius: 6px;
+  margin-top: 8px;
+}
+.gap-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.gap-table tr:last-child td { border-bottom: none; }
+.gap-table tr.gap-total-row {
+  background: white;
+  border-top: 2px solid var(--gc, var(--accent));
+}
+.gap-table tr.gap-total-row td { padding: 9px 10px; }
+.etf-mini {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  background: white;
+  border: 1px solid var(--border-strong);
+}
+.etf-mini.etf-0056 { color: var(--p-0056); border-color: var(--p-0056); }
+.etf-mini.etf-00919 { color: var(--p-00919); border-color: var(--p-00919); }
+.etf-mini.etf-00878 { color: var(--p-00878); border-color: var(--p-00878); }
 </style>
 </head>
 <body>
 <div class="container">
+
+<datalist id="etf-options">
+  <option value="0056"></option>
+  <option value="00919"></option>
+  <option value="00878"></option>
+  <option value="0050"></option>
+  <option value="00918"></option>
+  <option value="台積電"></option>
+  <option value="中鋼"></option>
+  <option value="00757"></option>
+  <option value="00662"></option>
+</datalist>
 
   <header class="header">
     <div class="header-eyebrow">Three-Pillar Dashboard · 2026</div>
@@ -756,6 +899,26 @@ details.collapsible summary:hover { color: var(--accent); }
     <details class="collapsible" id="sim-config">
       <summary>試算參數設定（DCA、股價、加速槓桿）</summary>
       <div class="collapsible-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; padding: 12px; background: var(--bg-input); border-radius: 8px;">
+          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; min-width: 220px;">
+            股價可手動輸入，或點按鈕從 Yahoo Finance 抓最新價（含 0050、台積電）。<br>
+            <span style="color: var(--text-dim); font-size: 11px;">非交易時段顯示最後成交價</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span id="price-status" style="font-size: 12px; font-family: 'JetBrains Mono', monospace;"></span>
+            <button class="btn btn-primary" id="update-prices-btn">↻ 更新股價</button>
+          </div>
+        </div>
+        <details style="margin-bottom: 16px;">
+          <summary style="font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 4px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">⚙ 進階：自訂 CORS Proxy（如果公用 proxy 失敗）</summary>
+          <div style="margin-top: 8px; padding: 12px; background: var(--bg-input); border-radius: 6px;">
+            <div style="font-size: 11px; color: var(--text-muted); line-height: 1.6; margin-bottom: 6px;">
+              填入你的 Cloudflare Worker URL，會優先使用此 proxy 抓股價。留空則用公用 proxy。<br>
+              範例格式：<code style="background:white;padding:1px 4px;border-radius:3px;font-size:10px;">https://my-proxy.your-name.workers.dev</code>
+            </div>
+            <input type="text" id="custom-proxy" placeholder="https://your-worker.workers.dev" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+          </div>
+        </details>
         <div class="pillars-grid" id="sim-pillars"></div>
         <div class="global-controls" style="margin-top: 16px;">
           <div class="field">
@@ -769,6 +932,10 @@ details.collapsible summary:hover { color: var(--accent); }
         </div>
       </div>
     </details>
+    <div style="margin-top: 14px; padding: 12px 16px; background: var(--accent-bg); border-radius: 8px; font-size: 12px; line-height: 1.6; color: var(--text);">
+      <strong>下方卡片代表：</strong>依「現有張數＋每月 DCA 加碼＋配息再投入」的累積速度，預估三支ETF 都達到下列每月配息目標的時間點。<br>
+      <span style="color: var(--text-muted);">會員自由調整目標金額或 DCA 金額，數字會即時重算。</span>
+    </div>
     <div class="results-grid" id="results-grid" style="margin-top: 14px;"></div>
   </section>
 
@@ -793,6 +960,64 @@ details.collapsible summary:hover { color: var(--accent); }
     </div>
   </section>
 
+  <!-- ============ 買入紀錄（摺疊） ============ -->
+  <section class="section">
+    <details class="collapsible" id="purchases-section">
+      <summary>持股買入紀錄（自動算平均成本）</summary>
+      <div class="collapsible-body" style="padding-bottom: 0;">
+        <div style="margin-bottom: 14px; padding: 12px; background: var(--bg-input); border-radius: 8px; font-size: 12px; line-height: 1.6; color: var(--text-muted);">
+          <strong style="color: var(--text);">用途：</strong>每次 DCA 買進後在這裡新增一筆，系統自動累計、算平均成本。下方摘要表顯示每支標的的累計張數、平均成本、最新股價，可一鍵套用到三本柱「現有張數」與「股價假設」。
+        </div>
+        
+        <!-- 摘要表 -->
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">摘要</div>
+          <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+            <table class="records-table" style="min-width: 720px;">
+              <thead>
+                <tr>
+                  <th>標的</th>
+                  <th>累計張數</th>
+                  <th>總成本</th>
+                  <th>平均成本價</th>
+                  <th>最新股價</th>
+                  <th>含息報酬</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="purchases-summary-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- 明細表 -->
+        <div style="font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;">明細</div>
+        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+          <table class="records-table" style="min-width: 720px;">
+            <thead>
+              <tr>
+                <th style="width:40px;"></th>
+                <th>日期</th>
+                <th>標的</th>
+                <th>買入股數</th>
+                <th>買入單價</th>
+                <th>成本</th>
+                <th>備註</th>
+              </tr>
+            </thead>
+            <tbody id="purchases-tbody"></tbody>
+          </table>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">
+          <button class="btn btn-primary" id="add-purchase">+ 新增買入</button>
+          <button class="btn" id="apply-shares">↑ 套用累計到「現有張數」</button>
+          <button class="btn" id="apply-prices">↑ 套用最新股價到「試算股價」</button>
+          <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空買入紀錄</button>
+        </div>
+      </div>
+    </details>
+  </section>
+
   <!-- ============ 配息紀錄（摺疊） ============ -->
   <section class="section">
     <details class="collapsible">
@@ -814,6 +1039,7 @@ details.collapsible summary:hover { color: var(--accent); }
                 <th>每股配息</th>
                 <th>配息入帳</th>
                 <th>年化殖利率</th>
+                <th>該支累計</th>
               </tr>
             </thead>
             <tbody id="records-tbody"></tbody>
@@ -841,6 +1067,28 @@ details.collapsible summary:hover { color: var(--accent); }
 <script>
 const STORAGE_KEY = 'shawn_three_pillar_v2';
 
+const DEFAULT_PURCHASES = []; // 預設空，由 Shawn 自行記錄
+
+const DEFAULT_LATEST_PRICES = {
+  '0056': null,
+  '00919': null,
+  '00878': null,
+  '0050': null,
+  '台積電': null
+};
+
+const YAHOO_TICKERS = {
+  '0056': '0056',
+  '00919': '00919',
+  '00878': '00878',
+  '0050': '0050',
+  '台積電': '2330',
+  '00918': '00918',
+  '中鋼': '2002',
+  '00757': '00757',
+  '00662': '00662'
+};
+
 const DEFAULT_PILLARS = {
   '0056':  { shares: 59.943, dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
   '00919': { shares: 99.323, dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
@@ -865,22 +1113,29 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      // 確保有所有欄位
       return {
         pillars: parsed.pillars || JSON.parse(JSON.stringify(DEFAULT_PILLARS)),
         records: parsed.records || JSON.parse(JSON.stringify(DEFAULT_RECORDS)),
+        purchases: parsed.purchases || [],
+        latestPrices: parsed.latestPrices || { ...DEFAULT_LATEST_PRICES },
+        priceUpdatedAt: parsed.priceUpdatedAt || null,
         goals: parsed.goals || { ...DEFAULT_GOALS },
         quarterlyBoost: parsed.quarterlyBoost || 0,
-        annualBonus: parsed.annualBonus || 0
+        annualBonus: parsed.annualBonus || 0,
+        customProxy: parsed.customProxy || ''
       };
     }
   } catch(e) { console.warn(e); }
   return {
     pillars: JSON.parse(JSON.stringify(DEFAULT_PILLARS)),
     records: JSON.parse(JSON.stringify(DEFAULT_RECORDS)),
+    purchases: [],
+    latestPrices: { ...DEFAULT_LATEST_PRICES },
+    priceUpdatedAt: null,
     goals: { ...DEFAULT_GOALS },
     quarterlyBoost: 0,
-    annualBonus: 0
+    annualBonus: 0,
+    customProxy: ''
   };
 }
 
@@ -932,13 +1187,9 @@ function renderPillars() {
           <span class="pillar-output-label">本季配息</span>
           <span class="pillar-output-value">${fmt(quarterly)} 元</span>
         </div>
-        <div class="pillar-output-row">
+        <div class="pillar-output-row highlight">
           <span class="pillar-output-label">年配息推估</span>
           <span class="pillar-output-value">${fmt(annual)} 元</span>
-        </div>
-        <div class="pillar-output-row highlight">
-          <span class="pillar-output-label">月均</span>
-          <span class="pillar-output-value">${fmt(monthly)} 元</span>
         </div>
       </div>
     `;
@@ -1024,29 +1275,76 @@ function updateGoals(monthly) {
   const container = document.getElementById('goal-progress-list');
   container.innerHTML = '';
   
-  // Custom goals first
+  // Custom goals: 卡片式，含達標成本明細
   customGoals.forEach(g => {
     const pct = Math.min(100, (monthly / g.target) * 100);
     const reached = monthly >= g.target;
     const gap = g.target - monthly;
-    const row = document.createElement('div');
-    row.className = `goal-row custom ${reached ? 'reached' : ''}`;
-    row.style.setProperty('--bar-color', g.color);
-    row.innerHTML = `
-      <div class="goal-row-label">${g.label}</div>
-      <div class="goal-bar-track"><div class="goal-bar-fill" style="width:${pct}%;"></div></div>
-      <div class="goal-row-meta">
-        <strong>${fmt2(pct)}%</strong>
-        ${reached ? ' ✓ 已達' : ` 差 ${fmt(gap)}`}
+    
+    // 計算三本柱缺口和成本
+    const gapInfo = computeGapCost(g.target);
+    
+    const card = document.createElement('div');
+    card.className = `goal-card ${reached ? 'reached' : ''}`;
+    card.style.setProperty('--gc', g.color);
+    
+    let detailHtml = '';
+    if (reached) {
+      detailHtml = `<div style="text-align:center; padding: 8px; color: var(--success); font-weight: 600;">✓ 三本柱配息已支撐此目標</div>`;
+    } else {
+      const rows = ['0056', '00919', '00878'].map(etf => {
+        const e = gapInfo.etfs[etf];
+        const priceSrc = state.latestPrices[etf] ? '最新' : '假設';
+        if (e.reached) {
+          return `<tr>
+            <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
+            <td colspan="3" style="color: var(--success); font-weight: 600;">✓ 已達標（現有 ${fmt2(state.pillars[etf].shares)} 張 ≥ 需要 ${fmt2(e.required)} 張）</td>
+          </tr>`;
+        }
+        return `<tr>
+          <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
+          <td>差 <strong>${fmt2(e.gap)}</strong> 張</td>
+          <td>× $${fmt2(e.price)} <span style="color:var(--text-dim);font-size:10px;">(${priceSrc})</span></td>
+          <td style="text-align:right;">= <strong>$${fmt(e.cost)}</strong></td>
+        </tr>`;
+      }).join('');
+      
+      detailHtml = `
+        <table class="gap-table">
+          ${rows}
+          <tr class="gap-total-row">
+            <td colspan="3"><strong>合計還需投入</strong></td>
+            <td style="text-align:right;"><strong style="color:var(--gc);font-size:16px;">$${fmt(gapInfo.totalCost)}</strong></td>
+          </tr>
+        </table>
+      `;
+    }
+    
+    card.innerHTML = `
+      <div class="goal-card-head">
+        <div class="goal-card-title">${g.label}</div>
+        <div class="goal-card-pct ${reached ? 'reached' : ''}">${fmt2(pct)}%</div>
       </div>
+      <div class="goal-card-bar">
+        <div class="goal-card-fill" style="width:${pct}%; background: ${reached ? 'var(--success)' : g.color};"></div>
+      </div>
+      <div class="goal-card-meta">
+        ${reached ? '✓ 已達標' : `月領目標 $${fmt(g.target)}　|　目前差 $${fmt(gap)}/月`}
+      </div>
+      ${detailHtml}
     `;
-    container.appendChild(row);
+    container.appendChild(card);
   });
   
   // Separator
   const sep = document.createElement('div');
-  sep.style.cssText = 'height:1px;background:var(--border);margin:8px 0;';
+  sep.style.cssText = 'height:1px;background:var(--border);margin:14px 0 10px;';
   container.appendChild(sep);
+  
+  const refTitle = document.createElement('div');
+  refTitle.style.cssText = 'font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-family: \'JetBrains Mono\', monospace;';
+  refTitle.textContent = '對照目標（5–12萬）';
+  container.appendChild(refTitle);
   
   refGoals.forEach(g => {
     const pct = Math.min(100, (monthly / g.target) * 100);
@@ -1065,6 +1363,31 @@ function updateGoals(monthly) {
     `;
     container.appendChild(row);
   });
+}
+
+// === 計算達到目標的張數缺口和成本 ===
+function computeGapCost(targetMonthly) {
+  const result = {};
+  let totalCost = 0;
+  
+  ['0056', '00919', '00878'].forEach(etf => {
+    const p = state.pillars[etf];
+    const price = state.latestPrices[etf] || p.price;
+    const requiredShares = p.dividend > 0 ? targetMonthly / (1000 * p.dividend) : 0;
+    const gap = requiredShares - p.shares;
+    const reached = gap <= 0;
+    const gapCost = reached ? 0 : gap * 1000 * price;
+    result[etf] = { 
+      required: requiredShares, 
+      gap: Math.max(0, gap), 
+      price, 
+      cost: gapCost, 
+      reached 
+    };
+    totalCost += gapCost;
+  });
+  
+  return { etfs: result, totalCost };
 }
 
 // === 試算引擎 ===
@@ -1121,10 +1444,20 @@ function computeTargetShares(monthlyTarget) {
 }
 
 function fmtTime(months) {
-  if (months < 0) return { text: '30年內未達標', y: '—', m: '' };
+  if (months < 0) return { headline: '30年內<br>未達標', sub: '', status: 'fail' };
+  if (months === 0) return { headline: '<span class="big-num">已達標</span>', sub: '✓ 目前配息已達目標', status: 'reached' };
   const y = Math.floor(months / 12);
   const m = months % 12;
-  return { y, m: m > 0 ? `${m} 個月` : '整', text: `${y}年${m > 0 ? m + '個月' : ''}` };
+  
+  let headline;
+  if (y === 0) {
+    headline = `<span class="big-num">${m}</span><span style="font-size:24px;color:var(--text);"> 個月後</span>`;
+  } else if (m === 0) {
+    headline = `<span class="big-num">${y}</span><span style="font-size:24px;color:var(--text);"> 年後</span>`;
+  } else {
+    headline = `<span class="big-num">${y}</span><span style="font-size:20px;color:var(--text);"> 年</span> <span class="big-num" style="font-size:32px;">${m}</span><span style="font-size:18px;color:var(--text);"> 個月後</span>`;
+  }
+  return { headline, sub: '預估達標時程', status: 'pending' };
 }
 
 function findBottleneck(target, history, reachedMonth) {
@@ -1159,13 +1492,26 @@ function updateSimulation() {
     const card = document.createElement('div');
     card.className = 'result-card';
     card.style.setProperty('--rc', g.color);
+    
+    const explainText = t.status === 'reached' 
+      ? '依目前持股與配息率，三本柱已能支撐此月領目標。'
+      : t.status === 'fail'
+        ? '依目前 DCA 加碼幅度，30 年內無法達成。請增加月定期定額或調整目標。'
+        : '依目前 DCA、股價與配息率推估，達到三支ETF都有足夠張數的時間點。';
+    
     card.innerHTML = `
       <div class="result-target">${g.label}</div>
-      <div class="result-headline">
-        <span class="big-num">${t.y}</span> 年 <span style="font-size:14px;color:var(--text-muted);">${t.m}</span>
+      <div class="result-headline" style="line-height:1.1;margin: 8px 0 12px;">
+        ${t.headline}
       </div>
-      <div class="result-detail">需要張數：0056 ${fmt1(g.target['0056'])} / 00919 ${fmt1(g.target['00919'])} / 00878 ${fmt1(g.target['00878'])}</div>
-      ${bn ? `<div class="result-bottleneck"><strong>關鍵卡關：${bn}</strong></div>` : ''}
+      <div class="result-detail" style="font-size:13px;line-height:1.6;">
+        ${explainText}
+      </div>
+      <div class="result-detail" style="margin-top:10px;font-size:12px;border-top:1px dashed var(--border);padding-top:10px;">
+        <strong style="color:var(--text);">達標需要張數：</strong><br>
+        0056 ≥ ${fmt1(g.target['0056'])} 張　·　00919 ≥ ${fmt1(g.target['00919'])} 張　·　00878 ≥ ${fmt1(g.target['00878'])} 張
+      </div>
+      ${bn ? `<div class="result-bottleneck"><strong>主要瓶頸：${bn}</strong>（最後一支達標的ETF）</div>` : ''}
     `;
     grid.appendChild(card);
   });
@@ -1210,12 +1556,14 @@ function renderRecords() {
   tbody.innerHTML = '';
   let total = 0;
   let lastMonth = 0;
+  const cumulative = {}; // 每支ETF的累計
   
   const sorted = [...state.records].sort((a, b) => a.date.localeCompare(b.date));
   sorted.forEach(rec => {
     const td = rec.shares * rec.divPerShare;
     const yp = rec.costPrice > 0 ? (rec.divPerShare * 4 / rec.costPrice * 100) : 0;
     total += td;
+    cumulative[rec.etf] = (cumulative[rec.etf] || 0) + td;
     const m = parseInt(rec.date.split('-')[1]);
     if (m > lastMonth) lastMonth = m;
     const i = state.records.indexOf(rec);
@@ -1223,12 +1571,13 @@ function renderRecords() {
     tr.innerHTML = `
       <td class="row-actions"><button class="delete-btn" data-idx="${i}" title="刪除">×</button></td>
       <td><input type="date" value="${rec.date}" data-idx="${i}" data-field="date"></td>
-      <td><span class="etf-tag ${getEtfClass(rec.etf)}">${rec.etf}</span></td>
+      <td><input type="text" list="etf-options" value="${rec.etf}" class="etf-input ${getEtfClass(rec.etf)}" data-idx="${i}" data-field="etf"></td>
       <td><input type="number" step="0.01" value="${rec.costPrice}" data-idx="${i}" data-field="costPrice"></td>
       <td><input type="number" step="1" value="${rec.shares}" data-idx="${i}" data-field="shares"></td>
       <td><input type="number" step="0.001" value="${rec.divPerShare}" data-idx="${i}" data-field="divPerShare"></td>
       <td>${fmt(td)}</td>
       <td>${fmt2(yp)}%</td>
+      <td style="font-weight:600;color:var(--accent);">${fmt(cumulative[rec.etf])}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -1238,7 +1587,7 @@ function renderRecords() {
   trTotal.innerHTML = `
     <td colspan="6" style="text-align:right;">YTD 合計</td>
     <td>${fmt(total)}</td>
-    <td></td>
+    <td colspan="2"></td>
   `;
   tbody.appendChild(trTotal);
   
@@ -1250,7 +1599,10 @@ function renderRecords() {
     inp.addEventListener('change', e => {
       const i = parseInt(e.target.dataset.idx);
       const f = e.target.dataset.field;
-      state.records[i][f] = f === 'date' ? e.target.value : parseFloat(e.target.value) || 0;
+      let val;
+      if (f === 'date' || f === 'etf') val = e.target.value;
+      else val = parseFloat(e.target.value) || 0;
+      state.records[i][f] = val;
       saveState();
       renderRecords();
     });
@@ -1267,6 +1619,280 @@ function renderRecords() {
   });
 }
 
+// === 買入紀錄 ===
+function renderPurchases() {
+  const tbody = document.getElementById('purchases-tbody');
+  tbody.innerHTML = '';
+  
+  const sorted = [...state.purchases].sort((a, b) => a.date.localeCompare(b.date));
+  sorted.forEach(p => {
+    const i = state.purchases.indexOf(p);
+    const cost = p.shares * p.price;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-actions"><button class="delete-btn" data-pidx="${i}" title="刪除">×</button></td>
+      <td><input type="date" value="${p.date}" data-pidx="${i}" data-field="date"></td>
+      <td><input type="text" list="etf-options" value="${p.etf}" class="etf-input ${getEtfClass(p.etf)}" data-pidx="${i}" data-field="etf"></td>
+      <td><input type="number" step="1" value="${p.shares}" data-pidx="${i}" data-field="shares"></td>
+      <td><input type="number" step="0.01" value="${p.price}" data-pidx="${i}" data-field="price"></td>
+      <td>${fmt(cost)}</td>
+      <td><input type="text" value="${p.note || ''}" data-pidx="${i}" data-field="note" placeholder="備註" style="text-align:left;"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  if (state.purchases.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">尚無買入紀錄。點「+ 新增買入」開始記錄。</td>`;
+    tbody.appendChild(tr);
+  }
+  
+  tbody.querySelectorAll('input[data-pidx]').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const i = parseInt(e.target.dataset.pidx);
+      const f = e.target.dataset.field;
+      let val;
+      if (f === 'date' || f === 'etf' || f === 'note') val = e.target.value;
+      else val = parseFloat(e.target.value) || 0;
+      state.purchases[i][f] = val;
+      saveState();
+      renderPurchases();
+      renderPurchaseSummary();
+    });
+  });
+  tbody.querySelectorAll('.delete-btn').forEach(b => {
+    b.addEventListener('click', e => {
+      const i = parseInt(e.target.dataset.pidx);
+      if (confirm('刪除這筆買入紀錄？')) {
+        state.purchases.splice(i, 1);
+        saveState();
+        renderPurchases();
+        renderPurchaseSummary();
+      }
+    });
+  });
+}
+
+function computePurchaseSummary() {
+  // 按 ETF 分組
+  const grouped = {};
+  state.purchases.forEach(p => {
+    if (!grouped[p.etf]) grouped[p.etf] = { totalShares: 0, totalCost: 0, count: 0 };
+    grouped[p.etf].totalShares += p.shares;
+    grouped[p.etf].totalCost += p.shares * p.price;
+    grouped[p.etf].count += 1;
+  });
+  // 計算平均成本
+  Object.values(grouped).forEach(g => {
+    g.avgPrice = g.totalShares > 0 ? g.totalCost / g.totalShares : 0;
+    g.totalLots = g.totalShares / 1000;
+  });
+  return grouped;
+}
+
+function renderPurchaseSummary() {
+  const tbody = document.getElementById('purchases-summary-tbody');
+  tbody.innerHTML = '';
+  const summary = computePurchaseSummary();
+  
+  if (Object.keys(summary).length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="7" style="text-align:center;padding:14px;color:var(--text-muted);font-size:12px;">尚無資料。新增買入紀錄後此處會自動匯總。</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+  
+  Object.entries(summary).forEach(([etf, s]) => {
+    const latestPrice = state.latestPrices[etf];
+    let profitText = '—';
+    let profitClass = '';
+    if (latestPrice && s.avgPrice > 0) {
+      const profitPct = (latestPrice - s.avgPrice) / s.avgPrice * 100;
+      profitText = (profitPct >= 0 ? '+' : '') + fmt2(profitPct) + '%';
+      profitClass = profitPct >= 0 ? 'profit-pos' : 'profit-neg';
+    }
+    const isPillar = ['0056', '00919', '00878'].includes(etf);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="etf-input ${getEtfClass(etf)}" style="cursor:default;">${etf}</span></td>
+      <td>${fmt2(s.totalLots)}</td>
+      <td>${fmt(s.totalCost)}</td>
+      <td>${fmt2(s.avgPrice)}</td>
+      <td>${latestPrice ? fmt2(latestPrice) : '<span style="color:var(--text-dim);">—</span>'}</td>
+      <td class="${profitClass}">${profitText}</td>
+      <td>
+        <div class="summary-row-actions">
+          ${isPillar ? `<button class="summary-btn" data-action="apply-share" data-etf="${etf}">套用張數</button>` : ''}
+          ${isPillar && latestPrice ? `<button class="summary-btn" data-action="apply-price" data-etf="${etf}">套用股價</button>` : ''}
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  tbody.querySelectorAll('.summary-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const action = e.target.dataset.action;
+      const etf = e.target.dataset.etf;
+      const summary = computePurchaseSummary();
+      if (action === 'apply-share' && summary[etf]) {
+        state.pillars[etf].shares = summary[etf].totalLots;
+        saveState();
+        renderPillars();
+        renderSimPillars();
+        updateAll();
+      } else if (action === 'apply-price' && state.latestPrices[etf]) {
+        state.pillars[etf].price = state.latestPrices[etf];
+        saveState();
+        renderSimPillars();
+        updateAll();
+      }
+    });
+  });
+}
+
+// === 抓股價（優先從同源 prices.json，後備 CORS proxy） ===
+function fetchWithTimeout(url, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Timeout ' + ms + 'ms')), ms);
+    fetch(url)
+      .then(res => { clearTimeout(timer); resolve(res); })
+      .catch(err => { clearTimeout(timer); reject(err); });
+  });
+}
+
+let _localPricesCache = null;
+async function tryFetchLocalPrices() {
+  if (_localPricesCache !== null) return _localPricesCache;
+  try {
+    const res = await fetchWithTimeout('./prices.json?t=' + Date.now(), 4000);
+    if (!res.ok) {
+      _localPricesCache = false;
+      return null;
+    }
+    const data = await res.json();
+    if (data && data.prices) {
+      console.log('✓ 本地 prices.json 載入成功，更新時間:', data.updatedAt);
+      _localPricesCache = { prices: data.prices, updatedAt: data.updatedAt };
+      return _localPricesCache;
+    }
+    _localPricesCache = false;
+    return null;
+  } catch(e) {
+    console.log('本地 prices.json 不存在，將使用 CORS proxy');
+    _localPricesCache = false;
+    return null;
+  }
+}
+
+async function fetchYahooPrice(symbol) {
+  // 優先從本地 prices.json（GitHub Actions 抓的，無 CORS 問題）
+  const local = await tryFetchLocalPrices();
+  if (local && local.prices && typeof local.prices[symbol] === 'number') {
+    return local.prices[symbol];
+  }
+  
+  // 後備：CORS proxy
+  const ticker = YAHOO_TICKERS[symbol] || symbol;
+  const tickerWithSuffix = ticker + '.TW';
+  const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${tickerWithSuffix}?interval=1d&range=1d`;
+  
+  const proxies = [
+    state.customProxy ? `${state.customProxy}?url=${encodeURIComponent(targetUrl)}` : null,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
+  ].filter(Boolean);
+  
+  for (const url of proxies) {
+    try {
+      const res = await fetchWithTimeout(url, 8000);
+      if (!res.ok) {
+        console.warn('Proxy HTTP error:', res.status, new URL(url).hostname);
+        continue;
+      }
+      const data = await res.json();
+      const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      if (typeof price === 'number') {
+        console.log(`✓ ${symbol}: ${price} (via ${new URL(url).hostname})`);
+        return price;
+      }
+    } catch(e) {
+      console.warn('Proxy fail:', new URL(url).hostname, '-', e.message);
+    }
+  }
+  return null;
+}
+
+async function updateAllPrices() {
+  const btn = document.getElementById('update-prices-btn');
+  const status = document.getElementById('price-status');
+  btn.disabled = true;
+  btn.textContent = '更新中…';
+  status.textContent = '正在抓取股價...';
+  status.style.color = 'var(--text-muted)';
+  
+  // 重置本地 prices.json 的快取（強制重新抓取）
+  _localPricesCache = null;
+  
+  // 收集要抓的標的：三本柱 + 買入紀錄裡的所有獨特標的
+  const symbols = new Set(['0056', '00919', '00878', '0050', '台積電']);
+  state.purchases.forEach(p => symbols.add(p.etf));
+  
+  const results = {};
+  for (const sym of symbols) {
+    if (!YAHOO_TICKERS[sym]) {
+      results[sym] = null;
+      continue;
+    }
+    results[sym] = await fetchYahooPrice(sym);
+  }
+  
+  // 更新 state
+  Object.entries(results).forEach(([sym, price]) => {
+    if (price !== null) {
+      state.latestPrices[sym] = price;
+      // 三本柱自動套用到試算股價
+      if (['0056', '00919', '00878'].includes(sym)) {
+        state.pillars[sym].price = price;
+      }
+    }
+  });
+  state.priceUpdatedAt = new Date().toISOString();
+  saveState();
+  
+  const successes = Object.entries(results).filter(([k, v]) => v !== null);
+  const failures = Object.entries(results).filter(([k, v]) => v === null);
+  
+  // 判斷資料來源
+  const local = _localPricesCache;
+  let source = '';
+  if (local && local.prices && local.updatedAt) {
+    const dt = new Date(local.updatedAt);
+    source = ` · 來源：本地 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+  } else if (successes.length > 0) {
+    source = ' · 來源：CORS proxy';
+  }
+  
+  if (failures.length === 0) {
+    status.textContent = `✓ 已更新${source}`;
+    status.style.color = 'var(--success)';
+  } else if (successes.length > 0) {
+    status.textContent = `⚠ ${successes.length}/${successes.length + failures.length} 成功${source}`;
+    status.style.color = 'var(--warning)';
+    console.warn('Failed symbols:', failures.map(([k]) => k).join(', '));
+  } else {
+    status.textContent = '✗ 全部失敗（請設定 GitHub Actions 自動抓股價）';
+    status.style.color = 'var(--danger)';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = '↻ 更新股價';
+  renderSimPillars();
+  renderPurchaseSummary();
+  updateAll();
+}
+
 // === Master update ===
 function updateAll() {
   const monthly = updateDashboard();
@@ -1279,6 +1905,8 @@ function init() {
   renderPillars();
   renderSimPillars();
   renderRecords();
+  renderPurchases();
+  renderPurchaseSummary();
   updateAll();
   
   // Goals
@@ -1352,14 +1980,17 @@ function init() {
       try {
         if (confirm('匯入此JSON並覆蓋現有資料？')) {
           state = JSON.parse(ev.target.result);
-          // 補齊缺失欄位
           if (!state.goals) state.goals = { ...DEFAULT_GOALS };
           if (!state.pillars) state.pillars = JSON.parse(JSON.stringify(DEFAULT_PILLARS));
           if (!state.records) state.records = JSON.parse(JSON.stringify(DEFAULT_RECORDS));
+          if (!state.purchases) state.purchases = [];
+          if (!state.latestPrices) state.latestPrices = { ...DEFAULT_LATEST_PRICES };
           saveState();
           renderPillars();
           renderSimPillars();
           renderRecords();
+          renderPurchases();
+          renderPurchaseSummary();
           updateAll();
           document.getElementById('goal-a').value = state.goals.a;
           document.getElementById('goal-b').value = state.goals.b;
@@ -1369,6 +2000,87 @@ function init() {
     };
     reader.readAsText(file);
   });
+  
+  // 買入紀錄
+  document.getElementById('add-purchase').addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    state.purchases.push({ date: today, etf: '00878', shares: 1000, price: 25, note: '' });
+    saveState();
+    renderPurchases();
+    renderPurchaseSummary();
+  });
+  document.getElementById('apply-shares').addEventListener('click', () => {
+    const summary = computePurchaseSummary();
+    const applied = [];
+    ['0056', '00919', '00878'].forEach(etf => {
+      if (summary[etf]) {
+        state.pillars[etf].shares = summary[etf].totalLots;
+        applied.push(`${etf}: ${fmt2(summary[etf].totalLots)} 張`);
+      }
+    });
+    if (applied.length === 0) {
+      alert('買入紀錄沒有任何三本柱資料可套用。');
+      return;
+    }
+    if (confirm('套用累計到三本柱「現有張數」？\n\n' + applied.join('\n'))) {
+      saveState();
+      renderPillars();
+      renderSimPillars();
+      updateAll();
+      alert('已套用！');
+    }
+  });
+  document.getElementById('apply-prices').addEventListener('click', () => {
+    const applied = [];
+    ['0056', '00919', '00878'].forEach(etf => {
+      if (state.latestPrices[etf]) {
+        state.pillars[etf].price = state.latestPrices[etf];
+        applied.push(`${etf}: ${fmt2(state.latestPrices[etf])} 元`);
+      }
+    });
+    if (applied.length === 0) {
+      alert('尚無最新股價資料。請先點「↻ 更新股價」。');
+      return;
+    }
+    if (confirm('套用最新股價到「試算股價假設」？\n\n' + applied.join('\n'))) {
+      saveState();
+      renderSimPillars();
+      updateAll();
+      alert('已套用！');
+    }
+  });
+  document.getElementById('clear-purchases').addEventListener('click', () => {
+    if (state.purchases.length === 0) return;
+    if (confirm('清空所有買入紀錄？此動作無法復原（除非有JSON備份）')) {
+      state.purchases = [];
+      saveState();
+      renderPurchases();
+      renderPurchaseSummary();
+    }
+  });
+  
+  // 股價更新
+  document.getElementById('update-prices-btn').addEventListener('click', updateAllPrices);
+  
+  // 自訂 proxy URL
+  const proxyInput = document.getElementById('custom-proxy');
+  proxyInput.value = state.customProxy || '';
+  proxyInput.addEventListener('change', e => {
+    let val = e.target.value.trim();
+    // 移除尾端斜線、查詢字串等
+    if (val && !val.startsWith('http')) val = 'https://' + val;
+    val = val.replace(/\/+$/, '').replace(/\?.*$/, '');
+    state.customProxy = val;
+    e.target.value = val;
+    saveState();
+  });
+  
+  // 顯示上次更新時間
+  if (state.priceUpdatedAt) {
+    const dt = new Date(state.priceUpdatedAt);
+    document.getElementById('price-status').textContent = `上次更新：${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+    document.getElementById('price-status').style.color = 'var(--text-dim)';
+  }
 }
 
 init();

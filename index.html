@@ -1500,12 +1500,27 @@ details[open] .loan-card-summary::after { content: '−'; }
   position: absolute;
   top: 14px;
   right: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 60%;
 }
 .lsum-refresh-row .btn {
   font-size: 11px;
   padding: 5px 12px;
   background: rgba(255, 255, 255, 0.7);
   border-color: rgba(212, 168, 87, 0.4);
+}
+
+/* 各區塊按鈕旁的時間顯示 */
+.price-time-mini {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 .lsum-empty {
   text-align: center;
@@ -2382,6 +2397,7 @@ details[open] .loan-card-summary::after { content: '−'; }
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
         <div class="subsection-label" style="margin-bottom:0;">📊 自動摘要（按標的分組）</div>
         <button class="btn refresh-prices-btn" data-trigger="purchases" style="font-size:11px; padding:5px 10px;">↻ 更新股價</button>
+        <span class="price-time-mini" data-time-display></span>
       </div>
       <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
         <table class="records-table" style="min-width: 720px;">
@@ -2429,7 +2445,8 @@ details[open] .loan-card-summary::after { content: '−'; }
   <section class="section">
     <div class="section-row">
       <div class="section-title">📡 觀察股清單</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+        <span class="price-time-mini" data-time-display></span>
         <button class="btn refresh-prices-btn" data-trigger="watchlist">↻ 更新股價</button>
         <button class="btn" id="add-watchlist">＋ 新增觀察股</button>
       </div>
@@ -2464,7 +2481,10 @@ details[open] .loan-card-summary::after { content: '−'; }
   <section class="section">
     <div class="section-row">
       <div class="section-title">月領目標進度</div>
-      <button class="btn refresh-prices-btn" data-trigger="goals">↻ 更新股價</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span class="price-time-mini" data-time-display></span>
+        <button class="btn refresh-prices-btn" data-trigger="goals">↻ 更新股價</button>
+      </div>
     </div>
     <div class="goals-config">
       <div class="goals-input-row" style="margin-bottom: 20px;">
@@ -2501,7 +2521,10 @@ details[open] .loan-card-summary::after { content: '−'; }
   <section class="section">
     <div class="section-row">
       <div class="section-title">未來達標試算</div>
-      <button class="btn refresh-prices-btn" data-trigger="simulation">↻ 更新股價</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span class="price-time-mini" data-time-display></span>
+        <button class="btn refresh-prices-btn" data-trigger="simulation">↻ 更新股價</button>
+      </div>
     </div>
     <details class="collapsible" id="sim-config">
       <summary>試算參數設定（DCA、股價、加速槓桿）</summary>
@@ -3706,6 +3729,11 @@ async function updateAllPrices() {
         el.style.color = color;
       }
     });
+    // 同步到所有 [data-time-display] mini 元素
+    document.querySelectorAll('[data-time-display]').forEach(el => {
+      el.textContent = text;
+      el.style.color = color;
+    });
   };
   
   allBtns.forEach(b => {
@@ -3838,6 +3866,10 @@ async function autoLoadLocalPrices() {
         el.style.color = 'var(--text-muted)';
       }
     });
+    document.querySelectorAll('[data-time-display]').forEach(el => {
+      el.textContent = '⏳ 載入即時股價...';
+      el.style.color = 'var(--text-muted)';
+    });
     // 延遲 300ms 等頁面渲染完，避免阻塞
     setTimeout(() => updateAllPrices(), 300);
     return;
@@ -3887,6 +3919,10 @@ async function autoLoadLocalPrices() {
             el.textContent = txt;
             el.style.color = color;
           }
+        });
+        document.querySelectorAll('[data-time-display]').forEach(el => {
+          el.textContent = txt;
+          el.style.color = color;
         });
         // 重新渲染
         renderPillars();
@@ -4124,6 +4160,7 @@ function renderLoanSummary() {
   
   wrap.innerHTML = `
     <div class="lsum-refresh-row">
+      <span class="price-time-mini" data-time-display></span>
       <button class="btn refresh-prices-btn" data-trigger="loan-summary">↻ 更新股價</button>
     </div>
     <div class="lsum-main">
@@ -4724,6 +4761,11 @@ async function waitForNewPrices(oldUpdatedAt, maxSec = 90) {
         el.textContent = text;
         el.style.color = color;
       }
+    });
+    // 同步到所有 [data-time-display] mini 元素
+    document.querySelectorAll('[data-time-display]').forEach(el => {
+      el.textContent = text;
+      el.style.color = color;
     });
   };
   
@@ -5710,6 +5752,10 @@ function openQuickAllDialog() {
         el.textContent = txt;
         el.style.color = 'var(--text-dim)';
       }
+    });
+    document.querySelectorAll('[data-time-display]').forEach(el => {
+      el.textContent = txt;
+      el.style.color = 'var(--text-dim)';
     });
   }
 }

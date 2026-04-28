@@ -790,6 +790,32 @@ details.collapsible summary:hover { color: var(--accent); }
   margin-bottom: 12px;
   letter-spacing: 0.05em;
 }
+.annual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.annual-header .annual-section-title { margin-bottom: 0; }
+.years-toggle {
+  background: white;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+.years-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
 .annual-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -1087,6 +1113,224 @@ details.collapsible summary:hover { color: var(--accent); }
   color: var(--accent);
   text-decoration: underline;
 }
+
+/* === 質押系統 === */
+.loan-section-label {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+}
+.loan-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.loan-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.loan-card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.loan-card-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.loan-card-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.ratio-input {
+  width: 60px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+.ratio-input-small {
+  width: 40px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  text-align: right;
+}
+.ratio-input:focus, .ratio-input-small:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: white;
+}
+
+/* 借款明細表 */
+.loan-table {
+  width: 100%;
+  min-width: 880px;
+  border-collapse: collapse;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.loan-table th {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-align: center;
+  padding: 12px 10px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+.loan-table td {
+  padding: 9px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
+}
+.loan-table tr.loan-total-row {
+  background: var(--accent-bg);
+  font-weight: 700;
+}
+.loan-table tr.loan-total-row td {
+  padding: 11px 10px;
+  color: var(--accent);
+}
+.loan-input {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 4px 6px;
+  text-align: center;
+  border-radius: 4px;
+  width: 100px;
+}
+.loan-input-small { width: 50px; }
+.loan-input-text { width: 180px; text-align: left; }
+.loan-input:hover { border-color: var(--border); background: var(--bg-input); }
+.loan-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: white;
+}
+.loan-status-ok {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 11px;
+}
+.loan-status-warn {
+  color: var(--warning);
+  font-weight: 600;
+  font-size: 11px;
+}
+.loan-status-danger {
+  color: var(--danger);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* 利息 vs 配息 */
+.cashflow-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.3fr;
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .cashflow-grid { grid-template-columns: 1fr; }
+}
+.cashflow-item {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+}
+.cashflow-item.positive { border-left: 4px solid var(--success); }
+.cashflow-item.negative { border-left: 4px solid var(--danger); }
+.cashflow-item.cashflow-net { 
+  background: linear-gradient(135deg, #fffaf0 0%, #f5e9d0 100%);
+  border-color: rgba(212, 168, 87, 0.4);
+}
+.cashflow-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.cashflow-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.cashflow-item.positive .cashflow-value { color: var(--success); }
+.cashflow-item.negative .cashflow-value { color: var(--danger); }
+.cashflow-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.cashflow-meta strong { color: var(--accent); }
+
+/* 維持率試算 */
+.stress-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.stress-table th {
+  background: var(--bg-input);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-align: center;
+  padding: 10px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-strong);
+}
+.stress-table td {
+  padding: 8px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-soft);
+}
+.stress-table tr.stress-ok td { color: var(--success); }
+.stress-table tr.stress-warn td { color: var(--warning); background: rgba(232, 145, 106, 0.05); }
+.stress-table tr.stress-danger td { color: var(--danger); background: rgba(231, 111, 111, 0.05); font-weight: 600; }
 
 /* === ETF 可編輯標的 === */
 .etf-input {
@@ -1602,7 +1846,7 @@ details.collapsible summary:hover { color: var(--accent); }
   <!-- ============ 配息紀錄（置頂，預設收合）============ -->
   <section class="section">
     <details class="collapsible">
-      <summary>💰 2026 配息紀錄（YTD 實際入帳）</summary>
+      <summary>💰 配息紀錄</summary>
       <div class="collapsible-body" style="padding-bottom: 0;">
         <div class="records-summary-bar">
           <div class="records-summary-item">
@@ -1641,6 +1885,55 @@ details.collapsible summary:hover { color: var(--accent); }
           <button class="btn-cta" id="export-data">↓ 匯出JSON</button>
           <button class="btn-cta" id="import-data">↑ 匯入JSON</button>
           <input type="file" id="file-input" accept=".json" style="display:none;">
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 質押系統（預設收合）============ -->
+  <section class="section">
+    <details class="collapsible" id="loans-section">
+      <summary>🏦 質押系統</summary>
+      <div class="collapsible-body" style="padding-bottom: 0;">
+        
+        <!-- A. 總覽卡片 -->
+        <div class="loan-overview" id="loan-overview"></div>
+        
+        <!-- B. 借款明細表 -->
+        <div class="loan-section-label">📋 借款明細</div>
+        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 10px;">
+          <table class="loan-table">
+            <thead>
+              <tr>
+                <th style="width:30px;"></th>
+                <th>借款日</th>
+                <th>金額</th>
+                <th>利率</th>
+                <th>質押內容</th>
+                <th>展延進度</th>
+                <th>下次到期</th>
+                <th>距今</th>
+                <th>狀態</th>
+              </tr>
+            </thead>
+            <tbody id="loan-tbody"></tbody>
+          </table>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn-cta btn-cta-primary" id="add-loan">＋ 新增借款</button>
+          <button class="btn" id="reset-loans" style="margin-left:auto;">↻ 重設預設</button>
+        </div>
+        
+        <!-- C. 利息 vs 配息 -->
+        <div class="loan-section-label" style="margin-top:24px;">💰 利息 vs 配息現金流</div>
+        <div class="loan-cashflow" id="loan-cashflow"></div>
+        
+        <!-- D. 維持率試算 -->
+        <div class="loan-section-label" style="margin-top:24px;">📉 維持率變化試算</div>
+        <div class="loan-stress" id="loan-stress"></div>
+        
+        <div style="margin-top: 16px; padding: 10px 14px; background: var(--bg-input); border-radius: 6px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+          <strong style="color: var(--text);">提醒：</strong>維持率資料需手動填入（在「總覽卡片」可編輯）。系統不會即時抓券商實際維持率，所有試算依「目前維持率」推估。
         </div>
       </div>
     </details>
@@ -1990,6 +2283,50 @@ const HISTORICAL_2025 = [
 
 const DEFAULT_GOALS = { a: 7, b: 8, c: 10 };
 
+// 質押借款預設值（Shawn 2026/04 現況）
+const DEFAULT_LOANS = [
+  { 
+    id: 'loan1',
+    borrowDate: '2025-06-13',
+    amount: 1115000,
+    rate: 2.5,
+    collateral: '0056×12 + 00878×39 + 00919×28',
+    extendedTimes: 1,
+    maxExtensions: 2,
+    note: '已展延一次，剩一次。下次到期須借新還舊'
+  },
+  {
+    id: 'loan2',
+    borrowDate: '2025-06-24',
+    amount: 390000,
+    rate: 2.5,
+    collateral: '0050×4 + 00919×22',
+    extendedTimes: 1,
+    maxExtensions: 2,
+    note: '已展延一次，剩一次'
+  },
+  {
+    id: 'loan3',
+    borrowDate: '2025-12-02',
+    amount: 1005000,
+    rate: 2.5,
+    collateral: '0056×18 + 00878×40 + 00919×9',
+    extendedTimes: 0,
+    maxExtensions: 2,
+    note: ''
+  },
+  {
+    id: 'loan4',
+    borrowDate: '2026-03-19',
+    amount: 546000,
+    rate: 2.5,
+    collateral: '00919×39',
+    extendedTimes: 0,
+    maxExtensions: 2,
+    note: ''
+  }
+];
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -2009,7 +2346,9 @@ function loadState() {
         githubToken: parsed.githubToken || '',
         githubRepo: parsed.githubRepo || 'shawn2026-oss/BeRich',
         githubWorkflow: parsed.githubWorkflow || 'fetch-prices.yml',
-        watchlist: parsed.watchlist || ['0050', '台積電']
+        watchlist: parsed.watchlist || ['0050', '台積電'],
+        loans: parsed.loans || JSON.parse(JSON.stringify(DEFAULT_LOANS)),
+        loanSettings: parsed.loanSettings || { warningRatio: 130, currentRatio: 190 }
       };
     }
   } catch(e) { console.warn(e); }
@@ -2027,7 +2366,9 @@ function loadState() {
     githubToken: '',
     githubRepo: 'shawn2026-oss/BeRich',
     githubWorkflow: 'fetch-prices.yml',
-    watchlist: ['0050', '台積電']
+    watchlist: ['0050', '台積電'],
+    loans: JSON.parse(JSON.stringify(DEFAULT_LOANS)),
+    loanSettings: { warningRatio: 130, currentRatio: 190 }
   };
 }
 
@@ -3140,7 +3481,6 @@ function renderWatchlist() {
   state.watchlist.forEach((etf, idx) => {
     const price = state.latestPrices[etf];
     const stat = purchaseStats[etf];
-    const yahooTicker = YAHOO_TICKERS[etf];
     const tag = getEtfClass(etf);
     
     // 計算含息報酬（如果有買入紀錄）
@@ -3161,8 +3501,6 @@ function renderWatchlist() {
       `;
     }
     
-    const yahooUrl = yahooTicker ? `https://tw.stock.yahoo.com/quote/${yahooTicker}.TW` : null;
-    
     grid.innerHTML += `
       <div class="watch-card">
         <div class="watch-card-head">
@@ -3173,7 +3511,6 @@ function renderWatchlist() {
           ${price ? `<span class="watch-price-num">$${fmt2(price)}</span>` : '<span class="watch-price-na">—</span>'}
         </div>
         ${returnHtml}
-        ${yahooUrl ? `<a href="${yahooUrl}" target="_blank" class="watch-link">📈 看 K 線（Yahoo）→</a>` : ''}
       </div>
     `;
   });
@@ -3193,6 +3530,273 @@ function renderWatchlist() {
 }
 
 // === 觀察股清單 結束 ===
+
+// === 觀察股清單 結束 ===
+
+// === 質押系統 ===
+function renderLoans() {
+  renderLoanOverview();
+  renderLoanTable();
+  renderLoanCashflow();
+  renderLoanStress();
+}
+
+function renderLoanOverview() {
+  const wrap = document.getElementById('loan-overview');
+  if (!wrap) return;
+  
+  const loans = state.loans || [];
+  const totalAmount = loans.reduce((s, l) => s + (l.amount || 0), 0);
+  const monthlyInterest = loans.reduce((s, l) => s + (l.amount * l.rate / 100 / 12), 0);
+  
+  // 找最近到期（每筆借款半年到期一次）
+  const nextDue = computeNextLoanDue(loans);
+  const daysToNext = nextDue ? Math.ceil((nextDue.dueDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  
+  const cur = state.loanSettings?.currentRatio || 190;
+  const warn = state.loanSettings?.warningRatio || 130;
+  const buffer = cur - warn;
+  
+  wrap.innerHTML = `
+    <div class="loan-card">
+      <div class="loan-card-label">借款總額</div>
+      <div class="loan-card-value">$${fmt(totalAmount)}</div>
+      <div class="loan-card-meta">${loans.length} 筆借款</div>
+    </div>
+    <div class="loan-card">
+      <div class="loan-card-label">月利息</div>
+      <div class="loan-card-value">$${fmt(monthlyInterest)}</div>
+      <div class="loan-card-meta">平均利率 ${loans.length > 0 ? (loans.reduce((s,l) => s + l.rate, 0) / loans.length).toFixed(2) : 0}%</div>
+    </div>
+    <div class="loan-card">
+      <div class="loan-card-label">維持率（手動填入）</div>
+      <div class="loan-card-value">
+        <input type="number" id="current-ratio-input" value="${cur}" min="100" max="500" step="1" class="ratio-input">%
+      </div>
+      <div class="loan-card-meta">
+        警戒
+        <input type="number" id="warning-ratio-input" value="${warn}" min="100" max="200" step="1" class="ratio-input-small">%
+        ｜緩衝 <strong style="color:${buffer < 30 ? 'var(--danger)' : buffer < 60 ? 'var(--warning)' : 'var(--success)'};">${buffer}%</strong>
+      </div>
+    </div>
+    <div class="loan-card">
+      <div class="loan-card-label">最近到期</div>
+      <div class="loan-card-value" style="font-size: 22px;">
+        ${nextDue ? nextDue.dueDate.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }) : '—'}
+      </div>
+      <div class="loan-card-meta">
+        ${nextDue ? `${daysToNext} 天後 · $${fmt(nextDue.amount)}` : '無資料'}
+      </div>
+    </div>
+  `;
+  
+  // 綁定維持率輸入
+  const curInp = document.getElementById('current-ratio-input');
+  const warnInp = document.getElementById('warning-ratio-input');
+  if (curInp) curInp.addEventListener('change', e => {
+    state.loanSettings.currentRatio = parseFloat(e.target.value) || 190;
+    saveState();
+    renderLoans();
+  });
+  if (warnInp) warnInp.addEventListener('change', e => {
+    state.loanSettings.warningRatio = parseFloat(e.target.value) || 130;
+    saveState();
+    renderLoans();
+  });
+}
+
+function computeNextLoanDue(loans) {
+  // 每筆借款的下次到期 = 借款日 + (展延次數+1) × 6個月
+  let nearest = null;
+  loans.forEach(l => {
+    const borrow = new Date(l.borrowDate);
+    const monthsAfter = (l.extendedTimes + 1) * 6;
+    const due = new Date(borrow);
+    due.setMonth(due.getMonth() + monthsAfter);
+    if (!nearest || due < nearest.dueDate) {
+      nearest = { dueDate: due, amount: l.amount, loan: l };
+    }
+  });
+  return nearest;
+}
+
+function renderLoanTable() {
+  const tbody = document.getElementById('loan-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  const loans = [...(state.loans || [])].sort((a, b) => a.borrowDate.localeCompare(b.borrowDate));
+  
+  if (loans.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-muted);">尚無借款。點「+ 新增借款」開始登記。</td></tr>';
+    return;
+  }
+  
+  loans.forEach(loan => {
+    const idx = state.loans.indexOf(loan);
+    const borrow = new Date(loan.borrowDate);
+    const monthsAfter = (loan.extendedTimes + 1) * 6;
+    const due = new Date(borrow);
+    due.setMonth(due.getMonth() + monthsAfter);
+    const days = Math.ceil((due - new Date()) / (1000 * 60 * 60 * 24));
+    
+    let statusBadge, statusClass;
+    const remaining = loan.maxExtensions - loan.extendedTimes;
+    if (days < 0) {
+      statusBadge = '已逾期';
+      statusClass = 'loan-status-danger';
+    } else if (days < 30) {
+      statusBadge = remaining > 0 ? `🔴 ${days}天內展延` : '🔴 須借新還舊';
+      statusClass = 'loan-status-danger';
+    } else if (days < 60) {
+      statusBadge = remaining > 0 ? '🟡 待展延' : '🟡 待借新還舊';
+      statusClass = 'loan-status-warn';
+    } else {
+      statusBadge = remaining > 0 ? '🟢 可展延' : '🟢 須借新還舊';
+      statusClass = 'loan-status-ok';
+    }
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><button class="delete-btn" data-loan-idx="${idx}" title="刪除">×</button></td>
+      <td><input type="date" value="${loan.borrowDate}" data-loan-idx="${idx}" data-field="borrowDate" class="loan-input"></td>
+      <td><input type="number" value="${loan.amount}" data-loan-idx="${idx}" data-field="amount" step="1000" class="loan-input"></td>
+      <td><input type="number" value="${loan.rate}" data-loan-idx="${idx}" data-field="rate" step="0.01" class="loan-input loan-input-small">%</td>
+      <td><input type="text" value="${loan.collateral}" data-loan-idx="${idx}" data-field="collateral" class="loan-input loan-input-text"></td>
+      <td>
+        <input type="number" value="${loan.extendedTimes}" data-loan-idx="${idx}" data-field="extendedTimes" min="0" max="${loan.maxExtensions}" class="loan-input loan-input-small">
+        / ${loan.maxExtensions}
+      </td>
+      <td>${due.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' })}</td>
+      <td><strong style="color: ${days < 30 ? 'var(--danger)' : days < 60 ? 'var(--warning)' : 'var(--text)'};">${days >= 0 ? days + ' 天' : '逾期'}</strong></td>
+      <td><span class="${statusClass}">${statusBadge}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  // 合計列
+  const total = loans.reduce((s, l) => s + l.amount, 0);
+  const trTotal = document.createElement('tr');
+  trTotal.className = 'loan-total-row';
+  trTotal.innerHTML = `
+    <td></td>
+    <td>合計</td>
+    <td><strong>$${fmt(total)}</strong></td>
+    <td colspan="6"></td>
+  `;
+  tbody.appendChild(trTotal);
+  
+  // 綁定編輯
+  tbody.querySelectorAll('input[data-loan-idx]').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const idx = parseInt(e.target.dataset.loanIdx);
+      const field = e.target.dataset.field;
+      let val;
+      if (field === 'borrowDate' || field === 'collateral') val = e.target.value;
+      else val = parseFloat(e.target.value) || 0;
+      state.loans[idx][field] = val;
+      saveState();
+      renderLoans();
+    });
+  });
+  // 刪除
+  tbody.querySelectorAll('.delete-btn').forEach(b => {
+    b.addEventListener('click', e => {
+      const idx = parseInt(e.target.dataset.loanIdx);
+      if (confirm(`刪除借款 #${idx + 1}（$${fmt(state.loans[idx].amount)}）？`)) {
+        state.loans.splice(idx, 1);
+        saveState();
+        renderLoans();
+      }
+    });
+  });
+}
+
+function renderLoanCashflow() {
+  const wrap = document.getElementById('loan-cashflow');
+  if (!wrap) return;
+  
+  const loans = state.loans || [];
+  const monthlyInterest = loans.reduce((s, l) => s + (l.amount * l.rate / 100 / 12), 0);
+  
+  // 計算月配息（用最新一年的紀錄取年化月均）
+  const currentYear = String(new Date().getFullYear());
+  const thisYearRecords = state.records.filter(r => r.date.startsWith(currentYear + '-'));
+  let monthlyDividend = 0;
+  if (thisYearRecords.length > 0) {
+    const total = thisYearRecords.reduce((s, r) => s + r.shares * r.divPerShare, 0);
+    const months = Math.max(...thisYearRecords.map(r => parseInt(r.date.substring(5, 7))));
+    monthlyDividend = total / months;
+  }
+  
+  const netFlow = monthlyDividend - monthlyInterest;
+  const coverage = monthlyInterest > 0 ? monthlyDividend / monthlyInterest : 0;
+  
+  wrap.innerHTML = `
+    <div class="cashflow-grid">
+      <div class="cashflow-item negative">
+        <div class="cashflow-label">月利息支出</div>
+        <div class="cashflow-value">−$${fmt(monthlyInterest)}</div>
+      </div>
+      <div class="cashflow-item positive">
+        <div class="cashflow-label">月配息收入（${currentYear} YTD月均）</div>
+        <div class="cashflow-value">+$${fmt(monthlyDividend)}</div>
+      </div>
+      <div class="cashflow-item ${netFlow >= 0 ? 'positive' : 'negative'} cashflow-net">
+        <div class="cashflow-label">淨現金流</div>
+        <div class="cashflow-value">${netFlow >= 0 ? '+' : ''}$${fmt(netFlow)} / 月</div>
+        <div class="cashflow-meta">${coverage > 0 ? `配息覆蓋利息 <strong>${coverage.toFixed(1)} 倍</strong>` : '尚無配息資料'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLoanStress() {
+  const wrap = document.getElementById('loan-stress');
+  if (!wrap) return;
+  
+  const cur = state.loanSettings?.currentRatio || 190;
+  const warn = state.loanSettings?.warningRatio || 130;
+  
+  // 模擬股價下跌時維持率變化
+  // 維持率 = 質押市值 / 借款 × 100
+  // 假設質押市值 = 借款 × 維持率/100
+  // 股價下跌 X% → 新市值 = 原市值 × (1-X) → 新維持率 = 原維持率 × (1-X)
+  const drops = [5, 10, 15, 20, 25, 30, 40, 50];
+  
+  let rows = '';
+  drops.forEach(drop => {
+    const newRatio = cur * (1 - drop / 100);
+    const distance = newRatio - warn;
+    const status = newRatio < warn ? 'danger' : newRatio < warn + 20 ? 'warn' : 'ok';
+    const statusText = newRatio < warn ? '⚠ 跌破警戒' : newRatio < warn + 20 ? '靠近警戒' : '安全';
+    rows += `
+      <tr class="stress-${status}">
+        <td>−${drop}%</td>
+        <td><strong>${newRatio.toFixed(0)}%</strong></td>
+        <td>${distance >= 0 ? '+' : ''}${distance.toFixed(0)}%</td>
+        <td>${statusText}</td>
+      </tr>
+    `;
+  });
+  
+  wrap.innerHTML = `
+    <table class="stress-table">
+      <thead>
+        <tr>
+          <th>股價跌幅</th>
+          <th>預估維持率</th>
+          <th>距警戒</th>
+          <th>狀態</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="font-size:11px; color:var(--text-muted); margin-top:8px; line-height:1.6;">
+      💡 假設質押標的等比例下跌。實際維持率還受質押標的種類與券商計算規則影響，這只是粗略估算。
+    </div>
+  `;
+}
 
 // === 觸發 GitHub Actions 重抓股價 ===
 async function triggerGitHubWorkflow() {
@@ -3275,6 +3879,9 @@ async function waitForNewPrices(oldUpdatedAt, maxSec = 90) {
 }
 
 // === 年度對比（動態 N 年）===
+// 年度對比展開狀態（false = 只顯示今年+去年，true = 全部）
+let _showAllYears = false;
+
 function renderAnnualComparison() {
   const wrap = document.getElementById('annual-comparison');
   if (!wrap) return;
@@ -3296,12 +3903,19 @@ function renderAnnualComparison() {
     byYearMonthEtf[year][month] += total;
   });
   
-  const years = Object.keys(byYearEtf).sort();
-  if (years.length < 2) {
+  const allYears = Object.keys(byYearEtf).sort();
+  if (allYears.length < 2) {
     wrap.style.display = 'none';
     return;
   }
   wrap.style.display = 'block';
+  
+  // 篩選顯示的年份：預設只顯示最近2年
+  const years = (_showAllYears || allYears.length <= 2) 
+    ? allYears 
+    : allYears.slice(-2);
+  
+  const hiddenCount = allYears.length - years.length;
   
   // 計算每年總計
   const yearTotals = {};
@@ -3335,7 +3949,13 @@ function renderAnnualComparison() {
   const projectedPillar = isPartialYear ? (pillarTotals[latestYear] / latestMonth * 12) : pillarTotals[latestYear];
   
   // === 渲染 ===
-  let html = '<div class="annual-section-title">📈 年度配息對比</div>';
+  let toggleBtn = '';
+  if (allYears.length > 2) {
+    toggleBtn = _showAllYears
+      ? `<button class="years-toggle" id="years-toggle-btn">收合（只看近 2 年）</button>`
+      : `<button class="years-toggle" id="years-toggle-btn">看更多（${hiddenCount} 個歷年）→</button>`;
+  }
+  let html = `<div class="annual-header"><div class="annual-section-title">📈 年度配息對比</div>${toggleBtn}</div>`;
   
   // 1. 主要統計卡（每年一張）
   html += '<div class="annual-cards">';
@@ -3500,6 +4120,15 @@ function renderAnnualComparison() {
   }
   
   wrap.innerHTML = html;
+  
+  // 綁定切換按鈕
+  const toggle = document.getElementById('years-toggle-btn');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      _showAllYears = !_showAllYears;
+      renderAnnualComparison();
+    });
+  }
 }
 
 // === Master update ===
@@ -3508,6 +4137,7 @@ function updateAll() {
   updateGoals(monthly);
   updateSimulation();
   renderWatchlist();
+  renderLoans();
 }
 
 // === Wire up ===
@@ -3517,6 +4147,7 @@ function init() {
   renderRecords();
   renderPurchases();
   renderPurchaseSummary();
+  renderLoans();
   updateAll();
   
   // Goals
@@ -3689,6 +4320,58 @@ function promptSyncShares(newPurchases) {
   }
 }
 
+  // 質押系統
+  document.getElementById('add-loan').addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    const amountStr = prompt('🏦 新增借款\n\n步驟 1/4：借款金額？（元）', '500000');
+    if (!amountStr) return;
+    const amount = parseFloat(amountStr);
+    if (!amount || amount <= 0) { alert('金額無效'); return; }
+    
+    const dateStr = prompt('步驟 2/4：借款日期？', today);
+    if (!dateStr) return;
+    
+    const rateStr = prompt('步驟 3/4：年利率（%）？\n\n2.5 = 舊借款利率\n2.88 = 永豐目前新借款利率', '2.5');
+    if (!rateStr) return;
+    const rate = parseFloat(rateStr);
+    if (!rate || rate <= 0) { alert('利率無效'); return; }
+    
+    const collateral = prompt('步驟 4/4：質押內容？\n例如：0056×12 + 00878×39', '');
+    if (collateral === null) return;
+    
+    const newLoan = {
+      id: 'loan' + Date.now(),
+      borrowDate: dateStr,
+      amount: amount,
+      rate: rate,
+      collateral: collateral || '',
+      extendedTimes: 0,
+      maxExtensions: 2,
+      note: ''
+    };
+    
+    if (!confirm(
+      `確認新增借款：\n` +
+      `日期：${dateStr}\n` +
+      `金額：$${fmt(amount)}\n` +
+      `利率：${rate}%\n` +
+      `質押：${collateral || '(未填)'}\n` +
+      `月利息：$${fmt(amount * rate / 100 / 12)}`
+    )) return;
+    
+    state.loans.push(newLoan);
+    saveState();
+    renderLoans();
+  });
+  
+  document.getElementById('reset-loans').addEventListener('click', () => {
+    if (confirm('將借款資料重設為預設值（你的 4 筆 305.6 萬）？\n目前資料會被覆蓋。')) {
+      state.loans = JSON.parse(JSON.stringify(DEFAULT_LOANS));
+      saveState();
+      renderLoans();
+    }
+  });
+  
   // 觀察股清單
   document.getElementById('add-watchlist').addEventListener('click', () => {
     const etf = prompt(

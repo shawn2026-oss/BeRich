@@ -2968,11 +2968,22 @@ async function updateAllPrices() {
 
 // === 自動載入本地 prices.json（不需要按按鈕） ===
 async function autoLoadLocalPrices() {
-  // 如果有設定 Cloudflare Worker，跳過自動載入（因為使用者按按鈕會走 Worker 取最新）
+  // 如果有設定 Cloudflare Worker，自動在背景觸發即時抓取
   if (state.customProxy) {
-    console.log('已設定 Cloudflare Worker，跳過自動載入 prices.json');
+    console.log('🚀 自動觸發 Cloudflare Worker 抓即時股價...');
+    // 顯示「載入中」狀態，避免先看到舊價
+    ['price-status', 'price-status-top'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = '⏳ 載入即時股價...';
+        el.style.color = 'var(--text-muted)';
+      }
+    });
+    // 延遲 300ms 等頁面渲染完，避免阻塞
+    setTimeout(() => updateAllPrices(), 300);
     return;
   }
+  
   try {
     const local = await tryFetchLocalPrices();
     if (local && local.prices) {

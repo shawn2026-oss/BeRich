@@ -1592,6 +1592,74 @@ details[open] .loan-card-summary::after { content: '−'; }
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* 擔保品力量分布 */
+.cpower-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(212, 168, 87, 0.4);
+}
+.cpower-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  letter-spacing: 0.05em;
+}
+.cpower-list {
+  display: grid;
+  gap: 14px;
+}
+.cpower-row {
+  display: grid;
+  gap: 4px;
+}
+.cpower-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+}
+.cpower-meta {
+  color: var(--text-muted);
+  flex: 1;
+}
+.cpower-pct {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  min-width: 40px;
+  text-align: right;
+}
+.cpower-bar-track {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(212, 168, 87, 0.2);
+}
+.cpower-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease-out;
+}
+.cpower-bar-fill.cpower-0056 { background: linear-gradient(90deg, var(--p-0056), #c8a868); }
+.cpower-bar-fill.cpower-00919 { background: linear-gradient(90deg, var(--p-00919), #6abdd6); }
+.cpower-bar-fill.cpower-00878 { background: linear-gradient(90deg, var(--p-00878), #a884b5); }
+.cpower-bar-fill.cpower-0050 { background: linear-gradient(90deg, var(--p-0050), #82b388); }
+.cpower-bar-fill.cpower-other { background: linear-gradient(90deg, var(--text-dim), var(--text-muted)); }
+.cpower-alone {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-left: 4px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.cpower-alone strong {
+  color: var(--accent);
+  font-size: 13px;
+}
+
 /* 「看詳細」摺疊區 */
 .loan-details-section {
   background: white;
@@ -4064,6 +4132,57 @@ function renderLoanSummary() {
         擔保品還能跌 <strong style="color:var(--accent);font-size:18px;">${dropToWarn > 0 ? dropToWarn.toFixed(1) : 0}%</strong> 才碰警戒線（${warn}%）
         <div class="lsum-stress-meta">目前緩衝 +${buffer.toFixed(0)}%</div>
       </div>
+    </div>
+    
+    ${renderCollateralPower(loans, totalAmount, collateralValue)}
+  `;
+}
+
+// 擔保品力量分布：每支標的撐起的維持率
+function renderCollateralPower(loans, loanTotal, collateralValue) {
+  if (loanTotal === 0) return '';
+  
+  // 按標的彙總（不分借款）
+  const byEtf = {};
+  loans.forEach(l => {
+    (l.collaterals || []).forEach(c => {
+      if (!byEtf[c.etf]) byEtf[c.etf] = { etf: c.etf, totalShares: 0, totalValue: 0 };
+      const price = state.latestPrices[c.etf] || 0;
+      byEtf[c.etf].totalShares += c.shares;
+      byEtf[c.etf].totalValue += c.shares * 1000 * price;
+    });
+  });
+  
+  // 由大到小排序
+  const list = Object.values(byEtf).sort((a, b) => b.totalValue - a.totalValue);
+  if (list.length === 0) return '';
+  
+  // 為每個標的算「該支單獨能撐多少維持率」（市值÷借款）
+  const rows = list.map(item => {
+    const sharePct = (item.totalValue / collateralValue * 100); // 在擔保品池中佔比
+    const aloneRatio = (item.totalValue / loanTotal * 100); // 自己一支撐的維持率
+    const etfClass = getEtfClass(item.etf);
+    return `
+      <div class="cpower-row">
+        <div class="cpower-info">
+          <span class="etf-mini ${etfClass}">${item.etf}</span>
+          <span class="cpower-meta">${item.totalShares} 張 · $${fmt(item.totalValue)}</span>
+          <span class="cpower-pct">${sharePct.toFixed(0)}%</span>
+        </div>
+        <div class="cpower-bar-track">
+          <div class="cpower-bar-fill cpower-${etfClass.replace('etf-','')}" style="width:${sharePct}%;"></div>
+        </div>
+        <div class="cpower-alone">
+          這支單獨提供 <strong>${aloneRatio.toFixed(0)}%</strong> 維持率
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  return `
+    <div class="cpower-section">
+      <div class="cpower-title">💪 四支擔保品如何撐著你的維持率</div>
+      <div class="cpower-list">${rows}</div>
     </div>
   `;
 }

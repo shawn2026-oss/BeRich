@@ -2462,7 +2462,10 @@ details[open] .loan-card-summary::after { content: '−'; }
 
   <!-- ============ 自訂目標 ============ -->
   <section class="section">
-    <div class="section-title">月領目標進度</div>
+    <div class="section-row">
+      <div class="section-title">月領目標進度</div>
+      <button class="btn refresh-prices-btn" data-trigger="goals">↻ 更新股價</button>
+    </div>
     <div class="goals-config">
       <div class="goals-input-row" style="margin-bottom: 20px;">
         <div class="goal-input-group">
@@ -2498,6 +2501,7 @@ details[open] .loan-card-summary::after { content: '−'; }
   <section class="section">
     <div class="section-row">
       <div class="section-title">未來達標試算</div>
+      <button class="btn refresh-prices-btn" data-trigger="simulation">↻ 更新股價</button>
     </div>
     <details class="collapsible" id="sim-config">
       <summary>試算參數設定（DCA、股價、加速槓桿）</summary>

@@ -1494,6 +1494,18 @@ details[open] .loan-card-summary::after { content: '−'; }
   padding: 24px;
   margin-bottom: 16px;
   box-shadow: var(--shadow-md);
+  position: relative;
+}
+.lsum-refresh-row {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+.lsum-refresh-row .btn {
+  font-size: 11px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(212, 168, 87, 0.4);
 }
 .lsum-empty {
   text-align: center;
@@ -2367,7 +2379,10 @@ details[open] .loan-card-summary::after { content: '−'; }
     
     <!-- 摘要區（有資料才顯示）-->
     <div id="purchases-summary-wrap" style="display:none; margin-top: 16px;">
-      <div class="subsection-label">📊 自動摘要（按標的分組）</div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+        <div class="subsection-label" style="margin-bottom:0;">📊 自動摘要（按標的分組）</div>
+        <button class="btn refresh-prices-btn" data-trigger="purchases" style="font-size:11px; padding:5px 10px;">↻ 更新股價</button>
+      </div>
       <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
         <table class="records-table" style="min-width: 720px;">
           <thead>
@@ -2414,7 +2429,10 @@ details[open] .loan-card-summary::after { content: '−'; }
   <section class="section">
     <div class="section-row">
       <div class="section-title">📡 觀察股清單</div>
-      <button class="btn" id="add-watchlist">＋ 新增觀察股</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn refresh-prices-btn" data-trigger="watchlist">↻ 更新股價</button>
+        <button class="btn" id="add-watchlist">＋ 新增觀察股</button>
+      </div>
     </div>
     <div class="watchlist-grid" id="watchlist-grid"></div>
   </section>
@@ -3674,6 +3692,8 @@ async function fetchYahooPrice(symbol) {
 async function updateAllPrices() {
   const btn = document.getElementById('update-prices-btn');
   const topBtn = document.getElementById('update-prices-btn-top');
+  const refreshBtns = Array.from(document.querySelectorAll('.refresh-prices-btn'));
+  const allBtns = [btn, topBtn, ...refreshBtns].filter(Boolean);
   const setStatus = (text, color) => {
     ['price-status', 'price-status-top'].forEach(id => {
       const el = document.getElementById(id);
@@ -3684,11 +3704,10 @@ async function updateAllPrices() {
     });
   };
   
-  [btn, topBtn].forEach(b => {
-    if (b) {
-      b.disabled = true;
-      b.textContent = '更新中…';
-    }
+  allBtns.forEach(b => {
+    b.disabled = true;
+    b._origText = b.textContent;
+    b.textContent = '更新中…';
   });
   
   // 先記下目前 prices.json 的時間（之後判斷是否更新）
@@ -3733,7 +3752,7 @@ async function updateAllPrices() {
         setStatus('⚠ 等了 90 秒沒收到新資料，請去 GitHub Actions 看是否成功', 'var(--warning)');
       }
       
-      [btn, topBtn].forEach(b => { if (b) { b.disabled = false; b.textContent = '↻ 更新股價'; } });
+      allBtns.forEach(b => { b.disabled = false; b.textContent = b._origText || '↻ 更新股價'; });
       return;
     }
   }
@@ -3795,7 +3814,7 @@ async function updateAllPrices() {
     setStatus('✗ 全部失敗（請設 GitHub Token）', 'var(--danger)');
   }
   
-  [btn, topBtn].forEach(b => { if (b) { b.disabled = false; b.textContent = '↻ 更新股價'; } });
+  allBtns.forEach(b => { b.disabled = false; b.textContent = b._origText || '↻ 更新股價'; });
   renderPillars();
   renderSimPillars();
   renderPurchaseSummary();
@@ -4100,6 +4119,9 @@ function renderLoanSummary() {
   }
   
   wrap.innerHTML = `
+    <div class="lsum-refresh-row">
+      <button class="btn refresh-prices-btn" data-trigger="loan-summary">↻ 更新股價</button>
+    </div>
     <div class="lsum-main">
       <div class="lsum-ratio-block">
         <div class="lsum-ratio-num" style="color:${ratioColor};">${ratio !== null ? ratio.toFixed(0) : '—'}<span class="lsum-ratio-pct">%</span></div>
@@ -5585,6 +5607,15 @@ function openQuickAllDialog() {
   document.getElementById('update-prices-btn').addEventListener('click', updateAllPrices);
   const topBtn = document.getElementById('update-prices-btn-top');
   if (topBtn) topBtn.addEventListener('click', updateAllPrices);
+  
+  // 事件代理：頁面任何 .refresh-prices-btn 都觸發更新
+  document.body.addEventListener('click', e => {
+    const btn = e.target.closest('.refresh-prices-btn');
+    if (btn) {
+      e.preventDefault();
+      updateAllPrices();
+    }
+  });
   
   // 自訂 proxy URL
   const proxyInput = document.getElementById('custom-proxy');

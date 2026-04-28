@@ -1194,7 +1194,7 @@ details.collapsible summary:hover { color: var(--accent); }
 /* 借款明細表 */
 .loan-table {
   width: 100%;
-  min-width: 880px;
+  min-width: 1100px;
   border-collapse: collapse;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
@@ -1237,7 +1237,11 @@ details.collapsible summary:hover { color: var(--accent); }
   width: 110px;
 }
 .loan-input-small { width: 60px; }
-.loan-input-text { width: 200px; text-align: left; }
+.loan-input-text { 
+  width: 100%;
+  min-width: 280px;
+  text-align: left; 
+}
 .loan-input:hover { border-color: var(--border); background: var(--bg-input); }
 .loan-input:focus {
   outline: none;
@@ -1976,8 +1980,11 @@ details.collapsible summary:hover { color: var(--accent); }
                 <th style="width:30px;"></th>
                 <th>標的</th>
                 <th>已擔保張數</th>
+                <th>質押日期</th>
+                <th>質押時價</th>
                 <th>最新股價</th>
-                <th>估算市值</th>
+                <th>變化</th>
+                <th>市值</th>
               </tr>
             </thead>
             <tbody id="collateral-tbody"></tbody>
@@ -1985,10 +1992,12 @@ details.collapsible summary:hover { color: var(--accent); }
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
           <button class="btn-cta btn-cta-primary" id="add-collateral">＋ 新增擔保品</button>
+          <button class="btn" id="fetch-pledge-prices">🔍 抓質押日股價</button>
           <button class="btn" id="reset-collaterals" style="margin-left:auto;">↻ 重設預設</button>
         </div>
         <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-input); border-radius: 6px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-          💡 <strong style="color:var(--text);">機制：</strong>只有「已擔保」的股票會算入維持率。每月 DCA 買的新股 <strong>不會自動進擔保</strong>，要主動到永豐 App 申請增加擔保張數，再回來這裡更新。
+          💡 <strong style="color:var(--text);">機制：</strong>只有「已擔保」的股票會算入維持率。每月 DCA 買的新股 <strong>不會自動進擔保</strong>，要主動到永豐 App 申請增加擔保張數，再回來這裡更新。<br>
+          📅 <strong style="color:var(--text);">質押當時價：</strong>填好「質押日期」後點「🔍 抓質押日股價」自動帶入該日收盤價，用來計算從質押至今的市值變化。
         </div>
         
         <!-- C. 利息 vs 配息 -->
@@ -2392,10 +2401,10 @@ const DEFAULT_LOANS = [
 
 // 擔保品預設值（Shawn 2026/04 永豐截圖）
 const DEFAULT_COLLATERALS = [
-  { etf: '0056', shares: 30 },
-  { etf: '00878', shares: 79 },
-  { etf: '00919', shares: 98 },
-  { etf: '0050', shares: 4 }
+  { etf: '0056', shares: 30, pledgeDate: '2025-06-13', pledgePrice: 0 },
+  { etf: '00878', shares: 79, pledgeDate: '2025-06-13', pledgePrice: 0 },
+  { etf: '00919', shares: 98, pledgeDate: '2025-06-13', pledgePrice: 0 },
+  { etf: '0050', shares: 4, pledgeDate: '2025-06-24', pledgePrice: 0 }
 ];
 
 function loadState() {
@@ -3607,17 +3616,60 @@ function renderWatchlist() {
 // === 觀察股清單 結束 ===
 
 // === 質押系統 ===
+
+// 抓歷史股價（特定日期的收盤價）
+async function fetchHistoricalPrice(etf, dateStr) {
+  const ticker = YAHOO_TICKERS[etf];
+  if (!ticker) return null;
+  
+  // 將日期轉為 Unix timestamp（取該日 00:00 UTC）
+  const targetDate = new Date(dateStr + 'T00:00:00Z');
+  const period1 = Math.floor(targetDate.getTime() / 1000);
+  const period2 = period1 + 86400 * 7; // 抓 7 天範圍以避免假日
+  
+  const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}.TW?period1=${period1}&period2=${period2}&interval=1d`;
+  
+  // 優先用 Cloudflare Worker
+  if (state.customProxy) {
+    try {
+      const url = `${state.customProxy}?url=${encodeURIComponent(targetUrl)}`;
+      const res = await fetchWithTimeout(url, 8000);
+      if (res.ok) {
+        const data = await res.json();
+        const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close;
+        const timestamps = data?.chart?.result?.[0]?.timestamp;
+        if (closes && timestamps && closes.length > 0) {
+          // 找最接近指定日期的有效收盤價
+          for (let i = 0; i < closes.length; i++) {
+            if (typeof closes[i] === 'number') {
+              return { price: closes[i], date: new Date(timestamps[i] * 1000).toISOString().split('T')[0] };
+            }
+          }
+        }
+      }
+    } catch(e) {
+      console.warn('Historical fetch fail:', e.message);
+    }
+  }
+  return null;
+}
+
 function computeCollateralValue() {
   // 計算擔保品總市值（用最新股價）
   const collaterals = state.collaterals || [];
   let total = 0;
+  let totalAtPledge = 0;
   const details = collaterals.map(c => {
     const price = state.latestPrices[c.etf] || 0;
     const value = c.shares * 1000 * price;
+    const pledgePrice = c.pledgePrice || 0;
+    const valueAtPledge = c.shares * 1000 * pledgePrice;
+    const change = pledgePrice > 0 ? ((price - pledgePrice) / pledgePrice * 100) : 0;
     total += value;
-    return { ...c, price, value };
+    totalAtPledge += valueAtPledge;
+    return { ...c, price, value, valueAtPledge, change };
   });
-  return { total, details };
+  return { total, totalAtPledge, details };
 }
 
 function computeMaintenanceRatio() {
@@ -3702,32 +3754,46 @@ function renderCollaterals() {
   if (!tbody) return;
   tbody.innerHTML = '';
   
-  const { details, total } = computeCollateralValue();
+  const { details, total, totalAtPledge } = computeCollateralValue();
   
   if (details.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">尚無擔保品。點「+ 新增擔保品」開始登記。</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">尚無擔保品。點「+ 新增擔保品」開始登記。</td></tr>';
     return;
   }
   
   details.forEach((c, idx) => {
     const tr = document.createElement('tr');
+    const changeColor = c.change >= 0 ? 'var(--success)' : 'var(--danger)';
+    const changeText = c.pledgePrice > 0 
+      ? `<strong style="color:${changeColor};">${c.change >= 0 ? '+' : ''}${c.change.toFixed(1)}%</strong>` 
+      : '<span style="color:var(--text-dim);">—</span>';
     tr.innerHTML = `
       <td><button class="delete-btn" data-coll-idx="${idx}" title="刪除">×</button></td>
       <td><span class="etf-mini ${getEtfClass(c.etf)}">${c.etf}</span></td>
       <td><input type="number" value="${c.shares}" data-coll-idx="${idx}" data-field="shares" step="1" min="0" class="loan-input loan-input-small"></td>
+      <td><input type="date" value="${c.pledgeDate || ''}" data-coll-idx="${idx}" data-field="pledgeDate" class="loan-input"></td>
+      <td><input type="number" value="${c.pledgePrice || 0}" data-coll-idx="${idx}" data-field="pledgePrice" step="0.01" min="0" class="loan-input loan-input-small"></td>
       <td>$${c.price > 0 ? fmt2(c.price) : '—'}</td>
+      <td>${changeText}</td>
       <td><strong>$${fmt(c.value)}</strong></td>
     `;
     tbody.appendChild(tr);
   });
   
   // 合計
+  const overallChange = totalAtPledge > 0 ? ((total - totalAtPledge) / totalAtPledge * 100) : 0;
+  const overallColor = overallChange >= 0 ? 'var(--success)' : 'var(--danger)';
   const trTotal = document.createElement('tr');
   trTotal.className = 'loan-total-row';
   trTotal.innerHTML = `
     <td></td>
     <td>合計</td>
-    <td colspan="2" style="text-align:right; padding-right:16px;">擔保品市值</td>
+    <td colspan="2" style="text-align:right; padding-right:16px; font-size:11px; color:var(--text-muted);">
+      質押當時市值
+    </td>
+    <td style="font-size:13px;">$${fmt(totalAtPledge)}</td>
+    <td colspan="1"></td>
+    <td><strong style="color:${overallColor};">${totalAtPledge > 0 ? (overallChange >= 0 ? '+' : '') + overallChange.toFixed(1) + '%' : '—'}</strong></td>
     <td><strong>$${fmt(total)}</strong></td>
   `;
   tbody.appendChild(trTotal);
@@ -3736,8 +3802,11 @@ function renderCollaterals() {
   tbody.querySelectorAll('input[data-coll-idx]').forEach(inp => {
     inp.addEventListener('change', e => {
       const idx = parseInt(e.target.dataset.collIdx);
-      const val = parseFloat(e.target.value) || 0;
-      state.collaterals[idx].shares = val;
+      const field = e.target.dataset.field;
+      let val;
+      if (field === 'pledgeDate') val = e.target.value;
+      else val = parseFloat(e.target.value) || 0;
+      state.collaterals[idx][field] = val;
       saveState();
       renderLoans();
     });
@@ -4577,33 +4646,84 @@ function promptSyncShares(newPurchases) {
   // 擔保品
   document.getElementById('add-collateral').addEventListener('click', () => {
     const etf = prompt(
-      '🔒 新增擔保品\n\n標的代號？\n例如：0056、00919、00878、0050',
+      '🔒 新增擔保品\n\n步驟 1/3：標的代號？\n例如：0056、00919、00878、0050',
       ''
     );
     if (!etf || !etf.trim()) return;
     const cleanEtf = etf.trim();
     
-    // 檢查重複
     if (state.collaterals.some(c => c.etf === cleanEtf)) {
       alert(`${cleanEtf} 已在擔保品清單，可直接修改張數。`);
       return;
     }
     
-    const sharesStr = prompt(`${cleanEtf} 擔保張數？`, '10');
+    const sharesStr = prompt(`步驟 2/3：${cleanEtf} 擔保張數？`, '10');
     if (!sharesStr) return;
     const shares = parseFloat(sharesStr);
     if (!shares || shares <= 0) { alert('張數無效'); return; }
     
-    state.collaterals.push({ etf: cleanEtf, shares: shares });
+    const today = new Date().toISOString().split('T')[0];
+    const dateStr = prompt(`步驟 3/3：質押日期？\n（後續可在表格抓那一天的收盤價）`, today);
+    if (!dateStr) return;
+    
+    state.collaterals.push({ etf: cleanEtf, shares: shares, pledgeDate: dateStr, pledgePrice: 0 });
     saveState();
     renderLoans();
+    alert(`✓ 已加入 ${cleanEtf}。\n\n點「🔍 抓質押日股價」可自動帶入 ${dateStr} 收盤價。`);
   });
   
   document.getElementById('reset-collaterals').addEventListener('click', () => {
-    if (confirm('將擔保品重設為預設值（0056×30、00878×79、00919×98、0050×4）？')) {
+    if (confirm('將擔保品重設為預設值？')) {
       state.collaterals = JSON.parse(JSON.stringify(DEFAULT_COLLATERALS));
       saveState();
       renderLoans();
+    }
+  });
+  
+  // 抓質押日股價
+  document.getElementById('fetch-pledge-prices').addEventListener('click', async () => {
+    if (!state.customProxy) {
+      alert('需要先設定 Cloudflare Worker URL（在「自訂 CORS Proxy」區）才能抓歷史股價。');
+      return;
+    }
+    const targets = state.collaterals.filter(c => c.pledgeDate && (!c.pledgePrice || c.pledgePrice === 0));
+    if (targets.length === 0) {
+      if (!confirm('所有擔保品都已有質押當時價。\n要重新抓取（會覆蓋現有值）？')) return;
+      targets.push(...state.collaterals.filter(c => c.pledgeDate));
+    }
+    
+    const btn = document.getElementById('fetch-pledge-prices');
+    btn.disabled = true;
+    btn.textContent = '抓取中…';
+    
+    let successCount = 0;
+    const failures = [];
+    for (const c of targets) {
+      btn.textContent = `抓取 ${c.etf}…`;
+      const result = await fetchHistoricalPrice(c.etf, c.pledgeDate);
+      if (result) {
+        c.pledgePrice = result.price;
+        successCount++;
+        console.log(`✓ ${c.etf} ${c.pledgeDate}: $${result.price} (實際抓到 ${result.date})`);
+      } else {
+        failures.push(c.etf);
+      }
+    }
+    
+    state.collaterals.forEach((c, i) => {
+      const updated = targets.find(t => t.etf === c.etf);
+      if (updated) state.collaterals[i] = updated;
+    });
+    saveState();
+    renderLoans();
+    
+    btn.disabled = false;
+    btn.textContent = '🔍 抓質押日股價';
+    
+    if (failures.length === 0) {
+      alert(`✓ 已成功抓取 ${successCount} 檔的質押日股價。`);
+    } else {
+      alert(`⚠ ${successCount} 成功，${failures.length} 失敗：${failures.join(', ')}\n\n失敗的可能原因：日期是假日、API 暫時故障。請手動填入。`);
     }
   });
   

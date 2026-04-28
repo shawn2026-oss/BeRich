@@ -3055,13 +3055,24 @@ function updateGoals(monthly) {
         if (e.reached) {
           return `<tr>
             <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
-            <td colspan="3" style="color: var(--success); font-weight: 600;">✓ 已達標（現有 ${fmt2(e.current)} ≥ 需要 ${fmt2(e.required)} 張）</td>
+            <td colspan="2" style="color: var(--success); font-weight: 600; font-size:12px;">
+              ✓ 已達標<br>
+              <span style="color:var(--text-muted); font-weight:normal;">現有 ${fmt2(e.current)} ≥ 目標 ${fmt2(e.required)} 張</span>
+            </td>
+            <td colspan="2" style="text-align:right; color: var(--success);">—</td>
           </tr>`;
         }
         return `<tr>
           <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
-          <td>差 <strong>${fmt2(e.gap)}</strong> 張<br><span style="color:var(--text-dim);font-size:10px;">(${fmt2(e.pct)}%)</span></td>
-          <td>× $${fmt2(e.price)} <span style="color:var(--text-dim);font-size:10px;">(${priceSrc})</span></td>
+          <td style="font-size:12px;">
+            現有 <strong>${fmt2(e.current)}</strong> 張<br>
+            <span style="color:var(--text-muted);">目標 ${fmt2(e.required)} 張</span>
+          </td>
+          <td>
+            差 <strong>${fmt2(e.gap)}</strong> 張<br>
+            <span style="color:var(--text-dim);font-size:10px;">(${fmt2(e.pct)}%)</span>
+          </td>
+          <td>× $${fmt2(e.price)}<br><span style="color:var(--text-dim);font-size:10px;">(${priceSrc})</span></td>
           <td style="text-align:right;">= <strong>$${fmt(e.cost)}</strong></td>
         </tr>`;
       }).join('');
@@ -3092,7 +3103,7 @@ function updateGoals(monthly) {
         <table class="gap-table">
           ${rows}
           <tr class="gap-total-row">
-            <td colspan="3"><strong>一次達成需投入</strong></td>
+            <td colspan="4"><strong>一次達成需投入</strong></td>
             <td style="text-align:right;"><strong style="color:var(--gc);font-size:16px;">$${fmt(info.totalCost)}</strong></td>
           </tr>
         </table>

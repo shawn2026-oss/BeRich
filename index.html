@@ -707,6 +707,39 @@ details.collapsible summary:hover { color: var(--accent); }
   font-size: 22px;
 }
 
+/* === 年份切換標籤 === */
+.records-year-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 4px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  width: fit-content;
+}
+.year-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.year-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.5);
+}
+.year-tab.active {
+  background: white;
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
 /* === 大型 CTA 按鈕 === */
 .records-actions {
   display: flex;
@@ -1573,7 +1606,7 @@ details.collapsible summary:hover { color: var(--accent); }
       <div class="collapsible-body" style="padding-bottom: 0;">
         <div class="records-summary-bar">
           <div class="records-summary-item">
-            <div class="records-summary-label">YTD 已領</div>
+            <div class="records-summary-label" id="records-ytd-label">YTD 已領</div>
             <div class="records-summary-value" id="records-ytd-display">—</div>
           </div>
           <div class="records-summary-item">
@@ -1581,6 +1614,7 @@ details.collapsible summary:hover { color: var(--accent); }
             <div class="records-summary-value secondary" id="records-monthly-display">—</div>
           </div>
         </div>
+        <div id="records-year-tabs" class="records-year-tabs" style="display:none;"></div>
         <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 10px;">
           <table class="records-table">
             <thead>
@@ -2539,14 +2573,47 @@ function updateSimulation() {
 }
 
 // === 配息紀錄 ===
+// 當前選中的明細年份（預設今年）
+let _currentRecordYear = String(new Date().getFullYear());
+
 function renderRecords() {
   const tbody = document.getElementById('records-tbody');
   tbody.innerHTML = '';
+  
+  // 收集所有年份
+  const allYears = [...new Set(state.records.map(r => r.date.substring(0, 4)))].sort();
+  
+  // 渲染年份切換標籤
+  const tabsWrap = document.getElementById('records-year-tabs');
+  if (tabsWrap) {
+    if (allYears.length <= 1) {
+      tabsWrap.style.display = 'none';
+    } else {
+      tabsWrap.style.display = 'flex';
+      // 確保 _currentRecordYear 是有效年份
+      if (!allYears.includes(_currentRecordYear)) {
+        _currentRecordYear = allYears[allYears.length - 1];
+      }
+      tabsWrap.innerHTML = allYears.map(y => 
+        `<button class="year-tab ${y === _currentRecordYear ? 'active' : ''}" data-year="${y}">${y}</button>`
+      ).join('');
+      tabsWrap.querySelectorAll('.year-tab').forEach(btn => {
+        btn.addEventListener('click', e => {
+          _currentRecordYear = e.target.dataset.year;
+          renderRecords();
+        });
+      });
+    }
+  }
+  
+  // 篩選當前年份的紀錄
+  const filtered = state.records.filter(r => r.date.startsWith(_currentRecordYear + '-'));
+  
   let total = 0;
   let lastMonth = 0;
-  const cumulative = {}; // 每支ETF的累計
+  const cumulative = {};
   
-  const sorted = [...state.records].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
   sorted.forEach(rec => {
     const td = rec.shares * rec.divPerShare;
     const yp = rec.costPrice > 0 ? (rec.divPerShare * 4 / rec.costPrice * 100) : 0;
@@ -2570,17 +2637,31 @@ function renderRecords() {
     tbody.appendChild(tr);
   });
   
+  if (filtered.length === 0) {
+    const emptyRow = document.createElement('tr');
+    emptyRow.innerHTML = `<td colspan="9" style="text-align:center; padding: 24px; color: var(--text-muted);">${_currentRecordYear} 年尚無紀錄</td>`;
+    tbody.appendChild(emptyRow);
+  }
+  
+  const yearLabel = _currentRecordYear === String(new Date().getFullYear()) ? 'YTD 合計' : `${_currentRecordYear} 全年合計`;
   const trTotal = document.createElement('tr');
   trTotal.className = 'total-row';
   trTotal.innerHTML = `
-    <td colspan="6" style="text-align:right; padding-right: 16px;">YTD 合計</td>
+    <td colspan="6" style="text-align:right; padding-right: 16px;">${yearLabel}</td>
     <td style="text-align:center;">${fmt(total)}</td>
     <td colspan="2"></td>
   `;
   tbody.appendChild(trTotal);
   
+  const isCurrentYear = _currentRecordYear === String(new Date().getFullYear());
+  const monthsCovered = isCurrentYear ? (lastMonth || 1) : 12;
+  const ytdLabel = isCurrentYear ? `${_currentRecordYear} YTD 已領` : `${_currentRecordYear} 全年已領`;
+  
+  // 更新摘要 label（如果元素允許）
+  const ytdLabelEl = document.getElementById('records-ytd-label');
+  if (ytdLabelEl) ytdLabelEl.textContent = ytdLabel;
+  
   document.getElementById('records-ytd-display').textContent = fmt(total) + ' 元';
-  const monthsCovered = lastMonth || 1;
   document.getElementById('records-monthly-display').textContent = fmt(total / monthsCovered) + ' 元（' + monthsCovered + ' 個月平均）';
   
   tbody.querySelectorAll('input[data-idx]').forEach(inp => {

@@ -1458,6 +1458,38 @@ details.collapsible summary:hover { color: var(--accent); }
             <button class="btn btn-primary" id="update-prices-btn">↻ 更新股價</button>
           </div>
         </div>
+        <details style="margin-bottom: 8px;" id="github-config">
+          <summary style="font-size: 12px; color: var(--accent); cursor: pointer; padding: 6px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; font-weight: 700;">🔑 GitHub Token 設定（讓「↻ 更新股價」即時抓最新）</summary>
+          <div style="margin-top: 8px; padding: 14px; background: var(--bg-input); border-radius: 8px;">
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px;">
+              填入 <strong style="color:var(--text);">Fine-grained Personal Access Token</strong> 後，按「↻ 更新股價」會直接觸發 GitHub Actions 重新抓 Yahoo Finance，<strong>不用自己進 GitHub 點按鈕</strong>。<br>
+              <strong style="color:var(--accent);">⚠ Token 只存在你本機 localStorage，不會上傳。</strong>
+            </div>
+            <div style="display: grid; gap: 8px;">
+              <div>
+                <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">GitHub Token（github_pat_…）</label>
+                <input type="password" id="github-token" placeholder="github_pat_..." style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+              </div>
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div>
+                  <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Repo（owner/name）</label>
+                  <input type="text" id="github-repo" placeholder="shawn2026-oss/BeRich" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+                </div>
+                <div>
+                  <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Workflow 檔名</label>
+                  <input type="text" id="github-workflow" placeholder="fetch-prices.yml" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button class="btn" id="test-github-token" style="font-size: 11px;">🔍 測試 Token</button>
+                <button class="btn" id="clear-github-token" style="font-size: 11px; color: var(--danger); border-color: rgba(201, 87, 87, 0.3);">清除 Token</button>
+              </div>
+              <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6; margin-top: 6px;">
+                如何建 Token：GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate → 選 BeRich repo、Actions: Read and write
+              </div>
+            </div>
+          </div>
+        </details>
         <details style="margin-bottom: 16px;">
           <summary style="font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 4px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">⚙ 進階：自訂 CORS Proxy（如果公用 proxy 失敗）</summary>
           <div style="margin-top: 8px; padding: 12px; background: var(--bg-input); border-radius: 6px;">
@@ -1585,7 +1617,10 @@ function loadState() {
         quarterlyBoost: parsed.quarterlyBoost || 0,
         annualBonus: parsed.annualBonus || 0,
         customProxy: parsed.customProxy || '',
-        reinvestDividend: parsed.reinvestDividend === true  // 預設 false
+        reinvestDividend: parsed.reinvestDividend === true,  // 預設 false
+        githubToken: parsed.githubToken || '',
+        githubRepo: parsed.githubRepo || 'shawn2026-oss/BeRich',
+        githubWorkflow: parsed.githubWorkflow || 'fetch-prices.yml'
       };
     }
   } catch(e) { console.warn(e); }
@@ -1599,7 +1634,10 @@ function loadState() {
     quarterlyBoost: 0,
     annualBonus: 0,
     customProxy: '',
-    reinvestDividend: false
+    reinvestDividend: false,
+    githubToken: '',
+    githubRepo: 'shawn2026-oss/BeRich',
+    githubWorkflow: 'fetch-prices.yml'
   };
 }
 
@@ -2381,23 +2419,42 @@ async function tryFetchLocalPrices() {
 }
 
 async function fetchYahooPrice(symbol) {
-  // 優先從本地 prices.json（GitHub Actions 抓的，無 CORS 問題）
-  const local = await tryFetchLocalPrices();
-  if (local && local.prices && typeof local.prices[symbol] === 'number') {
-    return local.prices[symbol];
-  }
-  
-  // 後備：CORS proxy
   const ticker = YAHOO_TICKERS[symbol] || symbol;
   const tickerWithSuffix = ticker + '.TW';
   const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${tickerWithSuffix}?interval=1d&range=1d`;
   
+  // 1. 優先：自訂 Cloudflare Worker（即時打 Yahoo）
+  if (state.customProxy) {
+    try {
+      const url = `${state.customProxy}?url=${encodeURIComponent(targetUrl)}`;
+      const res = await fetchWithTimeout(url, 8000);
+      if (res.ok) {
+        const data = await res.json();
+        const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+        if (typeof price === 'number') {
+          console.log(`✓ ${symbol}: ${price} (via Worker)`);
+          return price;
+        }
+      }
+      console.warn('Worker HTTP error:', res.status);
+    } catch(e) {
+      console.warn('Worker fail:', e.message);
+    }
+  }
+  
+  // 2. 後備：本地 prices.json（GitHub Actions 抓的）
+  const local = await tryFetchLocalPrices();
+  if (local && local.prices && typeof local.prices[symbol] === 'number') {
+    console.log(`✓ ${symbol}: ${local.prices[symbol]} (via local prices.json)`);
+    return local.prices[symbol];
+  }
+  
+  // 3. 最後：公用 CORS proxy
   const proxies = [
-    state.customProxy ? `${state.customProxy}?url=${encodeURIComponent(targetUrl)}` : null,
     `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
     `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
     `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
-  ].filter(Boolean);
+  ];
   
   for (const url of proxies) {
     try {
@@ -2438,29 +2495,75 @@ async function updateAllPrices() {
       b.textContent = '更新中…';
     }
   });
-  setStatus('正在抓取股價...', 'var(--text-muted)');
   
-  // 重置本地 prices.json 的快取（強制重新抓取）
+  // 先記下目前 prices.json 的時間（之後判斷是否更新）
+  let oldUpdatedAt = state.priceUpdatedAt;
+  try {
+    const cur = await fetch('./prices.json?t=' + Date.now());
+    if (cur.ok) {
+      const data = await cur.json();
+      oldUpdatedAt = data.updatedAt;
+    }
+  } catch(e) {}
+  
+  // 有 GitHub Token → 走「真的觸發 Actions」路線
+  if (state.githubToken) {
+    setStatus('🚀 觸發 GitHub Actions...', 'var(--text-muted)');
+    const triggered = await triggerGitHubWorkflow();
+    
+    if (triggered) {
+      setStatus('⏳ Actions 已啟動，等待新股價...', 'var(--text-muted)');
+      const newData = await waitForNewPrices(oldUpdatedAt, 90);
+      
+      if (newData) {
+        // 套用新資料
+        Object.entries(newData.prices).forEach(([sym, price]) => {
+          if (typeof price === 'number') {
+            state.latestPrices[sym] = price;
+            if (['0056', '00919', '00878'].includes(sym)) {
+              state.pillars[sym].price = price;
+            }
+          }
+        });
+        state.priceUpdatedAt = newData.updatedAt;
+        saveState();
+        
+        const dt = new Date(newData.updatedAt);
+        setStatus(`✓ 剛抓到最新（${dt.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' })}）`, 'var(--success)');
+        renderPillars();
+        renderSimPillars();
+        renderPurchaseSummary();
+        updateAll();
+      } else {
+        setStatus('⚠ 等了 90 秒沒收到新資料，請去 GitHub Actions 看是否成功', 'var(--warning)');
+      }
+      
+      [btn, topBtn].forEach(b => { if (b) { b.disabled = false; b.textContent = '↻ 更新股價'; } });
+      return;
+    }
+  }
+  
+  // 沒 Token → 走「直接 fetch」路線（會優先用 Cloudflare Worker）
+  setStatus(state.customProxy ? '🚀 透過 Cloudflare Worker 抓取...' : '讀取本地 prices.json...', 'var(--text-muted)');
   _localPricesCache = null;
   
-  // 收集要抓的標的：三本柱 + 買入紀錄裡的所有獨特標的
   const symbols = new Set(['0056', '00919', '00878', '0050', '台積電']);
   state.purchases.forEach(p => symbols.add(p.etf));
   
   const results = {};
+  let viaWorker = false;
   for (const sym of symbols) {
     if (!YAHOO_TICKERS[sym]) {
       results[sym] = null;
       continue;
     }
     results[sym] = await fetchYahooPrice(sym);
+    if (state.customProxy && results[sym] !== null) viaWorker = true;
   }
   
-  // 更新 state
   Object.entries(results).forEach(([sym, price]) => {
     if (price !== null) {
       state.latestPrices[sym] = price;
-      // 三本柱自動套用到試算股價
       if (['0056', '00919', '00878'].includes(sym)) {
         state.pillars[sym].price = price;
       }
@@ -2472,31 +2575,29 @@ async function updateAllPrices() {
   const successes = Object.entries(results).filter(([k, v]) => v !== null);
   const failures = Object.entries(results).filter(([k, v]) => v === null);
   
-  // 判斷資料來源
-  const local = _localPricesCache;
+  const now = new Date().toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' });
   let source = '';
-  if (local && local.prices && local.updatedAt) {
-    const dt = new Date(local.updatedAt);
-    source = ` (本地 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })})`;
-  } else if (successes.length > 0) {
-    source = ' (CORS proxy)';
+  if (viaWorker) {
+    source = ` (Cloudflare Worker · ${now})`;
+  } else {
+    const local = _localPricesCache;
+    if (local && local.prices && local.updatedAt) {
+      const dt = new Date(local.updatedAt);
+      source = ` (本地 prices.json ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })})`;
+    } else if (successes.length > 0) {
+      source = ' (公用 CORS proxy)';
+    }
   }
   
   if (failures.length === 0) {
-    setStatus(`✓ 已更新${source}`, 'var(--success)');
+    setStatus(`✓ 即時${source}`, 'var(--success)');
   } else if (successes.length > 0) {
     setStatus(`⚠ ${successes.length}/${successes.length + failures.length} 成功${source}`, 'var(--warning)');
-    console.warn('Failed symbols:', failures.map(([k]) => k).join(', '));
   } else {
-    setStatus('✗ 全部失敗', 'var(--danger)');
+    setStatus('✗ 全部失敗（請設 GitHub Token）', 'var(--danger)');
   }
   
-  [btn, topBtn].forEach(b => {
-    if (b) {
-      b.disabled = false;
-      b.textContent = '↻ 更新股價';
-    }
-  });
+  [btn, topBtn].forEach(b => { if (b) { b.disabled = false; b.textContent = '↻ 更新股價'; } });
   renderPillars();
   renderSimPillars();
   renderPurchaseSummary();
@@ -2505,6 +2606,11 @@ async function updateAllPrices() {
 
 // === 自動載入本地 prices.json（不需要按按鈕） ===
 async function autoLoadLocalPrices() {
+  // 如果有設定 Cloudflare Worker，跳過自動載入（因為使用者按按鈕會走 Worker 取最新）
+  if (state.customProxy) {
+    console.log('已設定 Cloudflare Worker，跳過自動載入 prices.json');
+    return;
+  }
   try {
     const local = await tryFetchLocalPrices();
     if (local && local.prices) {
@@ -2524,12 +2630,30 @@ async function autoLoadLocalPrices() {
         saveState();
         // 顯示時間（兩個status同步）
         const dt = new Date(local.updatedAt);
-        const txt = `✓ ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`;
+        const now = new Date();
+        const diffMin = Math.floor((now - dt) / 60000);
+        const diffHr = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHr / 24);
+        
+        let relative;
+        if (diffMin < 5) relative = '剛剛';
+        else if (diffMin < 60) relative = `${diffMin} 分鐘前`;
+        else if (diffHr < 24) relative = `${diffHr} 小時前`;
+        else relative = `${diffDay} 天前`;
+        
+        const absolute = dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const txt = `📊 ${relative}的收盤/盤中價（${absolute}）`;
+        
+        // 1小時內綠、6小時內琥珀、超過則灰
+        const color = diffHr < 1 ? 'var(--success)' 
+                    : diffHr < 6 ? 'var(--warning)' 
+                    : 'var(--text-dim)';
+        
         ['price-status', 'price-status-top'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             el.textContent = txt;
-            el.style.color = 'var(--success)';
+            el.style.color = color;
           }
         });
         // 重新渲染
@@ -2537,12 +2661,92 @@ async function autoLoadLocalPrices() {
         renderSimPillars();
         renderPurchaseSummary();
         updateAll();
-        console.log(`✓ 自動載入 ${updated} 檔股價`);
+        console.log(`✓ 自動載入 ${updated} 檔股價，更新時間 ${absolute} (${relative})`);
       }
     }
   } catch(e) {
     console.log('autoLoadLocalPrices error:', e);
   }
+}
+
+// === 觸發 GitHub Actions 重抓股價 ===
+async function triggerGitHubWorkflow() {
+  if (!state.githubToken) {
+    alert(
+      '尚未設定 GitHub Token。\n\n' +
+      '需要 Token 才能觸發 GitHub Actions 重新抓股價。\n' +
+      '點下方「⚙ Token 設定」展開設定區。'
+    );
+    document.getElementById('github-config').open = true;
+    return false;
+  }
+  
+  const url = `https://api.github.com/repos/${state.githubRepo}/actions/workflows/${state.githubWorkflow}/dispatches`;
+  
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${state.githubToken}`,
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      body: JSON.stringify({ ref: 'main' })
+    });
+    
+    if (res.status === 204) {
+      console.log('✓ Workflow triggered');
+      return true;
+    }
+    const errText = await res.text();
+    console.warn('Trigger failed:', res.status, errText);
+    if (res.status === 401) {
+      alert('GitHub Token 失效或錯誤。請到「⚙ Token 設定」重新填入。');
+    } else if (res.status === 404) {
+      alert(`找不到 workflow。請確認：\n- Repo: ${state.githubRepo}\n- Workflow 檔名: ${state.githubWorkflow}`);
+    } else if (res.status === 403) {
+      alert('Token 權限不足。請確認 Token 有 Actions: Read and write 權限。');
+    } else {
+      alert(`觸發失敗：HTTP ${res.status}\n${errText.substring(0, 200)}`);
+    }
+    return false;
+  } catch(e) {
+    console.error('Trigger error:', e);
+    alert('觸發失敗：' + e.message);
+    return false;
+  }
+}
+
+// === 等待新 prices.json（輪詢） ===
+async function waitForNewPrices(oldUpdatedAt, maxSec = 90) {
+  const setStatus = (text, color) => {
+    ['price-status', 'price-status-top'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = text;
+        el.style.color = color;
+      }
+    });
+  };
+  
+  for (let i = 0; i < maxSec / 5; i++) {
+    setStatus(`⏳ 抓取中…（已等 ${i * 5} 秒，預計 30-60 秒）`, 'var(--text-muted)');
+    await new Promise(r => setTimeout(r, 5000));
+    
+    // 強制重抓 prices.json（避免快取）
+    _localPricesCache = null;
+    try {
+      const res = await fetch('./prices.json?t=' + Date.now());
+      if (res.ok) {
+        const data = await res.json();
+        if (data.updatedAt && data.updatedAt !== oldUpdatedAt) {
+          console.log('✓ New prices.json detected:', data.updatedAt);
+          return data;
+        }
+      }
+    } catch(e) {}
+  }
+  return null;
 }
 
 // === Master update ===
@@ -2975,6 +3179,72 @@ function openQuickAllDialog() {
     e.target.value = val;
     saveState();
   });
+  
+  // GitHub Token 設定
+  const tokenInput = document.getElementById('github-token');
+  const repoInput = document.getElementById('github-repo');
+  const workflowInput = document.getElementById('github-workflow');
+  if (tokenInput) {
+    tokenInput.value = state.githubToken || '';
+    tokenInput.addEventListener('change', e => {
+      state.githubToken = e.target.value.trim();
+      saveState();
+    });
+  }
+  if (repoInput) {
+    repoInput.value = state.githubRepo || 'shawn2026-oss/BeRich';
+    repoInput.addEventListener('change', e => {
+      state.githubRepo = e.target.value.trim();
+      saveState();
+    });
+  }
+  if (workflowInput) {
+    workflowInput.value = state.githubWorkflow || 'fetch-prices.yml';
+    workflowInput.addEventListener('change', e => {
+      state.githubWorkflow = e.target.value.trim();
+      saveState();
+    });
+  }
+  
+  // 測試 Token
+  const testBtn = document.getElementById('test-github-token');
+  if (testBtn) {
+    testBtn.addEventListener('click', async () => {
+      if (!state.githubToken) {
+        alert('請先填入 Token');
+        return;
+      }
+      testBtn.disabled = true;
+      testBtn.textContent = '測試中…';
+      try {
+        const res = await fetch(`https://api.github.com/repos/${state.githubRepo}`, {
+          headers: { 'Authorization': `Bearer ${state.githubToken}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          alert(`✓ Token 有效！\n可存取 repo: ${data.full_name}\n\n現在按「↻ 更新股價」會自動觸發 Actions。`);
+        } else {
+          alert(`✗ Token 無效或權限不足（HTTP ${res.status}）\n請重新建立 Token`);
+        }
+      } catch(e) {
+        alert('✗ 測試失敗：' + e.message);
+      }
+      testBtn.disabled = false;
+      testBtn.textContent = '🔍 測試 Token';
+    });
+  }
+  
+  // 清除 Token
+  const clearBtn = document.getElementById('clear-github-token');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (confirm('清除 Token？之後「↻ 更新股價」只會讀現有 prices.json，不會即時觸發抓取。')) {
+        state.githubToken = '';
+        saveState();
+        if (tokenInput) tokenInput.value = '';
+      }
+    });
+  }
   
   // 顯示上次更新時間（autoLoadLocalPrices 會覆蓋）
   if (state.priceUpdatedAt) {

@@ -1163,11 +1163,11 @@ details.collapsible summary:hover { color: var(--accent); }
   line-height: 1.5;
 }
 .ratio-input {
-  width: 60px;
+  width: 80px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 5px;
-  padding: 2px 6px;
+  padding: 2px 8px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 22px;
   font-weight: 700;
@@ -1175,11 +1175,11 @@ details.collapsible summary:hover { color: var(--accent); }
   text-align: right;
 }
 .ratio-input-small {
-  width: 40px;
+  width: 56px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 1px 4px;
+  padding: 1px 6px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: var(--text);
@@ -1234,10 +1234,10 @@ details.collapsible summary:hover { color: var(--accent); }
   padding: 4px 6px;
   text-align: center;
   border-radius: 4px;
-  width: 100px;
+  width: 110px;
 }
-.loan-input-small { width: 50px; }
-.loan-input-text { width: 180px; text-align: left; }
+.loan-input-small { width: 60px; }
+.loan-input-text { width: 200px; text-align: left; }
 .loan-input:hover { border-color: var(--border); background: var(--bg-input); }
 .loan-input:focus {
   outline: none;
@@ -1331,6 +1331,49 @@ details.collapsible summary:hover { color: var(--accent); }
 .stress-table tr.stress-ok td { color: var(--success); }
 .stress-table tr.stress-warn td { color: var(--warning); background: rgba(232, 145, 106, 0.05); }
 .stress-table tr.stress-danger td { color: var(--danger); background: rgba(231, 111, 111, 0.05); font-weight: 600; }
+.stress-table tr.stress-current td { 
+  background: linear-gradient(90deg, rgba(212, 168, 87, 0.15) 0%, rgba(212, 168, 87, 0.08) 100%); 
+  font-weight: 700;
+  border-top: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+.stress-table tr.stress-current td:first-child::before {
+  content: '▶ ';
+  color: var(--accent);
+}
+.stress-table tr.stress-warning-line td { 
+  background: rgba(231, 111, 111, 0.1); 
+  border-top: 1px dashed var(--danger);
+  font-weight: 600;
+  color: var(--danger);
+}
+
+/* 維持率試算頭部大字 */
+.stress-headline {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(74, 157, 94, 0.08) 0%, rgba(74, 157, 94, 0.04) 100%);
+  border: 1px solid rgba(74, 157, 94, 0.25);
+  border-left: 4px solid var(--success);
+  border-radius: 0 10px 10px 0;
+  margin-bottom: 14px;
+}
+.stress-headline-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--success);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.stress-headline-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
 
 /* === ETF 可編輯標的 === */
 .etf-input {
@@ -1924,6 +1967,30 @@ details.collapsible summary:hover { color: var(--accent); }
           <button class="btn" id="reset-loans" style="margin-left:auto;">↻ 重設預設</button>
         </div>
         
+        <!-- 擔保品清單 -->
+        <div class="loan-section-label" style="margin-top:24px;">🔒 擔保品清單（已質押的張數）</div>
+        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 10px;">
+          <table class="loan-table">
+            <thead>
+              <tr>
+                <th style="width:30px;"></th>
+                <th>標的</th>
+                <th>已擔保張數</th>
+                <th>最新股價</th>
+                <th>估算市值</th>
+              </tr>
+            </thead>
+            <tbody id="collateral-tbody"></tbody>
+          </table>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn-cta btn-cta-primary" id="add-collateral">＋ 新增擔保品</button>
+          <button class="btn" id="reset-collaterals" style="margin-left:auto;">↻ 重設預設</button>
+        </div>
+        <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-input); border-radius: 6px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+          💡 <strong style="color:var(--text);">機制：</strong>只有「已擔保」的股票會算入維持率。每月 DCA 買的新股 <strong>不會自動進擔保</strong>，要主動到永豐 App 申請增加擔保張數，再回來這裡更新。
+        </div>
+        
         <!-- C. 利息 vs 配息 -->
         <div class="loan-section-label" style="margin-top:24px;">💰 利息 vs 配息現金流</div>
         <div class="loan-cashflow" id="loan-cashflow"></div>
@@ -1931,10 +1998,6 @@ details.collapsible summary:hover { color: var(--accent); }
         <!-- D. 維持率試算 -->
         <div class="loan-section-label" style="margin-top:24px;">📉 維持率變化試算</div>
         <div class="loan-stress" id="loan-stress"></div>
-        
-        <div style="margin-top: 16px; padding: 10px 14px; background: var(--bg-input); border-radius: 6px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-          <strong style="color: var(--text);">提醒：</strong>維持率資料需手動填入（在「總覽卡片」可編輯）。系統不會即時抓券商實際維持率，所有試算依「目前維持率」推估。
-        </div>
       </div>
     </details>
   </section>
@@ -2327,6 +2390,14 @@ const DEFAULT_LOANS = [
   }
 ];
 
+// 擔保品預設值（Shawn 2026/04 永豐截圖）
+const DEFAULT_COLLATERALS = [
+  { etf: '0056', shares: 30 },
+  { etf: '00878', shares: 79 },
+  { etf: '00919', shares: 98 },
+  { etf: '0050', shares: 4 }
+];
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -2348,7 +2419,8 @@ function loadState() {
         githubWorkflow: parsed.githubWorkflow || 'fetch-prices.yml',
         watchlist: parsed.watchlist || ['0050', '台積電'],
         loans: parsed.loans || JSON.parse(JSON.stringify(DEFAULT_LOANS)),
-        loanSettings: parsed.loanSettings || { warningRatio: 130, currentRatio: 190 }
+        collaterals: parsed.collaterals || JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
+        loanSettings: parsed.loanSettings || { warningRatio: 130 }
       };
     }
   } catch(e) { console.warn(e); }
@@ -2368,7 +2440,8 @@ function loadState() {
     githubWorkflow: 'fetch-prices.yml',
     watchlist: ['0050', '台積電'],
     loans: JSON.parse(JSON.stringify(DEFAULT_LOANS)),
-    loanSettings: { warningRatio: 130, currentRatio: 190 }
+    collaterals: JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
+    loanSettings: { warningRatio: 130 }
   };
 }
 
@@ -3534,9 +3607,31 @@ function renderWatchlist() {
 // === 觀察股清單 結束 ===
 
 // === 質押系統 ===
+function computeCollateralValue() {
+  // 計算擔保品總市值（用最新股價）
+  const collaterals = state.collaterals || [];
+  let total = 0;
+  const details = collaterals.map(c => {
+    const price = state.latestPrices[c.etf] || 0;
+    const value = c.shares * 1000 * price;
+    total += value;
+    return { ...c, price, value };
+  });
+  return { total, details };
+}
+
+function computeMaintenanceRatio() {
+  // 整戶維持率 = 擔保品總市值 / 借款總額 × 100
+  const { total: collateralValue } = computeCollateralValue();
+  const loanTotal = (state.loans || []).reduce((s, l) => s + (l.amount || 0), 0);
+  if (loanTotal <= 0) return null;
+  return collateralValue / loanTotal * 100;
+}
+
 function renderLoans() {
   renderLoanOverview();
   renderLoanTable();
+  renderCollaterals();
   renderLoanCashflow();
   renderLoanStress();
 }
@@ -3548,14 +3643,20 @@ function renderLoanOverview() {
   const loans = state.loans || [];
   const totalAmount = loans.reduce((s, l) => s + (l.amount || 0), 0);
   const monthlyInterest = loans.reduce((s, l) => s + (l.amount * l.rate / 100 / 12), 0);
+  const avgRate = loans.length > 0 ? (loans.reduce((s,l) => s + l.rate, 0) / loans.length) : 0;
   
-  // 找最近到期（每筆借款半年到期一次）
+  // 自動計算維持率
+  const ratio = computeMaintenanceRatio();
+  const warn = state.loanSettings?.warningRatio || 130;
+  const buffer = ratio !== null ? ratio - warn : 0;
+  const ratioColor = !ratio ? 'var(--text-dim)' 
+                   : ratio < warn ? 'var(--danger)' 
+                   : ratio < warn + 30 ? 'var(--warning)' 
+                   : 'var(--success)';
+  
+  // 找最近到期
   const nextDue = computeNextLoanDue(loans);
   const daysToNext = nextDue ? Math.ceil((nextDue.dueDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
-  
-  const cur = state.loanSettings?.currentRatio || 190;
-  const warn = state.loanSettings?.warningRatio || 130;
-  const buffer = cur - warn;
   
   wrap.innerHTML = `
     <div class="loan-card">
@@ -3566,17 +3667,15 @@ function renderLoanOverview() {
     <div class="loan-card">
       <div class="loan-card-label">月利息</div>
       <div class="loan-card-value">$${fmt(monthlyInterest)}</div>
-      <div class="loan-card-meta">平均利率 ${loans.length > 0 ? (loans.reduce((s,l) => s + l.rate, 0) / loans.length).toFixed(2) : 0}%</div>
+      <div class="loan-card-meta">平均利率 ${avgRate.toFixed(2)}%</div>
     </div>
     <div class="loan-card">
-      <div class="loan-card-label">維持率（手動填入）</div>
-      <div class="loan-card-value">
-        <input type="number" id="current-ratio-input" value="${cur}" min="100" max="500" step="1" class="ratio-input">%
-      </div>
+      <div class="loan-card-label">整戶維持率（自動算）</div>
+      <div class="loan-card-value" style="color:${ratioColor};">${ratio !== null ? ratio.toFixed(0) + '%' : '—'}</div>
       <div class="loan-card-meta">
         警戒
         <input type="number" id="warning-ratio-input" value="${warn}" min="100" max="200" step="1" class="ratio-input-small">%
-        ｜緩衝 <strong style="color:${buffer < 30 ? 'var(--danger)' : buffer < 60 ? 'var(--warning)' : 'var(--success)'};">${buffer}%</strong>
+        ｜緩衝 <strong style="color:${buffer < 30 ? 'var(--danger)' : buffer < 60 ? 'var(--warning)' : 'var(--success)'};">${buffer >= 0 ? '+' : ''}${buffer.toFixed(0)}%</strong>
       </div>
     </div>
     <div class="loan-card">
@@ -3590,14 +3689,7 @@ function renderLoanOverview() {
     </div>
   `;
   
-  // 綁定維持率輸入
-  const curInp = document.getElementById('current-ratio-input');
   const warnInp = document.getElementById('warning-ratio-input');
-  if (curInp) curInp.addEventListener('change', e => {
-    state.loanSettings.currentRatio = parseFloat(e.target.value) || 190;
-    saveState();
-    renderLoans();
-  });
   if (warnInp) warnInp.addEventListener('change', e => {
     state.loanSettings.warningRatio = parseFloat(e.target.value) || 130;
     saveState();
@@ -3605,8 +3697,66 @@ function renderLoanOverview() {
   });
 }
 
+function renderCollaterals() {
+  const tbody = document.getElementById('collateral-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  const { details, total } = computeCollateralValue();
+  
+  if (details.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">尚無擔保品。點「+ 新增擔保品」開始登記。</td></tr>';
+    return;
+  }
+  
+  details.forEach((c, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><button class="delete-btn" data-coll-idx="${idx}" title="刪除">×</button></td>
+      <td><span class="etf-mini ${getEtfClass(c.etf)}">${c.etf}</span></td>
+      <td><input type="number" value="${c.shares}" data-coll-idx="${idx}" data-field="shares" step="1" min="0" class="loan-input loan-input-small"></td>
+      <td>$${c.price > 0 ? fmt2(c.price) : '—'}</td>
+      <td><strong>$${fmt(c.value)}</strong></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  // 合計
+  const trTotal = document.createElement('tr');
+  trTotal.className = 'loan-total-row';
+  trTotal.innerHTML = `
+    <td></td>
+    <td>合計</td>
+    <td colspan="2" style="text-align:right; padding-right:16px;">擔保品市值</td>
+    <td><strong>$${fmt(total)}</strong></td>
+  `;
+  tbody.appendChild(trTotal);
+  
+  // 綁定編輯
+  tbody.querySelectorAll('input[data-coll-idx]').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const idx = parseInt(e.target.dataset.collIdx);
+      const val = parseFloat(e.target.value) || 0;
+      state.collaterals[idx].shares = val;
+      saveState();
+      renderLoans();
+    });
+  });
+  // 刪除
+  tbody.querySelectorAll('.delete-btn').forEach(b => {
+    b.addEventListener('click', e => {
+      const idx = parseInt(e.target.dataset.collIdx);
+      const c = state.collaterals[idx];
+      if (confirm(`刪除擔保品 ${c.etf}（${c.shares} 張）？`)) {
+        state.collaterals.splice(idx, 1);
+        saveState();
+        renderLoans();
+      }
+    });
+  });
+}
+
 function computeNextLoanDue(loans) {
-  // 每筆借款的下次到期 = 借款日 + (展延次數+1) × 6個月
   let nearest = null;
   loans.forEach(l => {
     const borrow = new Date(l.borrowDate);
@@ -3674,7 +3824,6 @@ function renderLoanTable() {
     tbody.appendChild(tr);
   });
   
-  // 合計列
   const total = loans.reduce((s, l) => s + l.amount, 0);
   const trTotal = document.createElement('tr');
   trTotal.className = 'loan-total-row';
@@ -3686,7 +3835,6 @@ function renderLoanTable() {
   `;
   tbody.appendChild(trTotal);
   
-  // 綁定編輯
   tbody.querySelectorAll('input[data-loan-idx]').forEach(inp => {
     inp.addEventListener('change', e => {
       const idx = parseInt(e.target.dataset.loanIdx);
@@ -3699,7 +3847,6 @@ function renderLoanTable() {
       renderLoans();
     });
   });
-  // 刪除
   tbody.querySelectorAll('.delete-btn').forEach(b => {
     b.addEventListener('click', e => {
       const idx = parseInt(e.target.dataset.loanIdx);
@@ -3719,7 +3866,6 @@ function renderLoanCashflow() {
   const loans = state.loans || [];
   const monthlyInterest = loans.reduce((s, l) => s + (l.amount * l.rate / 100 / 12), 0);
   
-  // 計算月配息（用最新一年的紀錄取年化月均）
   const currentYear = String(new Date().getFullYear());
   const thisYearRecords = state.records.filter(r => r.date.startsWith(currentYear + '-'));
   let monthlyDividend = 0;
@@ -3755,24 +3901,69 @@ function renderLoanStress() {
   const wrap = document.getElementById('loan-stress');
   if (!wrap) return;
   
-  const cur = state.loanSettings?.currentRatio || 190;
+  const cur = computeMaintenanceRatio();
   const warn = state.loanSettings?.warningRatio || 130;
   
-  // 模擬股價下跌時維持率變化
-  // 維持率 = 質押市值 / 借款 × 100
-  // 假設質押市值 = 借款 × 維持率/100
-  // 股價下跌 X% → 新市值 = 原市值 × (1-X) → 新維持率 = 原維持率 × (1-X)
-  const drops = [5, 10, 15, 20, 25, 30, 40, 50];
+  if (cur === null) {
+    wrap.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted); background:var(--bg-card); border:1px dashed var(--border-strong); border-radius:10px;">尚無借款資料，無法試算</div>';
+    return;
+  }
+  
+  // 漲跌情境（從漲到跌排序）
+  const scenarios = [
+    { change: 30, label: '+30%' },
+    { change: 20, label: '+20%' },
+    { change: 10, label: '+10%' },
+    { change: 5, label: '+5%' },
+    { change: 0, label: '目前', isCurrent: true },
+    { change: -5, label: '-5%' },
+    { change: -10, label: '-10%' },
+    { change: -15, label: '-15%' },
+    { change: -20, label: '-20%' },
+    { change: -25, label: '-25%' },
+    { change: -30, label: '-30%' }
+  ];
+  
+  // 算「能跌幾趴才到警戒」
+  const dropToWarn = (1 - warn / cur) * 100; // 例如 193 → 130，要跌 32.6%
+  
+  // 加一個警戒線數據點
+  if (dropToWarn > 0 && dropToWarn < 50) {
+    scenarios.push({ change: -dropToWarn, label: `${(-dropToWarn).toFixed(1)}%`, isWarning: true });
+  }
+  
+  // 排序：從大到小
+  scenarios.sort((a, b) => b.change - a.change);
   
   let rows = '';
-  drops.forEach(drop => {
-    const newRatio = cur * (1 - drop / 100);
+  scenarios.forEach(s => {
+    const newRatio = cur * (1 + s.change / 100);
     const distance = newRatio - warn;
     const status = newRatio < warn ? 'danger' : newRatio < warn + 20 ? 'warn' : 'ok';
-    const statusText = newRatio < warn ? '⚠ 跌破警戒' : newRatio < warn + 20 ? '靠近警戒' : '安全';
+    let statusText, classes;
+    if (s.isCurrent) {
+      statusText = '🟢 目前位置';
+      classes = 'stress-current';
+    } else if (s.isWarning) {
+      statusText = '🔴 警戒線';
+      classes = 'stress-warning-line';
+    } else if (newRatio < warn) {
+      statusText = '🔴 跌破警戒';
+      classes = 'stress-danger';
+    } else if (newRatio < warn + 20) {
+      statusText = '🟡 靠近警戒';
+      classes = 'stress-warn';
+    } else if (s.change >= 0) {
+      statusText = '🟢 寬裕';
+      classes = 'stress-ok';
+    } else {
+      statusText = '🟢 安全';
+      classes = 'stress-ok';
+    }
+    
     rows += `
-      <tr class="stress-${status}">
-        <td>−${drop}%</td>
+      <tr class="${classes}">
+        <td>${s.label}</td>
         <td><strong>${newRatio.toFixed(0)}%</strong></td>
         <td>${distance >= 0 ? '+' : ''}${distance.toFixed(0)}%</td>
         <td>${statusText}</td>
@@ -3780,11 +3971,22 @@ function renderLoanStress() {
     `;
   });
   
+  // 上方加一個重點訊息
+  const dropToWarnRounded = dropToWarn.toFixed(1);
+  const buffer = cur - warn;
+  
   wrap.innerHTML = `
+    <div class="stress-headline">
+      <div class="stress-headline-num">${dropToWarnRounded}<span style="font-size:60%;">%</span></div>
+      <div class="stress-headline-text">
+        <strong>距警戒線可承受跌幅</strong><br>
+        <span style="color:var(--text-muted); font-size:12px;">擔保品市值還能跌 ${dropToWarnRounded}% 才會觸警戒（${cur.toFixed(0)}% → ${warn}%）</span>
+      </div>
+    </div>
     <table class="stress-table">
       <thead>
         <tr>
-          <th>股價跌幅</th>
+          <th>股價變動</th>
           <th>預估維持率</th>
           <th>距警戒</th>
           <th>狀態</th>
@@ -3793,7 +3995,7 @@ function renderLoanStress() {
       <tbody>${rows}</tbody>
     </table>
     <div style="font-size:11px; color:var(--text-muted); margin-top:8px; line-height:1.6;">
-      💡 假設質押標的等比例下跌。實際維持率還受質押標的種類與券商計算規則影響，這只是粗略估算。
+      💡 假設擔保品（已質押的標的）等比例漲跌。實際維持率還受券商計算規則影響，這是粗略估算。
     </div>
   `;
 }
@@ -4367,6 +4569,39 @@ function promptSyncShares(newPurchases) {
   document.getElementById('reset-loans').addEventListener('click', () => {
     if (confirm('將借款資料重設為預設值（你的 4 筆 305.6 萬）？\n目前資料會被覆蓋。')) {
       state.loans = JSON.parse(JSON.stringify(DEFAULT_LOANS));
+      saveState();
+      renderLoans();
+    }
+  });
+  
+  // 擔保品
+  document.getElementById('add-collateral').addEventListener('click', () => {
+    const etf = prompt(
+      '🔒 新增擔保品\n\n標的代號？\n例如：0056、00919、00878、0050',
+      ''
+    );
+    if (!etf || !etf.trim()) return;
+    const cleanEtf = etf.trim();
+    
+    // 檢查重複
+    if (state.collaterals.some(c => c.etf === cleanEtf)) {
+      alert(`${cleanEtf} 已在擔保品清單，可直接修改張數。`);
+      return;
+    }
+    
+    const sharesStr = prompt(`${cleanEtf} 擔保張數？`, '10');
+    if (!sharesStr) return;
+    const shares = parseFloat(sharesStr);
+    if (!shares || shares <= 0) { alert('張數無效'); return; }
+    
+    state.collaterals.push({ etf: cleanEtf, shares: shares });
+    saveState();
+    renderLoans();
+  });
+  
+  document.getElementById('reset-collaterals').addEventListener('click', () => {
+    if (confirm('將擔保品重設為預設值（0056×30、00878×79、00919×98、0050×4）？')) {
+      state.collaterals = JSON.parse(JSON.stringify(DEFAULT_COLLATERALS));
       saveState();
       renderLoans();
     }

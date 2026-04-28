@@ -1486,6 +1486,144 @@ details[open] .loan-card-summary::after { content: '−'; }
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* === 質押系統精簡總結卡片 === */
+.loan-summary-card {
+  background: linear-gradient(135deg, #fffaf0 0%, #f5e9d0 100%);
+  border: 1px solid rgba(212, 168, 87, 0.4);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-md);
+}
+.lsum-empty {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.lsum-main {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.lsum-ratio-block {
+  flex-shrink: 0;
+  text-align: center;
+  padding-right: 24px;
+  border-right: 2px solid rgba(212, 168, 87, 0.25);
+}
+@media (max-width: 600px) {
+  .lsum-ratio-block { 
+    border-right: none; 
+    border-bottom: 2px solid rgba(212, 168, 87, 0.25);
+    padding-right: 0;
+    padding-bottom: 16px;
+    width: 100%;
+  }
+}
+.lsum-ratio-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.lsum-ratio-pct {
+  font-size: 28px;
+  margin-left: 2px;
+  opacity: 0.85;
+}
+.lsum-ratio-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.lsum-stats {
+  flex: 1;
+  min-width: 200px;
+  display: grid;
+  gap: 8px;
+}
+.lsum-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(212, 168, 87, 0.15);
+}
+.lsum-stat-row:last-child { border-bottom: none; }
+.lsum-stat-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.lsum-stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.lsum-stress-line {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(212, 168, 87, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.lsum-stress-icon { font-size: 24px; flex-shrink: 0; }
+.lsum-stress-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  flex: 1;
+}
+.lsum-stress-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* 「看詳細」摺疊區 */
+.loan-details-section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 4px;
+}
+.loan-details-section > summary {
+  padding: 14px 18px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.loan-details-section > summary::-webkit-details-marker { display: none; }
+.loan-details-section > summary::after {
+  content: '＋';
+  font-size: 18px;
+  color: var(--accent);
+}
+.loan-details-section[open] > summary::after { content: '−'; }
+.loan-details-section[open] > summary { 
+  border-bottom: 1px solid var(--border);
+}
+.loan-details-section > div { padding: 0 18px 18px; }
+
 /* 維持率試算頭部大字 */
 .stress-headline {
   display: flex;
@@ -2077,48 +2215,54 @@ details[open] .loan-card-summary::after { content: '−'; }
       <summary>🏦 質押系統</summary>
       <div class="collapsible-body" style="padding-bottom: 0;">
         
-        <!-- A. 總覽卡片 -->
-        <div class="loan-overview" id="loan-overview"></div>
+        <!-- 簡潔總結卡片 -->
+        <div class="loan-summary-card" id="loan-summary-card"></div>
         
-        <!-- B. 擔保品總覽（按標的合併） -->
-        <div class="loan-section-label" style="margin-top:24px;">🔒 擔保品總覽（按標的合併）</div>
-        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 10px;">
-          <table class="loan-table">
-            <thead>
-              <tr>
-                <th>標的</th>
-                <th>總已擔保</th>
-                <th>平均成本</th>
-                <th>最新股價</th>
-                <th>變化</th>
-                <th>市值</th>
-              </tr>
-            </thead>
-            <tbody id="collateral-summary-tbody"></tbody>
-          </table>
-        </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-          <button class="btn" id="fetch-pledge-prices">🔍 自動抓質押日股價</button>
-        </div>
-        
-        <!-- C. 借款明細（巢狀，每筆內含擔保品） -->
-        <div class="loan-section-label" style="margin-top:24px;">📋 借款明細（每筆借款獨立追蹤）</div>
-        <div id="loan-cards-wrap"></div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-          <button class="btn-cta btn-cta-primary" id="add-loan">＋ 新增借款</button>
-          <button class="btn" id="reset-loans" style="margin-left:auto;">↻ 重設預設</button>
-        </div>
-        <div style="margin-top: 10px; padding: 8px 12px; background: var(--bg-input); border-radius: 6px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
-          💡 <strong style="color:var(--text);">機制：</strong>每筆借款記錄當下押的張數＋價格，獨立追蹤。「擔保品總覽」是把所有借款的擔保按標的加總。每月 DCA 買的新股不會自動進擔保。
-        </div>
-        
-        <!-- D. 利息 vs 配息 -->
-        <div class="loan-section-label" style="margin-top:24px;">💰 利息 vs 配息現金流</div>
-        <div class="loan-cashflow" id="loan-cashflow"></div>
-        
-        <!-- E. 維持率試算 -->
-        <div class="loan-section-label" style="margin-top:24px;">📉 維持率變化試算</div>
-        <div class="loan-stress" id="loan-stress"></div>
+        <!-- 詳細區塊（摺疊） -->
+        <details class="loan-details-section" id="loan-details-section">
+          <summary>📊 看詳細（明細、擔保品、試算、現金流）</summary>
+          <div style="margin-top: 16px;">
+            
+            <!-- 借款明細 -->
+            <div class="loan-section-label" style="margin-top:8px;">📋 借款明細（每筆借款獨立追蹤）</div>
+            <div id="loan-cards-wrap"></div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+              <button class="btn-cta btn-cta-primary" id="add-loan">＋ 新增借款</button>
+              <button class="btn" id="fetch-pledge-prices">🔍 自動抓質押日股價</button>
+              <button class="btn" id="reset-loans" style="margin-left:auto;">↻ 重設預設</button>
+            </div>
+            
+            <!-- 擔保品總覽 -->
+            <div class="loan-section-label" style="margin-top:24px;">🔒 擔保品總覽（按標的合併）</div>
+            <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 10px;">
+              <table class="loan-table">
+                <thead>
+                  <tr>
+                    <th>標的</th>
+                    <th>總已擔保</th>
+                    <th>平均成本</th>
+                    <th>最新股價</th>
+                    <th>變化</th>
+                    <th>市值</th>
+                  </tr>
+                </thead>
+                <tbody id="collateral-summary-tbody"></tbody>
+              </table>
+            </div>
+            
+            <!-- 利息 vs 配息 -->
+            <div class="loan-section-label" style="margin-top:24px;">💰 利息 vs 配息現金流</div>
+            <div class="loan-cashflow" id="loan-cashflow"></div>
+            
+            <!-- 維持率試算 -->
+            <div class="loan-section-label" style="margin-top:24px;">📉 維持率變化試算</div>
+            <div class="loan-stress" id="loan-stress"></div>
+            
+            <div style="margin-top: 16px; padding: 10px 14px; background: var(--bg-input); border-radius: 6px; font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+              💡 <strong style="color:var(--text);">機制：</strong>每筆借款記錄當下押的張數+價格，獨立追蹤。整戶維持率 = 所有擔保品市值 ÷ 借款總額。每月 DCA 買的新股不會自動進擔保（要主動到永豐 App 申請）。
+            </div>
+          </div>
+        </details>
       </div>
     </details>
   </section>
@@ -3843,70 +3987,85 @@ function computeMaintenanceRatio() {
 }
 
 function renderLoans() {
-  renderLoanOverview();
+  renderLoanSummary();
   renderCollateralSummary();
   renderLoanCards();
   renderLoanCashflow();
   renderLoanStress();
 }
 
-function renderLoanOverview() {
-  const wrap = document.getElementById('loan-overview');
+function renderLoanSummary() {
+  const wrap = document.getElementById('loan-summary-card');
   if (!wrap) return;
   
   const loans = state.loans || [];
   const totalAmount = loans.reduce((s, l) => s + (l.amount || 0), 0);
   const monthlyInterest = loans.reduce((s, l) => s + (l.amount * l.rate / 100 / 12), 0);
-  const avgRate = loans.length > 0 ? (loans.reduce((s,l) => s + l.rate, 0) / loans.length) : 0;
   
   const ratio = computeMaintenanceRatio();
   const warn = state.loanSettings?.warningRatio || 130;
   const buffer = ratio !== null ? ratio - warn : 0;
+  const dropToWarn = ratio !== null ? (1 - warn / ratio) * 100 : 0;
+  
   const ratioColor = ratio === null ? 'var(--text-dim)' 
                    : ratio < warn ? 'var(--danger)' 
                    : ratio < warn + 30 ? 'var(--warning)' 
                    : 'var(--success)';
   
+  const { total: collateralValue } = computeTotalCollateralValue();
+  
   const nextDue = computeNextLoanDue(loans);
   const daysToNext = nextDue ? Math.ceil((nextDue.dueDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  const dueColor = !daysToNext ? 'var(--text-dim)'
+                 : daysToNext < 30 ? 'var(--danger)'
+                 : daysToNext < 60 ? 'var(--warning)'
+                 : 'var(--success)';
+  
+  if (loans.length === 0) {
+    wrap.innerHTML = `
+      <div class="lsum-empty">
+        尚無借款資料。<br>
+        <span style="font-size:12px;color:var(--text-muted);">展開「📊 看詳細」→ 點「+ 新增借款」開始登記。</span>
+      </div>
+    `;
+    return;
+  }
   
   wrap.innerHTML = `
-    <div class="loan-card">
-      <div class="loan-card-label">借款總額</div>
-      <div class="loan-card-value">$${fmt(totalAmount)}</div>
-      <div class="loan-card-meta">${loans.length} 筆借款</div>
-    </div>
-    <div class="loan-card">
-      <div class="loan-card-label">月利息</div>
-      <div class="loan-card-value">$${fmt(monthlyInterest)}</div>
-      <div class="loan-card-meta">平均利率 ${avgRate.toFixed(2)}%</div>
-    </div>
-    <div class="loan-card">
-      <div class="loan-card-label">整戶維持率（自動算）</div>
-      <div class="loan-card-value" style="color:${ratioColor};">${ratio !== null ? ratio.toFixed(0) + '%' : '—'}</div>
-      <div class="loan-card-meta">
-        警戒
-        <input type="number" id="warning-ratio-input" value="${warn}" min="100" max="200" step="1" class="ratio-input-small">%
-        ｜緩衝 <strong style="color:${buffer < 30 ? 'var(--danger)' : buffer < 60 ? 'var(--warning)' : 'var(--success)'};">${buffer >= 0 ? '+' : ''}${buffer.toFixed(0)}%</strong>
+    <div class="lsum-main">
+      <div class="lsum-ratio-block">
+        <div class="lsum-ratio-num" style="color:${ratioColor};">${ratio !== null ? ratio.toFixed(0) : '—'}<span class="lsum-ratio-pct">%</span></div>
+        <div class="lsum-ratio-label">整戶維持率</div>
+      </div>
+      <div class="lsum-stats">
+        <div class="lsum-stat-row">
+          <span class="lsum-stat-label">借款</span>
+          <span class="lsum-stat-value">$${fmt(totalAmount)}</span>
+        </div>
+        <div class="lsum-stat-row">
+          <span class="lsum-stat-label">擔保品市值</span>
+          <span class="lsum-stat-value">$${fmt(collateralValue)}</span>
+        </div>
+        <div class="lsum-stat-row">
+          <span class="lsum-stat-label">月利息</span>
+          <span class="lsum-stat-value">$${fmt(monthlyInterest)}</span>
+        </div>
+        <div class="lsum-stat-row">
+          <span class="lsum-stat-label">最近到期</span>
+          <span class="lsum-stat-value" style="color:${dueColor};">
+            ${nextDue ? nextDue.dueDate.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }) + ` (${daysToNext}天)` : '—'}
+          </span>
+        </div>
       </div>
     </div>
-    <div class="loan-card">
-      <div class="loan-card-label">最近到期</div>
-      <div class="loan-card-value" style="font-size: 22px;">
-        ${nextDue ? nextDue.dueDate.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }) : '—'}
-      </div>
-      <div class="loan-card-meta">
-        ${nextDue ? `${daysToNext} 天後 · $${fmt(nextDue.amount)}` : '無資料'}
+    <div class="lsum-stress-line">
+      <div class="lsum-stress-icon">📉</div>
+      <div class="lsum-stress-text">
+        擔保品還能跌 <strong style="color:var(--accent);font-size:18px;">${dropToWarn > 0 ? dropToWarn.toFixed(1) : 0}%</strong> 才碰警戒線（${warn}%）
+        <div class="lsum-stress-meta">目前緩衝 +${buffer.toFixed(0)}%</div>
       </div>
     </div>
   `;
-  
-  const warnInp = document.getElementById('warning-ratio-input');
-  if (warnInp) warnInp.addEventListener('change', e => {
-    state.loanSettings.warningRatio = parseFloat(e.target.value) || 130;
-    saveState();
-    renderLoans();
-  });
 }
 
 function renderCollateralSummary() {

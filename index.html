@@ -2571,6 +2571,36 @@ details[open] .loan-card-summary::after { content: '−'; }
             </div>
           </div>
         </details>
+        <details style="margin-bottom: 8px;" id="gist-config">
+          <summary style="font-size: 12px; color: var(--p-00919); cursor: pointer; padding: 6px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; font-weight: 700;">☁ 跨裝置同步（GitHub Gist）</summary>
+          <div style="margin-top: 8px; padding: 14px; background: var(--bg-input); border-radius: 8px;">
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px;">
+              填入 Gist ID 後，<strong style="color:var(--text);">每次資料變動會自動上傳到雲端</strong>，其他裝置打開時可下載最新。<br>
+              <strong style="color:var(--accent);">需要：</strong>① 已建一個 Secret Gist（檔名 <code style="background:white;padding:1px 4px;border-radius:3px;font-size:10px;">berich-data.json</code>）② Token 的 Gists 權限為「Read and write」
+            </div>
+            <div style="display: grid; gap: 8px;">
+              <div>
+                <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Gist ID</label>
+                <input type="text" id="gist-id-input" placeholder="32 個字元的 ID（網址最後那一段）" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                  <input type="checkbox" id="gist-autosync-toggle">
+                  自動同步（資料變更 5 秒後自動上傳）
+                </label>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                <button class="btn" id="gist-push-btn" style="font-size: 11px;">☁ 立即上傳</button>
+                <button class="btn" id="gist-pull-btn" style="font-size: 11px;">⬇ 從雲端下載</button>
+                <span data-sync-status style="font-size:11px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); align-self: center; margin-left: auto;"></span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6; margin-top: 6px;">
+                💡 <strong style="color:var(--text);">使用流程：</strong>① Mac 上設好資料 → ☁ 立即上傳 ② Windows 打開 → ⬇ 從雲端下載 → 之後改的會自動同步<br>
+                ⚠️ <strong style="color:var(--warning);">注意：</strong>下載會覆蓋本地資料。若兩邊都改過，請先在「最新」那邊上傳，再到另一邊下載。
+              </div>
+            </div>
+          </div>
+        </details>
         <details style="margin-bottom: 16px;">
           <summary style="font-size: 11px; color: var(--text-muted); cursor: pointer; padding: 4px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">⚙ 進階：自訂 CORS Proxy（如果公用 proxy 失敗）</summary>
           <div style="margin-top: 8px; padding: 12px; background: var(--bg-input); border-radius: 6px;">
@@ -2789,6 +2819,14 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      // 自動修復：舊版 loans 沒有 collaterals 陣列
+      if (parsed.loans) {
+        parsed.loans.forEach(l => {
+          if (!Array.isArray(l.collaterals)) {
+            l.collaterals = [];
+          }
+        });
+      }
       return {
         pillars: parsed.pillars || JSON.parse(JSON.stringify(DEFAULT_PILLARS)),
         records: parsed.records || JSON.parse(JSON.stringify(DEFAULT_RECORDS)),
@@ -2803,6 +2841,9 @@ function loadState() {
         githubToken: parsed.githubToken || '',
         githubRepo: parsed.githubRepo || 'shawn2026-oss/BeRich',
         githubWorkflow: parsed.githubWorkflow || 'fetch-prices.yml',
+        gistId: parsed.gistId || '',
+        gistAutoSync: parsed.gistAutoSync !== false,  // 預設開
+        lastGistSync: parsed.lastGistSync || null,
         watchlist: parsed.watchlist || ['0050', '台積電'],
         loans: parsed.loans || JSON.parse(JSON.stringify(DEFAULT_LOANS)),
         collaterals: parsed.collaterals || JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
@@ -2824,6 +2865,9 @@ function loadState() {
     githubToken: '',
     githubRepo: 'shawn2026-oss/BeRich',
     githubWorkflow: 'fetch-prices.yml',
+    gistId: '',
+    gistAutoSync: true,
+    lastGistSync: null,
     watchlist: ['0050', '台積電'],
     loans: JSON.parse(JSON.stringify(DEFAULT_LOANS)),
     collaterals: JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
@@ -2834,6 +2878,8 @@ function loadState() {
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch(e) { console.warn(e); }
+  // 觸發 Gist 自動同步（debounced 5 秒）
+  if (typeof scheduleGistAutoSync === 'function') scheduleGistAutoSync();
 }
 
 let state = loadState();
@@ -4018,6 +4064,159 @@ function renderWatchlist() {
 // === 觀察股清單 結束 ===
 
 // === 質押系統（巢狀結構：借款內含擔保品）===
+
+// === GitHub Gist 雲端同步 ===
+let _gistSyncInProgress = false;
+let _gistDebounceTimer = null;
+
+async function pushToGist(showAlert = false) {
+  if (!state.gistId || !state.githubToken) {
+    if (showAlert) alert('請先設定 Gist ID 與 GitHub Token');
+    return false;
+  }
+  if (_gistSyncInProgress) return false;
+  _gistSyncInProgress = true;
+  
+  setSyncStatus('上傳中…', 'var(--text-muted)');
+  
+  try {
+    const payload = {
+      files: {
+        'berich-data.json': {
+          content: JSON.stringify(state, null, 2)
+        }
+      }
+    };
+    const res = await fetch(`https://api.github.com/gists/${state.gistId}`, {
+      method: 'PATCH',
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${state.githubToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    if (res.ok) {
+      const now = new Date().toISOString();
+      state.lastGistSync = now;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+      
+      const tStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+      setSyncStatus(`☁ 已同步 ${tStr}`, 'var(--success)');
+      if (showAlert) alert('✓ 已上傳到 Gist');
+      _gistSyncInProgress = false;
+      return true;
+    } else {
+      const errText = await res.text();
+      console.warn('Gist push fail:', res.status, errText);
+      setSyncStatus(`⚠ 上傳失敗 (${res.status})`, 'var(--danger)');
+      if (showAlert) alert(`上傳失敗 HTTP ${res.status}\n${errText.substring(0, 200)}`);
+      _gistSyncInProgress = false;
+      return false;
+    }
+  } catch(e) {
+    console.warn('Gist push error:', e);
+    setSyncStatus('⚠ 上傳錯誤', 'var(--danger)');
+    if (showAlert) alert('上傳錯誤：' + e.message);
+    _gistSyncInProgress = false;
+    return false;
+  }
+}
+
+async function pullFromGist(showAlert = false) {
+  if (!state.gistId || !state.githubToken) {
+    if (showAlert) alert('請先設定 Gist ID 與 GitHub Token');
+    return false;
+  }
+  if (_gistSyncInProgress) return false;
+  _gistSyncInProgress = true;
+  
+  setSyncStatus('下載中…', 'var(--text-muted)');
+  
+  try {
+    const res = await fetch(`https://api.github.com/gists/${state.gistId}`, {
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${state.githubToken}`
+      }
+    });
+    
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn('Gist pull fail:', res.status);
+      setSyncStatus(`⚠ 下載失敗 (${res.status})`, 'var(--danger)');
+      if (showAlert) alert(`下載失敗 HTTP ${res.status}\n${errText.substring(0, 200)}`);
+      _gistSyncInProgress = false;
+      return false;
+    }
+    
+    const gist = await res.json();
+    const fileContent = gist.files?.['berich-data.json']?.content;
+    if (!fileContent) {
+      setSyncStatus('⚠ Gist 無資料檔', 'var(--warning)');
+      if (showAlert) alert('Gist 裡找不到 berich-data.json');
+      _gistSyncInProgress = false;
+      return false;
+    }
+    
+    const remoteData = JSON.parse(fileContent);
+    if (remoteData.placeholder) {
+      setSyncStatus('Gist 是空的，先按上傳', 'var(--text-muted)');
+      if (showAlert) alert('Gist 還沒有資料，請先「☁ 上傳到 Gist」');
+      _gistSyncInProgress = false;
+      return false;
+    }
+    
+    // 保留本地的 token、gistId、customProxy（避免被覆蓋）
+    const localToken = state.githubToken;
+    const localGistId = state.gistId;
+    const localProxy = state.customProxy;
+    
+    state = remoteData;
+    if (!state.githubToken) state.githubToken = localToken;
+    if (!state.gistId) state.gistId = localGistId;
+    if (!state.customProxy && localProxy) state.customProxy = localProxy;
+    state.lastGistSync = new Date().toISOString();
+    
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+    
+    const tStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+    setSyncStatus(`☁ 已同步 ${tStr}`, 'var(--success)');
+    
+    // 重新渲染所有
+    renderPillars();
+    renderSimPillars();
+    renderRecords();
+    renderPurchases();
+    renderPurchaseSummary();
+    renderLoans();
+    updateAll();
+    
+    if (showAlert) alert('✓ 已從 Gist 下載最新資料');
+    _gistSyncInProgress = false;
+    return true;
+  } catch(e) {
+    console.warn('Gist pull error:', e);
+    setSyncStatus('⚠ 下載錯誤', 'var(--danger)');
+    if (showAlert) alert('下載錯誤：' + e.message);
+    _gistSyncInProgress = false;
+    return false;
+  }
+}
+
+function setSyncStatus(text, color) {
+  document.querySelectorAll('[data-sync-status]').forEach(el => {
+    el.textContent = text;
+    el.style.color = color;
+  });
+}
+
+function scheduleGistAutoSync() {
+  if (!state.gistAutoSync || !state.gistId || !state.githubToken) return;
+  if (_gistDebounceTimer) clearTimeout(_gistDebounceTimer);
+  _gistDebounceTimer = setTimeout(() => pushToGist(false), 5000);
+}
 
 // 抓歷史股價（特定日期的收盤價）
 async function fetchHistoricalPrice(etf, dateStr) {
@@ -5751,6 +5950,38 @@ function openQuickAllDialog() {
         if (tokenInput) tokenInput.value = '';
       }
     });
+  }
+  
+  // === Gist 同步 ===
+  const gistInput = document.getElementById('gist-id-input');
+  const autoToggle = document.getElementById('gist-autosync-toggle');
+  if (gistInput) {
+    gistInput.value = state.gistId || '';
+    gistInput.addEventListener('change', e => {
+      state.gistId = e.target.value.trim();
+      saveState();
+    });
+  }
+  if (autoToggle) {
+    autoToggle.checked = state.gistAutoSync !== false;
+    autoToggle.addEventListener('change', e => {
+      state.gistAutoSync = e.target.checked;
+      saveState();
+    });
+  }
+  const pushBtn = document.getElementById('gist-push-btn');
+  const pullBtn = document.getElementById('gist-pull-btn');
+  if (pushBtn) pushBtn.addEventListener('click', () => pushToGist(true));
+  if (pullBtn) pullBtn.addEventListener('click', () => {
+    if (confirm('從雲端下載會「覆蓋」本地所有資料。\n如果本地有未上傳的修改會被蓋掉。\n\n確定？')) {
+      pullFromGist(true);
+    }
+  });
+  
+  // 顯示上次同步時間
+  if (state.lastGistSync) {
+    const dt = new Date(state.lastGistSync);
+    setSyncStatus(`☁ 上次同步 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`, 'var(--text-dim)');
   }
   
   // 顯示上次更新時間（autoLoadLocalPrices 會覆蓋）

@@ -781,6 +781,48 @@ details.collapsible summary:hover { color: var(--accent); }
   box-shadow: 0 4px 12px rgba(184, 146, 78, 0.35);
 }
 
+/* 資料管理區塊：本機最後更新時間 */
+.data-status-bar {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(106, 176, 232, 0.08) 0%, rgba(106, 176, 232, 0.03) 100%);
+  border: 1px solid rgba(106, 176, 232, 0.25);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.data-status-item {
+  flex-shrink: 0;
+}
+.data-status-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.data-status-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.data-status-help {
+  flex: 1;
+  min-width: 200px;
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  border-left: 1px solid rgba(106, 176, 232, 0.2);
+  padding-left: 16px;
+}
+@media (max-width: 600px) {
+  .data-status-help { border-left: none; padding-left: 0; border-top: 1px dashed var(--border); padding-top: 12px; }
+}
+
 /* === 年度對比 === */
 .annual-section-title {
   font-family: 'Noto Serif TC', serif;
@@ -2262,6 +2304,15 @@ details[open] .loan-card-summary::after { content: '−'; }
     <details class="collapsible">
       <summary>🔄 資料管理（備份／跨裝置同步）</summary>
       <div class="collapsible-body" style="padding-bottom: 18px;">
+        <div class="data-status-bar">
+          <div class="data-status-item">
+            <div class="data-status-label">💾 本機資料最後更新</div>
+            <div class="data-status-value" id="local-last-modified">—</div>
+          </div>
+          <div class="data-status-help">
+            ⓘ 跨裝置同步時，比較兩台這個時間 → <strong>較新的那台匯出</strong>
+          </div>
+        </div>
         <div style="margin-bottom: 14px; padding: 10px 14px; background: var(--bg-input); border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.7;">
           <strong style="color: var(--text);">整個儀表板的所有資料</strong>（三本柱、配息紀錄、買入紀錄、質押系統、目標、設定）。<br>
           💡 <strong style="color: var(--text);">跨裝置使用</strong>：在其中一台「↓ 匯出 JSON」→ 傳到另一台 → 「↑ 匯入 JSON」。<br>
@@ -2891,11 +2942,33 @@ function loadState() {
   };
 }
 
+// 內部旗標：呼叫 saveState 時若這個為 true，不更新 lastModified
+let _skipTouchOnSave = false;
+
 function saveState() {
+  // 預設每次儲存都記錄時間（方便跨裝置判斷哪份資料較新）
+  if (!_skipTouchOnSave) {
+    state.lastModified = new Date().toISOString();
+  }
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
   catch(e) { console.warn(e); }
   // 觸發 Gist 自動同步（debounced 5 秒）
   if (typeof scheduleGistAutoSync === 'function') scheduleGistAutoSync();
+  // 更新時間顯示
+  if (typeof renderLastModified === 'function') renderLastModified();
+}
+
+// 包裝器：呼叫期間不更新 lastModified（用於純股價刷新等不算「動資料」的動作）
+function saveWithoutTouch(fn) {
+  _skipTouchOnSave = true;
+  try { return fn(); }
+  finally { _skipTouchOnSave = false; }
+}
+
+function saveStateTouch() {
+  // 顯式更新時間（供未來明確需要時用）
+  state.lastModified = new Date().toISOString();
+  saveState();
 }
 
 let state = loadState();
@@ -3845,7 +3918,7 @@ async function updateAllPrices() {
           }
         });
         state.priceUpdatedAt = newData.updatedAt;
-        saveState();
+        saveWithoutTouch(saveState);
         
         const dt = new Date(newData.updatedAt);
         setStatus(`✓ 剛抓到最新（${dt.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' })}）`, 'var(--success)');
@@ -3892,7 +3965,8 @@ async function updateAllPrices() {
     }
   });
   state.priceUpdatedAt = new Date().toISOString();
-  saveState();
+  // 抓股價不算「動資料」，保留 lastModified 原值
+  saveWithoutTouch(saveState);
   
   const successes = Object.entries(results).filter(([k, v]) => v !== null);
   const failures = Object.entries(results).filter(([k, v]) => v === null);
@@ -3964,7 +4038,7 @@ async function autoLoadLocalPrices() {
       });
       if (updated > 0) {
         state.priceUpdatedAt = local.updatedAt;
-        saveState();
+        saveWithoutTouch(saveState);
         // 顯示時間（兩個status同步）
         const dt = new Date(local.updatedAt);
         const now = new Date();
@@ -4226,6 +4300,34 @@ function setSyncStatus(text, color) {
     el.textContent = text;
     el.style.color = color;
   });
+}
+
+// 顯示「本機資料最後更新」時間
+function renderLastModified() {
+  const el = document.getElementById('local-last-modified');
+  if (!el) return;
+  if (!state.lastModified) {
+    el.textContent = '—';
+    el.style.color = 'var(--text-dim)';
+    return;
+  }
+  const dt = new Date(state.lastModified);
+  const now = new Date();
+  const diffMin = Math.floor((now - dt) / 60000);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+  
+  let relative;
+  if (diffMin < 5) relative = '剛剛';
+  else if (diffMin < 60) relative = `${diffMin} 分鐘前`;
+  else if (diffHr < 24) relative = `${diffHr} 小時前`;
+  else relative = `${diffDay} 天前`;
+  
+  const absolute = dt.toLocaleString('zh-TW', { 
+    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+  });
+  el.innerHTML = `<strong>${absolute}</strong> <span style="color:var(--text-muted); font-weight:normal;">(${relative})</span>`;
+  el.style.color = 'var(--text)';
 }
 
 function scheduleGistAutoSync() {
@@ -5286,6 +5388,7 @@ function init() {
   renderPurchaseSummary();
   renderLoans();
   updateAll();
+  renderLastModified();
   
   // Goals
   document.getElementById('goal-a').value = state.goals.a;
@@ -5396,25 +5499,56 @@ function init() {
     const reader = new FileReader();
     reader.onload = ev => {
       try {
-        if (confirm('匯入此JSON並覆蓋現有資料？')) {
-          state = JSON.parse(ev.target.result);
-          if (!state.goals) state.goals = { ...DEFAULT_GOALS };
-          if (!state.pillars) state.pillars = JSON.parse(JSON.stringify(DEFAULT_PILLARS));
-          if (!state.records) state.records = JSON.parse(JSON.stringify(DEFAULT_RECORDS));
-          if (!state.purchases) state.purchases = [];
-          if (!state.latestPrices) state.latestPrices = { ...DEFAULT_LATEST_PRICES };
-          saveState();
-          renderPillars();
-          renderSimPillars();
-          renderRecords();
-          renderPurchases();
-          renderPurchaseSummary();
-          updateAll();
-          document.getElementById('goal-a').value = state.goals.a;
-          document.getElementById('goal-b').value = state.goals.b;
-          document.getElementById('goal-c').value = state.goals.c;
+        const incoming = JSON.parse(ev.target.result);
+        
+        // 比對時間
+        const localTime = state.lastModified ? new Date(state.lastModified) : null;
+        const incomingTime = incoming.lastModified ? new Date(incoming.lastModified) : null;
+        const fmtT = dt => dt ? dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '無時間紀錄';
+        
+        let warning = '';
+        if (localTime && incomingTime) {
+          if (incomingTime > localTime) {
+            warning = `✓ 匯入的資料較新（${fmtT(incomingTime)} > 本機 ${fmtT(localTime)}）\n\n`;
+          } else if (incomingTime < localTime) {
+            warning = `⚠️ 警告：匯入的資料較舊！\n本機：${fmtT(localTime)}\n匯入：${fmtT(incomingTime)}\n\n用「舊」覆蓋「新」？建議檢查再操作。\n\n`;
+          } else {
+            warning = `兩邊時間一樣，匯入後不變。\n\n`;
+          }
+        } else if (incomingTime) {
+          warning = `匯入資料時間：${fmtT(incomingTime)}（本機無時間紀錄）\n\n`;
         }
-      } catch(err) { alert('JSON 格式錯誤'); }
+        
+        if (!confirm(warning + '確定匯入並覆蓋現有資料？')) return;
+        
+        const newState = incoming;
+        if (!newState.goals) newState.goals = { ...DEFAULT_GOALS };
+        if (!newState.pillars) newState.pillars = JSON.parse(JSON.stringify(DEFAULT_PILLARS));
+        if (!newState.records) newState.records = JSON.parse(JSON.stringify(DEFAULT_RECORDS));
+        if (!newState.purchases) newState.purchases = [];
+        if (!newState.latestPrices) newState.latestPrices = { ...DEFAULT_LATEST_PRICES };
+        
+        state = newState;
+        // 直接寫 localStorage（不呼叫 saveState 避免覆蓋 lastModified）
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+        
+        renderPillars();
+        renderSimPillars();
+        renderRecords();
+        renderPurchases();
+        renderPurchaseSummary();
+        if (typeof renderLoans === 'function') renderLoans();
+        updateAll();
+        renderLastModified();
+        document.getElementById('goal-a').value = state.goals.a;
+        document.getElementById('goal-b').value = state.goals.b;
+        document.getElementById('goal-c').value = state.goals.c;
+        
+        alert('✓ 匯入完成');
+      } catch(err) { 
+        console.error(err);
+        alert('JSON 格式錯誤：' + err.message); 
+      }
     };
     reader.readAsText(file);
   });
@@ -5899,7 +6033,7 @@ function openQuickAllDialog() {
     val = val.replace(/\/+$/, '').replace(/\?.*$/, '');
     state.customProxy = val;
     e.target.value = val;
-    saveState();
+    saveWithoutTouch(saveState);
   });
   
   // GitHub Token 設定
@@ -5910,21 +6044,21 @@ function openQuickAllDialog() {
     tokenInput.value = state.githubToken || '';
     tokenInput.addEventListener('change', e => {
       state.githubToken = e.target.value.trim();
-      saveState();
+      saveWithoutTouch(saveState);
     });
   }
   if (repoInput) {
     repoInput.value = state.githubRepo || 'shawn2026-oss/BeRich';
     repoInput.addEventListener('change', e => {
       state.githubRepo = e.target.value.trim();
-      saveState();
+      saveWithoutTouch(saveState);
     });
   }
   if (workflowInput) {
     workflowInput.value = state.githubWorkflow || 'fetch-prices.yml';
     workflowInput.addEventListener('change', e => {
       state.githubWorkflow = e.target.value.trim();
-      saveState();
+      saveWithoutTouch(saveState);
     });
   }
   
@@ -5962,7 +6096,7 @@ function openQuickAllDialog() {
     clearBtn.addEventListener('click', () => {
       if (confirm('清除 Token？之後「↻ 更新股價」只會讀現有 prices.json，不會即時觸發抓取。')) {
         state.githubToken = '';
-        saveState();
+        saveWithoutTouch(saveState);
         if (tokenInput) tokenInput.value = '';
       }
     });
@@ -5975,14 +6109,14 @@ function openQuickAllDialog() {
     gistInput.value = state.gistId || '';
     gistInput.addEventListener('change', e => {
       state.gistId = e.target.value.trim();
-      saveState();
+      saveWithoutTouch(saveState);
     });
   }
   if (autoToggle) {
     autoToggle.checked = state.gistAutoSync !== false;
     autoToggle.addEventListener('change', e => {
       state.gistAutoSync = e.target.checked;
-      saveState();
+      saveWithoutTouch(saveState);
     });
   }
   const pushBtn = document.getElementById('gist-push-btn');

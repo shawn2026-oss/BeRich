@@ -2257,7 +2257,26 @@ details[open] .loan-card-summary::after { content: '−'; }
     <p class="header-sub">輸入「現有張數」與「本季每股配息」，自動推算每月可領、年化收入與目標達成進度。資料自動保存於瀏覽器。</p>
   </header>
 
-  <!-- ============ 配息紀錄（置頂，預設收合）============ -->
+  <!-- ============ 資料管理（跨裝置同步、備份）============ -->
+  <section class="section">
+    <details class="collapsible">
+      <summary>🔄 資料管理（備份／跨裝置同步）</summary>
+      <div class="collapsible-body" style="padding-bottom: 18px;">
+        <div style="margin-bottom: 14px; padding: 10px 14px; background: var(--bg-input); border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.7;">
+          <strong style="color: var(--text);">整個儀表板的所有資料</strong>（三本柱、配息紀錄、買入紀錄、質押系統、目標、設定）。<br>
+          💡 <strong style="color: var(--text);">跨裝置使用</strong>：在其中一台「↓ 匯出 JSON」→ 傳到另一台 → 「↑ 匯入 JSON」。<br>
+          ⚠️ <strong style="color: var(--warning);">匯入會覆蓋目前所有資料</strong>，不放心可以先匯出一份備份。
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn-cta btn-cta-primary" id="export-data">↓ 匯出 JSON 備份</button>
+          <button class="btn-cta" id="import-data">↑ 匯入 JSON</button>
+          <input type="file" id="file-input" accept=".json" style="display:none;">
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 配息紀錄（預設收合）============ -->
   <section class="section">
     <details class="collapsible">
       <summary>💰 配息紀錄</summary>
@@ -2296,9 +2315,6 @@ details[open] .loan-card-summary::after { content: '−'; }
           <button class="btn-cta btn-cta-primary" id="add-record">＋ 新增一筆配息</button>
           <button class="btn-cta" id="import-historical">📥 匯入歷史紀錄</button>
           <button class="btn-cta" id="reset-records">↻ 重設預設</button>
-          <button class="btn-cta" id="export-data">↓ 匯出JSON</button>
-          <button class="btn-cta" id="import-data">↑ 匯入JSON</button>
-          <input type="file" id="file-input" accept=".json" style="display:none;">
         </div>
       </div>
     </details>

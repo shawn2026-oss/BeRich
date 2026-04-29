@@ -1536,24 +1536,30 @@ details[open] .loan-card-summary::after { content: '−'; }
   padding: 24px;
   margin-bottom: 16px;
   box-shadow: var(--shadow-md);
-  position: relative;
 }
 .lsum-refresh-row {
-  position: absolute;
-  top: 14px;
-  right: 14px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
-  max-width: 60%;
+  margin: -8px -8px 16px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(212, 168, 87, 0.2);
+}
+.lsum-refresh-row .price-time-mini {
+  flex: 1;
+  text-align: left;
+  font-size: 12px;
 }
 .lsum-refresh-row .btn {
   font-size: 11px;
   padding: 5px 12px;
-  background: rgba(255, 255, 255, 0.7);
-  border-color: rgba(212, 168, 87, 0.4);
+  background: white;
+  border-color: rgba(212, 168, 87, 0.5);
+  flex-shrink: 0;
 }
 
 /* 各區塊按鈕旁的時間顯示 */
@@ -4527,6 +4533,22 @@ function renderLoanSummary() {
     
     ${renderCollateralPower(loans, totalAmount, collateralValue)}
   `;
+  
+  // 渲染後同步當前 price-status 文字到剛建好的 [data-time-display]
+  syncPriceTimeDisplays();
+}
+
+// 把現有 #price-status 的文字內容同步到所有 [data-time-display]
+function syncPriceTimeDisplays() {
+  const src = document.getElementById('price-status') || document.getElementById('price-status-top');
+  if (!src) return;
+  const text = src.textContent;
+  const color = src.style.color;
+  if (!text) return;
+  document.querySelectorAll('[data-time-display]').forEach(el => {
+    el.textContent = text;
+    if (color) el.style.color = color;
+  });
 }
 
 // 擔保品力量分布：每支標的撐起的維持率
@@ -5377,6 +5399,8 @@ function updateAll() {
   updateSimulation();
   renderWatchlist();
   renderLoans();
+  // 動態渲染後同步時間顯示
+  if (typeof syncPriceTimeDisplays === 'function') syncPriceTimeDisplays();
 }
 
 // === Wire up ===

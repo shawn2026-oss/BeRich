@@ -219,6 +219,17 @@ body {
   font-weight: 700;
   font-size: 14px;
 }
+.pillar-output-source {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 4px;
+  text-align: right;
+  font-style: italic;
+}
+.annual-est-info {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.02em;
+}
 
 /* === Big Dashboard === */
 .dashboard {
@@ -2991,6 +3002,38 @@ function getEtfClass(etf) {
 }
 
 // === 三本柱現況卡片 ===
+// 從配息紀錄推估該 ETF 的年配息（每股）
+function estimateAnnualDividendPerShare(etf) {
+  const records = (state.records || []).filter(r => r.etf === etf);
+  if (records.length === 0) return null;
+  
+  // 按日期由新到舊排序
+  const sorted = [...records].sort((a, b) => b.date.localeCompare(a.date));
+  
+  // 取最近 12 個月內的紀錄（從最新一筆往前算 365 天）
+  const newest = new Date(sorted[0].date);
+  const cutoff = new Date(newest);
+  cutoff.setDate(cutoff.getDate() - 365);
+  
+  const recent = sorted.filter(r => new Date(r.date) > cutoff);
+  
+  if (recent.length === 0) return null;
+  
+  // 算平均每筆配息（每股）
+  const avgPerShare = recent.reduce((s, r) => s + r.divPerShare, 0) / recent.length;
+  
+  // 該 ETF 一年配幾次（從 dividendMonths 取）
+  const pillar = state.pillars[etf];
+  const yearlyCount = pillar?.dividendMonths?.length || 4;
+  
+  return {
+    annualPerShare: avgPerShare * yearlyCount,
+    sampleCount: recent.length,
+    expectedCount: yearlyCount,
+    avgPerShare
+  };
+}
+
 function renderPillars() {
   const grid = document.getElementById('pillars-grid');
   grid.innerHTML = '';
@@ -2998,8 +3041,17 @@ function renderPillars() {
     const data = state.pillars[etf];
     const months = data.dividendMonths.join('、') + '月';
     const quarterly = data.shares * 1000 * data.dividend;
-    const annual = quarterly * 4;
-    const monthly = annual / 12;
+    
+    // 從歷史推估年配息
+    const est = estimateAnnualDividendPerShare(etf);
+    let annual, annualSource;
+    if (est && est.sampleCount > 0) {
+      annual = data.shares * 1000 * est.annualPerShare;
+      annualSource = `<span class="annual-est-info">基於最近 ${est.sampleCount} 筆配息實績（年配 ${fmt2(est.annualPerShare)} 元/股）</span>`;
+    } else {
+      annual = quarterly * 4;
+      annualSource = `<span class="annual-est-info">無歷史紀錄，用本季 × 4 估</span>`;
+    }
     
     const card = document.createElement('div');
     card.className = 'pillar-card';
@@ -3024,6 +3076,7 @@ function renderPillars() {
           <span class="pillar-output-label">年配息推估</span>
           <span class="pillar-output-value">${fmt(annual)} 元</span>
         </div>
+        <div class="pillar-output-source">${annualSource}</div>
       </div>
       <div class="pillar-dca-row">
         <div class="pillar-dca-item">
@@ -3046,12 +3099,16 @@ function renderPillars() {
       state.pillars[etf][field] = parseFloat(e.target.value) || 0;
       saveState();
       
-      // 即時更新本卡片的「本季配息」「年配息推估」（不重渲染整個卡片，避免輸入框失焦）
+      // 即時更新本卡片的「本季配息」「年配息推估」
       const card = e.target.closest('.pillar-card');
       if (card) {
         const data = state.pillars[etf];
         const quarterly = data.shares * 1000 * data.dividend;
-        const annual = quarterly * 4;
+        // 年配息優先用歷史推估
+        const est = estimateAnnualDividendPerShare(etf);
+        const annual = est && est.sampleCount > 0
+          ? data.shares * 1000 * est.annualPerShare
+          : quarterly * 4;
         const outputs = card.querySelectorAll('.pillar-output-value');
         if (outputs[0]) outputs[0].textContent = fmt(quarterly) + ' 元';
         if (outputs[1]) outputs[1].textContent = fmt(annual) + ' 元';
@@ -3100,11 +3157,19 @@ function renderSimPillars() {
 // === 每月可領儀表板 ===
 function updateDashboard() {
   let totalQ = 0;
+  let totalA = 0;
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
     totalQ += p.shares * 1000 * p.dividend;
+    
+    // 年配息：優先用歷史推估，沒紀錄才退回 ×4
+    const est = estimateAnnualDividendPerShare(etf);
+    if (est && est.sampleCount > 0) {
+      totalA += p.shares * 1000 * est.annualPerShare;
+    } else {
+      totalA += p.shares * 1000 * p.dividend * 4;
+    }
   });
-  const totalA = totalQ * 4;
   const monthly = totalA / 12;
   
   document.getElementById('dash-monthly').textContent = fmt(monthly);

@@ -3045,6 +3045,18 @@ function renderPillars() {
       const field = e.target.dataset.field;
       state.pillars[etf][field] = parseFloat(e.target.value) || 0;
       saveState();
+      
+      // 即時更新本卡片的「本季配息」「年配息推估」（不重渲染整個卡片，避免輸入框失焦）
+      const card = e.target.closest('.pillar-card');
+      if (card) {
+        const data = state.pillars[etf];
+        const quarterly = data.shares * 1000 * data.dividend;
+        const annual = quarterly * 4;
+        const outputs = card.querySelectorAll('.pillar-output-value');
+        if (outputs[0]) outputs[0].textContent = fmt(quarterly) + ' 元';
+        if (outputs[1]) outputs[1].textContent = fmt(annual) + ' 元';
+      }
+      
       updateAll();
     });
   });

@@ -3729,6 +3729,13 @@ function renderRecords() {
   
   // 渲染年度對比（如果有 ≥2 年資料）
   renderAnnualComparison();
+  
+  // 配息紀錄變動會影響「年配息推估」（用當年度紀錄估算）
+  // 重新渲染三本柱卡片以更新推估
+  if (typeof renderPillars === 'function' && document.getElementById('pillars-grid')) {
+    renderPillars();
+  }
+  if (typeof updateAll === 'function') updateAll();
 }
 
 

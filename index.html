@@ -3007,30 +3007,37 @@ function estimateAnnualDividendPerShare(etf) {
   const records = (state.records || []).filter(r => r.etf === etf);
   if (records.length === 0) return null;
   
-  // 按日期由新到舊排序
-  const sorted = [...records].sort((a, b) => b.date.localeCompare(a.date));
+  const currentYear = String(new Date().getFullYear());
+  const thisYear = records.filter(r => r.date.startsWith(currentYear + '-'));
+  if (thisYear.length === 0) return null;
   
-  // 取最近 12 個月內的紀錄（從最新一筆往前算 365 天）
-  const newest = new Date(sorted[0].date);
-  const cutoff = new Date(newest);
-  cutoff.setDate(cutoff.getDate() - 365);
-  
-  const recent = sorted.filter(r => new Date(r.date) > cutoff);
-  
-  if (recent.length === 0) return null;
-  
-  // 算平均每筆配息（每股）
-  const avgPerShare = recent.reduce((s, r) => s + r.divPerShare, 0) / recent.length;
-  
-  // 該 ETF 一年配幾次（從 dividendMonths 取）
   const pillar = state.pillars[etf];
-  const yearlyCount = pillar?.dividendMonths?.length || 4;
+  const expectedQuarters = pillar?.dividendMonths?.length || 4;
+  const recordedQuarters = thisYear.length;
+  const totalSoFar = thisYear.reduce((s, r) => s + r.divPerShare, 0);
+  
+  // 已領完該年所有配息 → 真實值，不推估
+  if (recordedQuarters >= expectedQuarters) {
+    return {
+      annualPerShare: totalSoFar,
+      sampleCount: recordedQuarters,
+      expectedCount: expectedQuarters,
+      isComplete: true,
+      year: currentYear
+    };
+  }
+  
+  // 部分已領 → 用已領平均推估剩餘
+  const avgPerQuarter = totalSoFar / recordedQuarters;
+  const projectedRemaining = avgPerQuarter * (expectedQuarters - recordedQuarters);
   
   return {
-    annualPerShare: avgPerShare * yearlyCount,
-    sampleCount: recent.length,
-    expectedCount: yearlyCount,
-    avgPerShare
+    annualPerShare: totalSoFar + projectedRemaining,
+    sampleCount: recordedQuarters,
+    expectedCount: expectedQuarters,
+    isComplete: false,
+    avgPerQuarter,
+    year: currentYear
   };
 }
 
@@ -3047,10 +3054,14 @@ function renderPillars() {
     let annual, annualSource;
     if (est && est.sampleCount > 0) {
       annual = data.shares * 1000 * est.annualPerShare;
-      annualSource = `<span class="annual-est-info">基於最近 ${est.sampleCount} 筆配息實績（年配 ${fmt2(est.annualPerShare)} 元/股）</span>`;
+      if (est.isComplete) {
+        annualSource = `<span class="annual-est-info">${est.year} 全年實際 ${est.sampleCount}/${est.expectedCount} 季 = ${fmt2(est.annualPerShare)} 元/股 ✓</span>`;
+      } else {
+        annualSource = `<span class="annual-est-info">${est.year} 已領 ${est.sampleCount}/${est.expectedCount} 季（平均 ${fmt2(est.avgPerQuarter)}/季）→ 推估全年 ${fmt2(est.annualPerShare)} 元/股</span>`;
+      }
     } else {
       annual = quarterly * 4;
-      annualSource = `<span class="annual-est-info">無歷史紀錄，用本季 × 4 估</span>`;
+      annualSource = `<span class="annual-est-info">${new Date().getFullYear()} 無配息紀錄，用本季 × 4 估</span>`;
     }
     
     const card = document.createElement('div');

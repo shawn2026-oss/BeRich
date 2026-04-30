@@ -4872,9 +4872,18 @@ function renderLoanCards() {
             <strong>下次到期：</strong>${due.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' })}（${days}天後）${loan.note ? '<br><strong>備註：</strong>' + loan.note : ''}
           </div>
           
-          <!-- 刪除按鈕 -->
-          <div style="margin-top: 12px;">
-            <button class="btn" data-action="delete-loan" data-loan-idx="${realIdx}" style="color:var(--danger);">🗑 刪除這筆借款</button>
+          <!-- 操作說明 -->
+          <div style="margin-top: 12px; padding: 10px 14px; background: rgba(74, 131, 184, 0.06); border-left: 3px solid var(--p-00919); border-radius: 0 6px 6px 0; font-size: 11px; line-height: 1.7; color: var(--text-muted);">
+            <strong style="color: var(--text);">📖 展延 / 借新還舊操作說明</strong><br>
+            <strong style="color: var(--accent);">展延（剩 ${loan.maxExtensions - loan.extendedTimes} 次）：</strong>${loan.extendedTimes < loan.maxExtensions ? '點下方「🔄 一鍵展延」自動 +1 展延次數、輸入新利率，到期日會自動往後 6 個月。' : '<span style="color:var(--danger);">已用完展延次數，下次必須借新還舊。</span>'}<br>
+            <strong style="color: var(--accent);">借新還舊：</strong>展延用完後到期，要刪除這筆 → 新增一筆（金額可調整、利率用當時值）。借款日是新的那天，擔保品要重新登。<br>
+            <strong style="color: var(--accent);">手動修改：</strong>借款日、金額、利率、展延次數任一格直接點輸入框改。<strong style="color: var(--text);">展延時不要改借款日</strong>（系統用借款日 + 展延次數×6個月 自動算到期日）。
+          </div>
+          
+          <!-- 操作按鈕 -->
+          <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+            ${loan.extendedTimes < loan.maxExtensions ? `<button class="btn-cta btn-cta-primary" data-action="extend-loan" data-loan-idx="${realIdx}" style="font-size: 12px;">🔄 一鍵展延（+1 次）</button>` : ''}
+            <button class="btn" data-action="delete-loan" data-loan-idx="${realIdx}" style="color:var(--danger); margin-left: auto;">🗑 刪除這筆借款</button>
           </div>
         </div>
       </details>
@@ -4910,6 +4919,44 @@ function renderLoanCards() {
           saveState();
           renderLoans();
         }
+      } else if (action === 'extend-loan') {
+        const loan = state.loans[lidx];
+        const remaining = loan.maxExtensions - loan.extendedTimes;
+        
+        // 算展延後的下次到期
+        const borrow = new Date(loan.borrowDate);
+        const newDue = new Date(borrow);
+        newDue.setMonth(newDue.getMonth() + (loan.extendedTimes + 2) * 6);
+        const newDueStr = newDue.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        
+        const newRateStr = prompt(
+          `🔄 借款 #${lidx + 1} 展延\n\n` +
+          `原利率：${loan.rate}%\n` +
+          `展延次數將從 ${loan.extendedTimes}/${loan.maxExtensions} 變成 ${loan.extendedTimes + 1}/${loan.maxExtensions}\n` +
+          `下次到期：${newDueStr}\n` +
+          (remaining - 1 === 0 ? '⚠️ 這是最後一次展延，下次到期須借新還舊\n' : '') +
+          `\n展延後新利率（%）？\n` +
+          `2026/04 永豐三本柱新利率：4`,
+          loan.rate.toString()
+        );
+        if (newRateStr === null) return;
+        const newRate = parseFloat(newRateStr);
+        if (!newRate || newRate <= 0) { alert('利率無效'); return; }
+        
+        if (!confirm(
+          `確認展延：\n\n` +
+          `借款日：${loan.borrowDate}（不變）\n` +
+          `金額：$${fmt(loan.amount)}（不變）\n` +
+          `利率：${loan.rate}% → ${newRate}%\n` +
+          `展延次數：${loan.extendedTimes}/${loan.maxExtensions} → ${loan.extendedTimes + 1}/${loan.maxExtensions}\n` +
+          `下次到期：${newDueStr}\n\n` +
+          `月利息：$${fmt(loan.amount * loan.rate / 100 / 12)} → $${fmt(loan.amount * newRate / 100 / 12)}`
+        )) return;
+        
+        loan.extendedTimes += 1;
+        loan.rate = newRate;
+        saveState();
+        renderLoans();
       } else if (action === 'add-loan-collateral') {
         const etf = prompt('新增擔保品到此借款\n標的代號？', '');
         if (!etf || !etf.trim()) return;

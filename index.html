@@ -2316,89 +2316,90 @@ details[open] .loan-card-summary::after { content: '−'; }
     <p class="header-sub">輸入「現有張數」與「本季每股配息」，自動推算每月可領、年化收入與目標達成進度。資料自動保存於瀏覽器。</p>
   </header>
 
-  <!-- ============ 資料管理（跨裝置同步、備份）============ -->
   <section class="section">
     <details class="collapsible">
-      <summary>🔄 資料管理（備份／跨裝置同步）</summary>
+      <summary>🔄 資料管理（雲端同步／本機備份）</summary>
       <div class="collapsible-body" style="padding-bottom: 18px;">
+        
+        <!-- 狀態時間列 -->
         <div class="data-status-bar">
           <div class="data-status-item">
             <div class="data-status-label">💾 本機資料最後更新</div>
             <div class="data-status-value" id="local-last-modified">—</div>
           </div>
-          <div class="data-status-help">
-            ⓘ 跨裝置同步時，比較兩台這個時間 → <strong>較新的那台匯出</strong>
+          <div class="data-status-item" style="border-left: 1px solid rgba(106, 176, 232, 0.2); padding-left: 16px;">
+            <div class="data-status-label">☁ 雲端最後同步</div>
+            <div class="data-status-value" data-jsonbin-status>—</div>
           </div>
         </div>
-        <div style="margin-bottom: 14px; padding: 10px 14px; background: var(--bg-input); border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.7;">
-          <strong style="color: var(--text);">📁 手動備份／單機備份用</strong>（三本柱、配息紀錄、買入紀錄、質押系統、目標、設定）。<br>
-          💾 <strong style="color: var(--text);">建議用途</strong>：每月底匯出一份 JSON 存到雲端硬碟當保險（防 localStorage 被清掉）。<br>
-          ☁ <strong style="color: var(--success);">跨裝置同步請用下方「自動跨裝置同步（JSONbin.io）」</strong>，比手動匯出方便。<br>
-          ⚠️ <strong style="color: var(--warning);">匯入會覆蓋目前所有資料</strong>，建議先匯出一份再匯入。
-        </div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn-cta btn-cta-primary" id="export-data">↓ 匯出 JSON 備份</button>
-          <button class="btn-cta" id="import-data">↑ 匯入 JSON</button>
-          <input type="file" id="file-input" accept=".json" style="display:none;">
+        
+        <!-- 主功能：JSONbin 自動同步 -->
+        <div style="margin-top: 14px; padding: 16px; background: rgba(74, 131, 184, 0.06); border: 1px solid rgba(74, 131, 184, 0.25); border-radius: 10px;">
+          <div style="font-family: 'Noto Serif TC', serif; font-size: 15px; font-weight: 700; color: var(--p-00919); margin-bottom: 12px;">
+            ☁ 自動跨裝置同步（JSONbin.io）
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px;">
+            <strong style="color: var(--success);">✓ 改完資料 → 5 秒後自動上傳　　✓ 打開頁面 → 自動偵測雲端新版 → 自動載入</strong><br>
+            兩台電腦填同一組 Bin ID + Master Key 即完成設定，平常不用按任何按鈕。
+          </div>
+          
+          <details style="margin-bottom: 12px;">
+            <summary style="font-size: 12px; color: var(--accent); cursor: pointer; padding: 4px 0;">📋 第一次設定步驟</summary>
+            <div style="margin-top: 8px; padding: 12px; background: white; border-radius: 6px; font-size: 12px; line-height: 1.8;">
+              <ol style="margin: 0; padding-left: 18px; color: var(--text);">
+                <li>到 <a href="https://jsonbin.io/" target="_blank" style="color: var(--accent);">https://jsonbin.io/</a> 註冊（用 Google 登入最快）</li>
+                <li>登入後點 <strong>「Create Bin」</strong> → 內容貼 <code style="background: var(--bg-input); padding: 2px 6px; border-radius: 3px;">{}</code> → 勾 <strong>「Make Bin Private」</strong> → Save</li>
+                <li>找這兩個值：
+                  <ul style="padding-left: 18px; margin-top: 4px;">
+                    <li><strong>BIN ID</strong>：網址結尾 24 位英數字</li>
+                    <li><strong>Master Key</strong>：右上頭像 → API Keys → 複製 X-Master-Key</li>
+                  </ul>
+                </li>
+                <li><strong>資料齊全那台</strong>：填欄位後點「☁ 手動上傳」</li>
+                <li><strong>第二台</strong>：填同樣的 Bin ID + Master Key → 強制重整頁面（Ctrl+F5）→ 自動載入</li>
+                <li>之後兩台都自動同步</li>
+              </ol>
+            </div>
+          </details>
+          
+          <div style="display: grid; gap: 10px;">
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Bin ID（24 位英數字）</label>
+              <input type="text" id="jsonbin-id-input" placeholder="例：68215f4a8a456b7977c5e3d2" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+            </div>
+            <div>
+              <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Master Key（$2a$10$ 開頭那串）</label>
+              <input type="password" id="jsonbin-key-input" placeholder="不會顯示在畫面上" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+            </div>
+            <div>
+              <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                <input type="checkbox" id="jsonbin-autosync-toggle">
+                自動同步（推薦開啟）
+              </label>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px;">
+              <button class="btn" id="jsonbin-push-btn" style="font-size: 11px;" title="手動觸發立即上傳到雲端">☁ 手動上傳</button>
+              <button class="btn" id="jsonbin-pull-btn" style="font-size: 11px;" title="手動從雲端拉最新覆蓋本機">⬇ 手動下載</button>
+            </div>
+            <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6; margin-top: 4px;">
+              ⚠️ 不要兩台同時操作（後上傳的會蓋掉先上傳的）
+            </div>
+          </div>
         </div>
         
-        <!-- JSONbin 雲端自動同步 -->
-        <details style="margin-top: 16px;" id="jsonbin-config">
-          <summary style="font-size: 13px; color: var(--p-00919); cursor: pointer; padding: 8px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; font-weight: 700;">☁ 自動跨裝置同步（JSONbin.io）</summary>
-          <div style="margin-top: 10px; padding: 14px; background: rgba(74, 131, 184, 0.06); border: 1px solid rgba(74, 131, 184, 0.2); border-radius: 8px;">
-            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px;">
-              <strong style="color: var(--text);">設定一次永久同步</strong>：兩台電腦填同一組 Bin ID + Master Key 即完成設定。<br>
-              <span style="color: var(--success);">✓ 改完資料 → 自動上傳　　✓ 打開頁面 → 自動載入</span><br>
-              <span style="color: var(--text);">完全不需要按按鈕。</span>
+        <!-- 次要：手動備份（預設收合）-->
+        <details style="margin-top: 14px;">
+          <summary style="font-size: 12px; color: var(--text-muted); cursor: pointer; padding: 8px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em;">📁 手動 JSON 備份／還原（防 localStorage 被清掉）</summary>
+          <div style="margin-top: 8px; padding: 12px; background: var(--bg-input); border-radius: 8px;">
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px;">
+              <strong style="color: var(--text);">用途</strong>：每月底匯出一份 JSON 存到雲端硬碟當保險。<br>
+              <span style="color: var(--text-dim);">跨裝置同步請用上面的雲端同步，比較方便。</span><br>
+              ⚠️ 匯入會覆蓋目前所有資料，建議先匯出一份再匯入。
             </div>
-            
-            <details style="margin-bottom: 12px;">
-              <summary style="font-size: 12px; color: var(--accent); cursor: pointer; padding: 4px 0;">📋 設定步驟（第一次用看這裡）</summary>
-              <div style="margin-top: 8px; padding: 12px; background: white; border-radius: 6px; font-size: 12px; line-height: 1.8;">
-                <ol style="margin: 0; padding-left: 18px; color: var(--text);">
-                  <li>到 <a href="https://jsonbin.io/" target="_blank" style="color: var(--accent);">https://jsonbin.io/</a> 註冊（用 Google 登入最快）</li>
-                  <li>登入後右上角點 <strong>「Create Bin」</strong></li>
-                  <li>內容貼 <code style="background: var(--bg-input); padding: 2px 6px; border-radius: 3px;">{}</code> 然後勾選 <strong>「Make Bin Private」</strong>，按 Save</li>
-                  <li>建好後在頁面找：
-                    <ul style="padding-left: 18px; margin-top: 4px;">
-                      <li><strong>BIN ID</strong>：網址結尾那串（24 位英數字，例如 <code style="background: var(--bg-input); padding: 1px 4px;">68215f4a8a456b7977c5e3d2</code>）</li>
-                      <li><strong>Master Key</strong>：右上角頭像 → API Keys → 複製那個 X-Master-Key</li>
-                    </ul>
-                  </li>
-                  <li><strong>第一次資料齊全那台</strong>：把 Bin ID + Master Key 貼到下方欄位 → 點「☁ 手動上傳」</li>
-                  <li><strong>第二台</strong>：填同樣的 Bin ID + Master Key → 強制重整頁面（Ctrl+F5）→ 自動載入雲端資料</li>
-                  <li>之後兩台都自動同步，<strong>不需要按任何按鈕</strong></li>
-                </ol>
-              </div>
-            </details>
-            
-            <div style="display: grid; gap: 10px;">
-              <div>
-                <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Bin ID（24 位英數字）</label>
-                <input type="text" id="jsonbin-id-input" placeholder="例：68215f4a8a456b7977c5e3d2" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-              </div>
-              <div>
-                <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Master Key（$2a$10$ 開頭那串）</label>
-                <input type="password" id="jsonbin-key-input" placeholder="不會顯示在畫面上" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-              </div>
-              <div>
-                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
-                  <input type="checkbox" id="jsonbin-autosync-toggle">
-                  自動同步（資料變更 5 秒後自動上傳到雲端）
-                </label>
-              </div>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px;">
-                <button class="btn" id="jsonbin-push-btn" style="font-size: 11px;" title="手動觸發立即上傳到雲端">☁ 手動上傳</button>
-                <button class="btn" id="jsonbin-pull-btn" style="font-size: 11px;" title="手動從雲端拉最新覆蓋本機">⬇ 手動下載</button>
-                <span data-jsonbin-status style="font-size:11px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); margin-left: auto;"></span>
-              </div>
-              <div style="font-size: 11px; color: var(--text-dim); line-height: 1.7; margin-top: 4px; padding: 10px; background: rgba(74, 157, 94, 0.08); border-left: 3px solid var(--success); border-radius: 0 4px 4px 0;">
-                ✓ <strong style="color: var(--success);">改完資料</strong> → 5 秒後自動上傳到雲端<br>
-                ✓ <strong style="color: var(--success);">打開頁面</strong> → 自動偵測雲端有新版 → 自動載入覆蓋本地<br>
-                <span style="color: var(--text);">→ 平常完全不需要按按鈕。下方按鈕只在你想手動同步時用。</span><br><br>
-                ⚠️ <strong>不要兩台同時操作</strong>（後上傳的會蓋掉先上傳的）。<br>
-                💡 系統自動比對時間，若雲端較舊不會自動覆蓋本地。
-              </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn" id="export-data" style="font-size: 12px;">↓ 匯出 JSON 備份</button>
+              <button class="btn" id="import-data" style="font-size: 12px;">↑ 匯入 JSON</button>
+              <input type="file" id="file-input" accept=".json" style="display:none;">
             </div>
           </div>
         </details>

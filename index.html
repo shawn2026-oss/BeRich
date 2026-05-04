@@ -2841,6 +2841,18 @@ const YAHOO_TICKERS = {
   '00662': '00662'
 };
 
+// TWSE 即時 API 代號（上市用 tse_，上櫃用 otc_）
+const TWSE_TICKERS = {
+  '0056': 'tse_0056.tw',
+  '00919': 'tse_00919.tw',
+  '00878': 'tse_00878.tw',
+  '0050': 'tse_0050.tw',
+  '台積電': 'tse_2330.tw',
+  '00918': 'tse_00918.tw',
+  '中鋼': 'tse_2002.tw',
+  '00757': 'tse_00757.tw',
+  '00662': 'tse_00662.tw'
+};
 const DEFAULT_PILLARS = {
   '0056':  { shares: 59.943, dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
   '00919': { shares: 99.323, dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
@@ -3977,13 +3989,66 @@ async function tryFetchLocalPrices() {
   }
 }
 
+// TWSE 一次抓全部標的（避免 5秒/3次 限速；多支 symbol 共享一次 request）
+let _twsePromise = null;
+async function fetchTwseAll() {
+  if (!state.customProxy) return null;
+  const wantedSymbols = Object.keys(TWSE_TICKERS);
+  const exCh = wantedSymbols.map(s => TWSE_TICKERS[s]).join('|');
+  const targetUrl = `https://mis.twse.com.tw/stock/api/getStockInfo.jsp?ex_ch=${encodeURIComponent(exCh)}&json=1&delay=0&_=${Date.now()}`;
+  const proxyUrl = `${state.customProxy}?url=${encodeURIComponent(targetUrl)}`;
+  try {
+    const res = await fetchWithTimeout(proxyUrl, 8000);
+    if (!res.ok) { console.warn('TWSE HTTP', res.status); return null; }
+    const data = await res.json();
+    if (data.rtcode && data.rtcode !== '0000') { console.warn('TWSE rtcode', data.rtcode); return null; }
+    if (!Array.isArray(data.msgArray) || data.msgArray.length === 0) return null;
+    const codeToSym = {};
+    wantedSymbols.forEach(s => {
+      const code = TWSE_TICKERS[s].split('_')[1].split('.')[0];
+      codeToSym[code] = s;
+    });
+    const out = {};
+    let latestTs = 0;
+    data.msgArray.forEach(item => {
+      const sym = codeToSym[item.c];
+      if (!sym) return;
+      let price = parseFloat(item.z);
+      const usedY = isNaN(price) || item.z === '-';
+      if (usedY) price = parseFloat(item.y);
+      if (!isNaN(price) && price > 0) {
+        out[sym] = price;
+        const ts = parseInt(item.tlong) || 0;
+        if (ts > latestTs) latestTs = ts;
+        console.log(`✓ ${sym}: ${price} (TWSE${usedY ? ' · 昨收' : ''})`);
+      }
+    });
+    return { prices: out, time: latestTs > 0 ? new Date(latestTs) : null };
+  } catch(e) {
+    console.warn('TWSE bulk fail:', e.message);
+    return null;
+  }
+}
+
 async function fetchYahooPrice(symbol) {
+  // 第一順位：TWSE 即時（無延遲；多 symbol 共用一個 request）
+  if (state.customProxy && TWSE_TICKERS[symbol]) {
+    if (!_twsePromise) {
+      _twsePromise = fetchTwseAll();
+      setTimeout(() => { _twsePromise = null; }, 5000);
+    }
+    const r = await _twsePromise;
+    if (r && r.prices[symbol] !== undefined) {
+      if (r.time) window._twseLatestTs = r.time.getTime();
+      return r.prices[symbol];
+    }
+  }
+  
   const ticker = YAHOO_TICKERS[symbol] || symbol;
   const tickerWithSuffix = ticker + '.TW';
   const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${tickerWithSuffix}?interval=1d&range=1d`;
   
-  // 1. 優先：自訂 Cloudflare Worker（即時打 Yahoo）
-  if (state.customProxy) {
+  // 第二順位：Yahoo via Cloudflare Worker（TWSE 失敗或標的不在 TSE）  if (state.customProxy) {
     try {
       const url = `${state.customProxy}?url=${encodeURIComponent(targetUrl)}`;
       const res = await fetchWithTimeout(url, 8000);
@@ -4144,10 +4209,13 @@ async function updateAllPrices() {
   const successes = Object.entries(results).filter(([k, v]) => v !== null);
   const failures = Object.entries(results).filter(([k, v]) => v === null);
   
-  const now = new Date().toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+ // 若 TWSE 有回傳真實資料時間就用那個，否則用按鈕點擊時間
+  const tsDate = window._twseLatestTs ? new Date(window._twseLatestTs) : new Date();
+  const now = tsDate.toLocaleString('zh-TW', { hour: '2-digit', minute: '2-digit' });
   let source = '';
   if (viaWorker) {
-    source = ` (Cloudflare Worker · ${now})`;
+    source = window._twseLatestTs ? ` (TWSE 即時 · ${now})` : ` (Cloudflare Worker · ${now})`;
+    window._twseLatestTs = null;
   } else {
     const local = _localPricesCache;
     if (local && local.prices && local.updatedAt) {

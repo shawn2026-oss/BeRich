@@ -4575,17 +4575,34 @@ async function pullFromJsonbin(showAlert = false) {
       }
     }
     
-    // 保留本地的 jsonbin 設定（避免被覆蓋）
+    // 保留本地的設定 + 最新股價（避免雲端舊股價覆蓋剛抓的最新）
     const localJsonbinId = state.jsonbinId;
     const localJsonbinKey = state.jsonbinKey;
     const localProxy = state.customProxy;
     const localToken = state.githubToken;
+    const localPrices = state.latestPrices ? { ...state.latestPrices } : {};
+    const localPriceUpdatedAt = state.priceUpdatedAt;
     
     state = remoteData;
     if (!state.jsonbinId) state.jsonbinId = localJsonbinId;
     if (!state.jsonbinKey) state.jsonbinKey = localJsonbinKey;
     if (!state.customProxy && localProxy) state.customProxy = localProxy;
     if (!state.githubToken && localToken) state.githubToken = localToken;
+    // 股價保留本地較新的
+    if (!state.latestPrices) state.latestPrices = {};
+    Object.entries(localPrices).forEach(([sym, price]) => {
+      if (typeof price === 'number' && price > 0) {
+        state.latestPrices[sym] = price;
+      }
+    });
+    if (localPriceUpdatedAt && (!state.priceUpdatedAt || new Date(localPriceUpdatedAt) > new Date(state.priceUpdatedAt))) {
+      state.priceUpdatedAt = localPriceUpdatedAt;
+    }
+    ['0056', '00919', '00878'].forEach(etf => {
+      if (state.latestPrices[etf] && state.pillars[etf]) {
+        state.pillars[etf].price = state.latestPrices[etf];
+      }
+    });
     state.lastJsonbinSync = new Date().toISOString();
     
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
@@ -6623,17 +6640,37 @@ async function autoCheckJsonbinOnLoad() {
         const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
         console.log(`☁ 雲端較新（${fmtT(remoteTime)}）→ 自動覆蓋本地（${localTime ? fmtT(localTime) : '無'}）`);
         
-        // 保留本地的 jsonbin 設定（避免被覆蓋）
+        // 保留本地的設定 + 最新股價（避免被雲端的舊股價覆蓋）
         const localJsonbinId = state.jsonbinId;
         const localJsonbinKey = state.jsonbinKey;
         const localProxy = state.customProxy;
         const localToken = state.githubToken;
+        const localPrices = state.latestPrices ? { ...state.latestPrices } : {};
+        const localPriceUpdatedAt = state.priceUpdatedAt;
         
         state = remoteData;
         if (!state.jsonbinId) state.jsonbinId = localJsonbinId;
         if (!state.jsonbinKey) state.jsonbinKey = localJsonbinKey;
         if (!state.customProxy && localProxy) state.customProxy = localProxy;
         if (!state.githubToken && localToken) state.githubToken = localToken;
+        // 股價：本地較新就用本地的（避免雲端舊股價覆蓋剛抓的最新）
+        if (!state.latestPrices) state.latestPrices = {};
+        Object.entries(localPrices).forEach(([sym, price]) => {
+          // 本地有抓到價就保留
+          if (typeof price === 'number' && price > 0) {
+            state.latestPrices[sym] = price;
+          }
+        });
+        // priceUpdatedAt 用較新的
+        if (localPriceUpdatedAt && (!state.priceUpdatedAt || new Date(localPriceUpdatedAt) > new Date(state.priceUpdatedAt))) {
+          state.priceUpdatedAt = localPriceUpdatedAt;
+        }
+        // 也要把三本柱卡片的 price 同步成最新（pillars.{etf}.price 是試算用的）
+        ['0056', '00919', '00878'].forEach(etf => {
+          if (state.latestPrices[etf] && state.pillars[etf]) {
+            state.pillars[etf].price = state.latestPrices[etf];
+          }
+        });
         state.lastJsonbinSync = new Date().toISOString();
         
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}

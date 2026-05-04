@@ -2331,9 +2331,10 @@ details[open] .loan-card-summary::after { content: '−'; }
           </div>
         </div>
         <div style="margin-bottom: 14px; padding: 10px 14px; background: var(--bg-input); border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.7;">
-          <strong style="color: var(--text);">整個儀表板的所有資料</strong>（三本柱、配息紀錄、買入紀錄、質押系統、目標、設定）。<br>
-          💡 <strong style="color: var(--text);">跨裝置使用</strong>：在其中一台「↓ 匯出 JSON」→ 傳到另一台 → 「↑ 匯入 JSON」。<br>
-          ⚠️ <strong style="color: var(--warning);">匯入會覆蓋目前所有資料</strong>，不放心可以先匯出一份備份。
+          <strong style="color: var(--text);">📁 手動備份／單機備份用</strong>（三本柱、配息紀錄、買入紀錄、質押系統、目標、設定）。<br>
+          💾 <strong style="color: var(--text);">建議用途</strong>：每月底匯出一份 JSON 存到雲端硬碟當保險（防 localStorage 被清掉）。<br>
+          ☁ <strong style="color: var(--success);">跨裝置同步請用下方「自動跨裝置同步（JSONbin.io）」</strong>，比手動匯出方便。<br>
+          ⚠️ <strong style="color: var(--warning);">匯入會覆蓋目前所有資料</strong>，建議先匯出一份再匯入。
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <button class="btn-cta btn-cta-primary" id="export-data">↓ 匯出 JSON 備份</button>
@@ -2346,7 +2347,9 @@ details[open] .loan-card-summary::after { content: '−'; }
           <summary style="font-size: 13px; color: var(--p-00919); cursor: pointer; padding: 8px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; font-weight: 700;">☁ 自動跨裝置同步（JSONbin.io）</summary>
           <div style="margin-top: 10px; padding: 14px; background: rgba(74, 131, 184, 0.06); border: 1px solid rgba(74, 131, 184, 0.2); border-radius: 8px;">
             <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px;">
-              <strong style="color: var(--text);">設定一次永久同步</strong>：兩台電腦填同一組 Bin ID + Master Key，資料變動 5 秒後自動上雲，另一台一打開「⬇ 下載」就有最新。
+              <strong style="color: var(--text);">設定一次永久同步</strong>：兩台電腦填同一組 Bin ID + Master Key 即完成設定。<br>
+              <span style="color: var(--success);">✓ 改完資料 → 自動上傳　　✓ 打開頁面 → 自動載入</span><br>
+              <span style="color: var(--text);">完全不需要按按鈕。</span>
             </div>
             
             <details style="margin-bottom: 12px;">
@@ -2362,8 +2365,9 @@ details[open] .loan-card-summary::after { content: '−'; }
                       <li><strong>Master Key</strong>：右上角頭像 → API Keys → 複製那個 X-Master-Key</li>
                     </ul>
                   </li>
-                  <li>把這兩個貼到下方欄位 → 點「☁ 立即上傳」測試</li>
-                  <li>另一台電腦：填 <strong>同樣的 Bin ID + Master Key</strong> → 點「⬇ 從雲端下載」就有了</li>
+                  <li><strong>第一次資料齊全那台</strong>：把 Bin ID + Master Key 貼到下方欄位 → 點「☁ 手動上傳」</li>
+                  <li><strong>第二台</strong>：填同樣的 Bin ID + Master Key → 強制重整頁面（Ctrl+F5）→ 自動載入雲端資料</li>
+                  <li>之後兩台都自動同步，<strong>不需要按任何按鈕</strong></li>
                 </ol>
               </div>
             </details>
@@ -2384,14 +2388,16 @@ details[open] .loan-card-summary::after { content: '−'; }
                 </label>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px;">
-                <button class="btn" id="jsonbin-push-btn" style="font-size: 11px;">☁ 立即上傳</button>
-                <button class="btn" id="jsonbin-pull-btn" style="font-size: 11px;">⬇ 從雲端下載</button>
+                <button class="btn" id="jsonbin-push-btn" style="font-size: 11px;" title="手動觸發立即上傳到雲端">☁ 手動上傳</button>
+                <button class="btn" id="jsonbin-pull-btn" style="font-size: 11px;" title="手動從雲端拉最新覆蓋本機">⬇ 手動下載</button>
                 <span data-jsonbin-status style="font-size:11px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); margin-left: auto;"></span>
               </div>
-              <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6; margin-top: 4px; padding: 8px; background: rgba(232, 145, 106, 0.08); border-left: 3px solid var(--warning); border-radius: 0 4px 4px 0;">
-                ⚠️ <strong style="color:var(--warning);">使用順序很重要</strong>：先在「資料齊全」那台「☁ 立即上傳」一次 → 另一台「⬇ 從雲端下載」覆蓋空白資料 → 之後兩台改了會自動同步。<br>
-                ⚠️ <strong>不要兩台同時改</strong>，會互相覆蓋。一台改完等 5 秒同步完，另一台再點「⬇」拉最新。<br>
-                💡 系統會自動比對時間，若你不小心要用「舊」覆蓋「新」會跳警告擋下。
+              <div style="font-size: 11px; color: var(--text-dim); line-height: 1.7; margin-top: 4px; padding: 10px; background: rgba(74, 157, 94, 0.08); border-left: 3px solid var(--success); border-radius: 0 4px 4px 0;">
+                ✓ <strong style="color: var(--success);">改完資料</strong> → 5 秒後自動上傳到雲端<br>
+                ✓ <strong style="color: var(--success);">打開頁面</strong> → 自動偵測雲端有新版 → 自動載入覆蓋本地<br>
+                <span style="color: var(--text);">→ 平常完全不需要按按鈕。下方按鈕只在你想手動同步時用。</span><br><br>
+                ⚠️ <strong>不要兩台同時操作</strong>（後上傳的會蓋掉先上傳的）。<br>
+                💡 系統自動比對時間，若雲端較舊不會自動覆蓋本地。
               </div>
             </div>
           </div>

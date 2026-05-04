@@ -3159,6 +3159,24 @@ function renderPillars() {
           <span class="pillar-output-label">年配息推估</span>
           <span class="pillar-output-value">${fmt(annual)} 元</span>
         </div>
+        ${(() => {
+          const recs = (state.records || [])
+            .filter(r => r.etf === etf && r.costPrice > 0)
+            .sort((a, b) => b.date.localeCompare(a.date));
+          if (recs.length === 0 || !est || est.sampleCount === 0) return '';
+          const cost = recs[0].costPrice;
+          const annualPerShare = est.annualPerShare;
+          const yieldPct = annualPerShare / cost * 100;
+          return `
+            <div class="pillar-output-row" style="border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 4px;">
+              <span class="pillar-output-label">個人殖利率</span>
+              <span class="pillar-output-value" style="color: var(--success); font-weight: 700;">${fmt2(yieldPct)}%</span>
+            </div>
+            <div class="pillar-output-source" style="font-size: 10px;">
+              年配 ${fmt2(annualPerShare)} ÷ 成本 ${fmt2(cost)}（${recs[0].date}）
+            </div>
+          `;
+        })()}
         <div class="pillar-output-source">${annualSource}</div>
       </div>
       <div class="pillar-dca-row">

@@ -6578,6 +6578,87 @@ function openQuickAllDialog() {
 
 init();
 autoLoadLocalPrices();
+
+// 頁面載入後檢查雲端有沒有較新版資料
+// 這是「打開電腦就有最新」的關鍵：自動 pull
+async function autoCheckJsonbinOnLoad() {
+  if (!state.jsonbinId || !state.jsonbinKey) return; // 還沒設定，跳過
+  if (!state.jsonbinAutoSync) return; // 使用者關掉自動同步
+  
+  // 延遲 1 秒避免擋住頁面初始渲染
+  setTimeout(async () => {
+    try {
+      setJsonbinStatus('檢查雲端…', 'var(--text-muted)');
+      const res = await fetch(`https://api.jsonbin.io/v3/b/${state.jsonbinId}/latest`, {
+        headers: { 'X-Master-Key': state.jsonbinKey }
+      });
+      if (!res.ok) {
+        setJsonbinStatus(`⚠ 檢查失敗 (${res.status})`, 'var(--warning)');
+        return;
+      }
+      const data = await res.json();
+      const remoteData = data.record;
+      if (!remoteData || (typeof remoteData === 'object' && Object.keys(remoteData).length <= 1)) {
+        setJsonbinStatus('雲端是空的', 'var(--text-muted)');
+        return;
+      }
+      
+      const localTime = state.lastModified ? new Date(state.lastModified) : null;
+      const remoteTime = remoteData.lastModified ? new Date(remoteData.lastModified) : null;
+      
+      if (!remoteTime) {
+        setJsonbinStatus('雲端無時間紀錄', 'var(--text-muted)');
+        return;
+      }
+      
+      // 雲端較新 → 自動覆蓋本地
+      if (!localTime || remoteTime > localTime) {
+        const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        console.log(`☁ 雲端較新（${fmtT(remoteTime)}）→ 自動覆蓋本地（${localTime ? fmtT(localTime) : '無'}）`);
+        
+        // 保留本地的 jsonbin 設定（避免被覆蓋）
+        const localJsonbinId = state.jsonbinId;
+        const localJsonbinKey = state.jsonbinKey;
+        const localProxy = state.customProxy;
+        const localToken = state.githubToken;
+        
+        state = remoteData;
+        if (!state.jsonbinId) state.jsonbinId = localJsonbinId;
+        if (!state.jsonbinKey) state.jsonbinKey = localJsonbinKey;
+        if (!state.customProxy && localProxy) state.customProxy = localProxy;
+        if (!state.githubToken && localToken) state.githubToken = localToken;
+        state.lastJsonbinSync = new Date().toISOString();
+        
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+        
+        // 重新渲染所有
+        renderPillars();
+        renderSimPillars();
+        renderRecords();
+        renderPurchases();
+        renderPurchaseSummary();
+        if (typeof renderLoans === 'function') renderLoans();
+        updateAll();
+        renderLastModified();
+        document.getElementById('goal-a').value = state.goals.a;
+        document.getElementById('goal-b').value = state.goals.b;
+        document.getElementById('goal-c').value = state.goals.c;
+        
+        setJsonbinStatus(`☁ 已自動載入雲端 (${fmtT(remoteTime)})`, 'var(--success)');
+      } else if (remoteTime.getTime() === localTime.getTime()) {
+        setJsonbinStatus('☁ 已是最新', 'var(--success)');
+      } else {
+        // 本機較新 → 不動，等你動資料時自動上傳
+        const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        setJsonbinStatus(`本機較新 (${fmtT(localTime)})`, 'var(--text-muted)');
+      }
+    } catch (e) {
+      console.warn('Auto-check JSONbin failed:', e);
+      setJsonbinStatus('⚠ 檢查失敗', 'var(--danger)');
+    }
+  }, 1000);
+}
+autoCheckJsonbinOnLoad();
 </script>
 </body>
 </html>

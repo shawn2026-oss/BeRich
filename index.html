@@ -2340,6 +2340,62 @@ details[open] .loan-card-summary::after { content: '−'; }
           <button class="btn-cta" id="import-data">↑ 匯入 JSON</button>
           <input type="file" id="file-input" accept=".json" style="display:none;">
         </div>
+        
+        <!-- JSONbin 雲端自動同步 -->
+        <details style="margin-top: 16px;" id="jsonbin-config">
+          <summary style="font-size: 13px; color: var(--p-00919); cursor: pointer; padding: 8px 0; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; font-weight: 700;">☁ 自動跨裝置同步（JSONbin.io）</summary>
+          <div style="margin-top: 10px; padding: 14px; background: rgba(74, 131, 184, 0.06); border: 1px solid rgba(74, 131, 184, 0.2); border-radius: 8px;">
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px;">
+              <strong style="color: var(--text);">設定一次永久同步</strong>：兩台電腦填同一組 Bin ID + Master Key，資料變動 5 秒後自動上雲，另一台一打開「⬇ 下載」就有最新。
+            </div>
+            
+            <details style="margin-bottom: 12px;">
+              <summary style="font-size: 12px; color: var(--accent); cursor: pointer; padding: 4px 0;">📋 設定步驟（第一次用看這裡）</summary>
+              <div style="margin-top: 8px; padding: 12px; background: white; border-radius: 6px; font-size: 12px; line-height: 1.8;">
+                <ol style="margin: 0; padding-left: 18px; color: var(--text);">
+                  <li>到 <a href="https://jsonbin.io/" target="_blank" style="color: var(--accent);">https://jsonbin.io/</a> 註冊（用 Google 登入最快）</li>
+                  <li>登入後右上角點 <strong>「Create Bin」</strong></li>
+                  <li>內容貼 <code style="background: var(--bg-input); padding: 2px 6px; border-radius: 3px;">{}</code> 然後勾選 <strong>「Make Bin Private」</strong>，按 Save</li>
+                  <li>建好後在頁面找：
+                    <ul style="padding-left: 18px; margin-top: 4px;">
+                      <li><strong>BIN ID</strong>：網址結尾那串（24 位英數字，例如 <code style="background: var(--bg-input); padding: 1px 4px;">68215f4a8a456b7977c5e3d2</code>）</li>
+                      <li><strong>Master Key</strong>：右上角頭像 → API Keys → 複製那個 X-Master-Key</li>
+                    </ul>
+                  </li>
+                  <li>把這兩個貼到下方欄位 → 點「☁ 立即上傳」測試</li>
+                  <li>另一台電腦：填 <strong>同樣的 Bin ID + Master Key</strong> → 點「⬇ 從雲端下載」就有了</li>
+                </ol>
+              </div>
+            </details>
+            
+            <div style="display: grid; gap: 10px;">
+              <div>
+                <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Bin ID（24 位英數字）</label>
+                <input type="text" id="jsonbin-id-input" placeholder="例：68215f4a8a456b7977c5e3d2" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+              </div>
+              <div>
+                <label style="font-size: 11px; color: var(--text-muted); display:block; margin-bottom:3px;">Master Key（$2a$10$ 開頭那串）</label>
+                <input type="password" id="jsonbin-key-input" placeholder="不會顯示在畫面上" style="width: 100%; background: white; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+              </div>
+              <div>
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; cursor:pointer;">
+                  <input type="checkbox" id="jsonbin-autosync-toggle">
+                  自動同步（資料變更 5 秒後自動上傳到雲端）
+                </label>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px;">
+                <button class="btn" id="jsonbin-push-btn" style="font-size: 11px;">☁ 立即上傳</button>
+                <button class="btn" id="jsonbin-pull-btn" style="font-size: 11px;">⬇ 從雲端下載</button>
+                <span data-jsonbin-status style="font-size:11px; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); margin-left: auto;"></span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-dim); line-height: 1.6; margin-top: 4px; padding: 8px; background: rgba(232, 145, 106, 0.08); border-left: 3px solid var(--warning); border-radius: 0 4px 4px 0;">
+                ⚠️ <strong style="color:var(--warning);">使用順序很重要</strong>：先在「資料齊全」那台「☁ 立即上傳」一次 → 另一台「⬇ 從雲端下載」覆蓋空白資料 → 之後兩台改了會自動同步。<br>
+                ⚠️ <strong>不要兩台同時改</strong>，會互相覆蓋。一台改完等 5 秒同步完，另一台再點「⬇」拉最新。<br>
+                💡 系統會自動比對時間，若你不小心要用「舊」覆蓋「新」會跳警告擋下。
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
     </details>
   </section>
@@ -2926,8 +2982,12 @@ function loadState() {
         githubRepo: parsed.githubRepo || 'shawn2026-oss/BeRich',
         githubWorkflow: parsed.githubWorkflow || 'fetch-prices.yml',
         gistId: parsed.gistId || '',
-        gistAutoSync: parsed.gistAutoSync !== false,  // 預設開
+        gistAutoSync: parsed.gistAutoSync !== false,
         lastGistSync: parsed.lastGistSync || null,
+        jsonbinId: parsed.jsonbinId || '',
+        jsonbinKey: parsed.jsonbinKey || '',
+        jsonbinAutoSync: parsed.jsonbinAutoSync !== false,
+        lastJsonbinSync: parsed.lastJsonbinSync || null,
         watchlist: parsed.watchlist || ['0050', '台積電'],
         loans: parsed.loans || JSON.parse(JSON.stringify(DEFAULT_LOANS)),
         collaterals: parsed.collaterals || JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
@@ -2952,6 +3012,10 @@ function loadState() {
     gistId: '',
     gistAutoSync: true,
     lastGistSync: null,
+    jsonbinId: '',
+    jsonbinKey: '',
+    jsonbinAutoSync: true,
+    lastJsonbinSync: null,
     watchlist: ['0050', '台積電'],
     loans: JSON.parse(JSON.stringify(DEFAULT_LOANS)),
     collaterals: JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
@@ -2971,6 +3035,7 @@ function saveState() {
   catch(e) { console.warn(e); }
   // 觸發 Gist 自動同步（debounced 5 秒）
   if (typeof scheduleGistAutoSync === 'function') scheduleGistAutoSync();
+  if (typeof scheduleJsonbinAutoSync === 'function') scheduleJsonbinAutoSync();
   // 更新時間顯示
   if (typeof renderLastModified === 'function') renderLastModified();
 }
@@ -4401,6 +4466,154 @@ function setSyncStatus(text, color) {
     el.textContent = text;
     el.style.color = color;
   });
+}
+function setJsonbinStatus(text, color) {
+  document.querySelectorAll('[data-jsonbin-status]').forEach(el => {
+    el.textContent = text;
+    el.style.color = color;
+  });
+}
+
+// === JSONbin 雲端同步 ===
+let _jsonbinSyncInProgress = false;
+let _jsonbinDebounceTimer = null;
+
+async function pushToJsonbin(showAlert = false) {
+  if (!state.jsonbinId || !state.jsonbinKey) {
+    if (showAlert) alert('請先設定 JSONbin Bin ID 與 Master Key');
+    return false;
+  }
+  if (_jsonbinSyncInProgress) return false;
+  _jsonbinSyncInProgress = true;
+  setJsonbinStatus('上傳中…', 'var(--text-muted)');
+  
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${state.jsonbinId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': state.jsonbinKey,
+        'X-Bin-Versioning': 'false'
+      },
+      body: JSON.stringify(state)
+    });
+    
+    if (res.ok) {
+      const now = new Date().toISOString();
+      state.lastJsonbinSync = now;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+      const tStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+      setJsonbinStatus(`☁ 已同步 ${tStr}`, 'var(--success)');
+      if (showAlert) alert('✓ 已上傳到 JSONbin');
+      _jsonbinSyncInProgress = false;
+      return true;
+    } else {
+      const errText = await res.text();
+      setJsonbinStatus(`⚠ 上傳失敗 (${res.status})`, 'var(--danger)');
+      if (showAlert) alert(`上傳失敗 HTTP ${res.status}\n${errText.substring(0, 300)}`);
+      _jsonbinSyncInProgress = false;
+      return false;
+    }
+  } catch(e) {
+    setJsonbinStatus('⚠ 上傳錯誤', 'var(--danger)');
+    if (showAlert) alert('上傳錯誤：' + e.message);
+    _jsonbinSyncInProgress = false;
+    return false;
+  }
+}
+
+async function pullFromJsonbin(showAlert = false) {
+  if (!state.jsonbinId || !state.jsonbinKey) {
+    if (showAlert) alert('請先設定 JSONbin Bin ID 與 Master Key');
+    return false;
+  }
+  if (_jsonbinSyncInProgress) return false;
+  _jsonbinSyncInProgress = true;
+  setJsonbinStatus('下載中…', 'var(--text-muted)');
+  
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${state.jsonbinId}/latest`, {
+      headers: {
+        'X-Master-Key': state.jsonbinKey
+      }
+    });
+    
+    if (!res.ok) {
+      const errText = await res.text();
+      setJsonbinStatus(`⚠ 下載失敗 (${res.status})`, 'var(--danger)');
+      if (showAlert) alert(`下載失敗 HTTP ${res.status}\n${errText.substring(0, 300)}`);
+      _jsonbinSyncInProgress = false;
+      return false;
+    }
+    
+    const data = await res.json();
+    const remoteData = data.record;
+    
+    if (!remoteData || (typeof remoteData === 'object' && Object.keys(remoteData).length === 0)) {
+      setJsonbinStatus('Bin 是空的', 'var(--warning)');
+      if (showAlert) alert('JSONbin 還沒有資料，請先「☁ 上傳」');
+      _jsonbinSyncInProgress = false;
+      return false;
+    }
+    
+    // 比對時間
+    const localTime = state.lastModified ? new Date(state.lastModified) : null;
+    const remoteTime = remoteData.lastModified ? new Date(remoteData.lastModified) : null;
+    if (localTime && remoteTime && remoteTime < localTime) {
+      const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+      if (!confirm(`⚠️ 警告：雲端資料比本機舊！\n本機：${fmtT(localTime)}\n雲端：${fmtT(remoteTime)}\n\n用「舊」覆蓋「新」？`)) {
+        _jsonbinSyncInProgress = false;
+        setJsonbinStatus('已取消', 'var(--text-muted)');
+        return false;
+      }
+    }
+    
+    // 保留本地的 jsonbin 設定（避免被覆蓋）
+    const localJsonbinId = state.jsonbinId;
+    const localJsonbinKey = state.jsonbinKey;
+    const localProxy = state.customProxy;
+    const localToken = state.githubToken;
+    
+    state = remoteData;
+    if (!state.jsonbinId) state.jsonbinId = localJsonbinId;
+    if (!state.jsonbinKey) state.jsonbinKey = localJsonbinKey;
+    if (!state.customProxy && localProxy) state.customProxy = localProxy;
+    if (!state.githubToken && localToken) state.githubToken = localToken;
+    state.lastJsonbinSync = new Date().toISOString();
+    
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+    
+    const tStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+    setJsonbinStatus(`☁ 已同步 ${tStr}`, 'var(--success)');
+    
+    // 重新渲染所有
+    renderPillars();
+    renderSimPillars();
+    renderRecords();
+    renderPurchases();
+    renderPurchaseSummary();
+    if (typeof renderLoans === 'function') renderLoans();
+    updateAll();
+    renderLastModified();
+    document.getElementById('goal-a').value = state.goals.a;
+    document.getElementById('goal-b').value = state.goals.b;
+    document.getElementById('goal-c').value = state.goals.c;
+    
+    if (showAlert) alert('✓ 已從 JSONbin 下載最新資料');
+    _jsonbinSyncInProgress = false;
+    return true;
+  } catch(e) {
+    setJsonbinStatus('⚠ 下載錯誤', 'var(--danger)');
+    if (showAlert) alert('下載錯誤：' + e.message);
+    _jsonbinSyncInProgress = false;
+    return false;
+  }
+}
+
+function scheduleJsonbinAutoSync() {
+  if (!state.jsonbinAutoSync || !state.jsonbinId || !state.jsonbinKey) return;
+  if (_jsonbinDebounceTimer) clearTimeout(_jsonbinDebounceTimer);
+  _jsonbinDebounceTimer = setTimeout(() => pushToJsonbin(false), 5000);
 }
 
 // 顯示「本機資料最後更新」時間
@@ -6298,6 +6511,51 @@ function openQuickAllDialog() {
   if (state.lastGistSync) {
     const dt = new Date(state.lastGistSync);
     setSyncStatus(`☁ 上次同步 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`, 'var(--text-dim)');
+  }
+  
+  // === JSONbin 同步 ===
+  const jbIdInput = document.getElementById('jsonbin-id-input');
+  const jbKeyInput = document.getElementById('jsonbin-key-input');
+  const jbAutoToggle = document.getElementById('jsonbin-autosync-toggle');
+  if (jbIdInput) {
+    jbIdInput.value = state.jsonbinId || '';
+    jbIdInput.addEventListener('change', e => {
+      // 清掉前後空白和可能複製到的網址前綴
+      let val = e.target.value.trim();
+      // 如果貼整段 https://api.jsonbin.io/v3/b/XXX，自動取 ID
+      const m = val.match(/\/b\/([a-f0-9]{24})/i);
+      if (m) val = m[1];
+      e.target.value = val;
+      state.jsonbinId = val;
+      saveWithoutTouch(saveState);
+    });
+  }
+  if (jbKeyInput) {
+    jbKeyInput.value = state.jsonbinKey || '';
+    jbKeyInput.addEventListener('change', e => {
+      state.jsonbinKey = e.target.value.trim();
+      saveWithoutTouch(saveState);
+    });
+  }
+  if (jbAutoToggle) {
+    jbAutoToggle.checked = state.jsonbinAutoSync !== false;
+    jbAutoToggle.addEventListener('change', e => {
+      state.jsonbinAutoSync = e.target.checked;
+      saveWithoutTouch(saveState);
+    });
+  }
+  const jbPushBtn = document.getElementById('jsonbin-push-btn');
+  const jbPullBtn = document.getElementById('jsonbin-pull-btn');
+  if (jbPushBtn) jbPushBtn.addEventListener('click', () => pushToJsonbin(true));
+  if (jbPullBtn) jbPullBtn.addEventListener('click', () => {
+    if (confirm('從雲端下載會「覆蓋」本地所有資料。\n如果本地有未上傳的修改會被蓋掉。\n\n確定？')) {
+      pullFromJsonbin(true);
+    }
+  });
+  // 顯示上次同步時間
+  if (state.lastJsonbinSync) {
+    const dt = new Date(state.lastJsonbinSync);
+    setJsonbinStatus(`☁ 上次同步 ${dt.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`, 'var(--text-dim)');
   }
   
   // 顯示上次更新時間（autoLoadLocalPrices 會覆蓋）

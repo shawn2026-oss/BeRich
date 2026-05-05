@@ -2583,7 +2583,6 @@ details[open] .loan-card-summary::after { content: '−'; }
       </table>
     </div>
     <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-      <button class="btn" id="apply-prices">↑ 套用最新股價到試算</button>
       <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空買入紀錄</button>
     </div>
   </section>
@@ -3910,9 +3909,10 @@ function renderPurchaseSummary() {
     if (wrap) wrap.style.display = 'none';
     return;
   }
-  if (wrap) wrap.style.display = 'block';
+ if (wrap) wrap.style.display = 'block';
   
-  Object.entries(summary).forEach(([etf, s]) => {
+  const PILLAR_ORDER = { '0056': 1, '00919': 2, '00878': 3 };
+  Object.entries(summary).sort(([a], [b]) => (PILLAR_ORDER[a] || 99) - (PILLAR_ORDER[b] || 99) || a.localeCompare(b)).forEach(([etf, s]) => {
     const latestPrice = state.latestPrices[etf];
     let profitText = '—';
     let profitClass = '';
@@ -6003,7 +6003,8 @@ function promptSyncShares(newPurchases) {
     `（按「確定」更新；按「取消」只保留買入紀錄不更新張數）`
   )) {
     Object.entries(grouped).forEach(([etf, sharesAdded]) => {
-      state.pillars[etf].shares += sharesAdded / 1000;
+      const newShares = state.pillars[etf].shares + sharesAdded / 1000;
+      state.pillars[etf].shares = Math.round(newShares * 1000) / 1000;
     });
     saveState();
     renderPillars();
@@ -6401,26 +6402,7 @@ function openQuickAllDialog() {
       alert('已套用！');
     }
   });
-  document.getElementById('apply-prices').addEventListener('click', () => {
-    const applied = [];
-    ['0056', '00919', '00878'].forEach(etf => {
-      if (state.latestPrices[etf]) {
-        state.pillars[etf].price = state.latestPrices[etf];
-        applied.push(`${etf}: ${fmt2(state.latestPrices[etf])} 元`);
-      }
-    });
-    if (applied.length === 0) {
-      alert('尚無最新股價資料。請先點「↻ 更新股價」。');
-      return;
-    }
-    if (confirm('套用最新股價到「試算股價假設」？\n\n' + applied.join('\n'))) {
-      saveState();
-      renderSimPillars();
-      updateAll();
-      alert('已套用！');
-    }
-  });
-  document.getElementById('clear-purchases').addEventListener('click', () => {
+    document.getElementById('clear-purchases').addEventListener('click', () => {
     if (state.purchases.length === 0) return;
     if (confirm('清空所有買入紀錄？此動作無法復原（除非有JSON備份）')) {
       state.purchases = [];

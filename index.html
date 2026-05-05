@@ -2526,7 +2526,6 @@ details[open] .loan-card-summary::after { content: '−'; }
   <section class="section">
     <div class="section-row">
       <div class="section-title">📝 買入登記（DCA／加碼／一次性買進）</div>
-      <button class="btn" id="apply-shares" title="套用買入累計到三本柱「現有張數」">↑ 套用到現有張數</button>
     </div>
     
     <!-- 快捷加碼按鈕區 -->
@@ -6374,28 +6373,7 @@ function openQuickAllDialog() {
   renderPurchaseSummary();
   promptSyncShares(newPurchases);
 }
-  document.getElementById('apply-shares').addEventListener('click', () => {
-    const summary = computePurchaseSummary();
-    const applied = [];
-    ['0056', '00919', '00878'].forEach(etf => {
-      if (summary[etf]) {
-        state.pillars[etf].shares = summary[etf].totalLots;
-        applied.push(`${etf}: ${fmt2(summary[etf].totalLots)} 張`);
-      }
-    });
-    if (applied.length === 0) {
-      alert('買入紀錄沒有任何三本柱資料可套用。');
-      return;
-    }
-    if (confirm('套用累計到三本柱「現有張數」？\n\n' + applied.join('\n'))) {
-      saveState();
-      renderPillars();
-      renderSimPillars();
-      updateAll();
-      alert('已套用！');
-    }
-  });
-    document.getElementById('clear-purchases').addEventListener('click', () => {
+     document.getElementById('clear-purchases').addEventListener('click', () => {
     if (state.purchases.length === 0) return;
     if (confirm('清空所有買入紀錄？此動作無法復原（除非有JSON備份）')) {
       state.purchases = [];

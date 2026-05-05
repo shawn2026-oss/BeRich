@@ -2548,15 +2548,13 @@ details[open] .loan-card-summary::after { content: '−'; }
       </div>
       <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
         <table class="records-table" style="min-width: 720px;">
-          <thead>
+         <thead>
             <tr>
               <th>標的</th>
               <th>累計張數</th>
               <th>總成本</th>
-              <th>平均成本價</th>
               <th>最新股價</th>
-              <th>含息報酬</th>
-              <th>操作</th>
+                          <th>操作</th>
             </tr>
           </thead>
           <tbody id="purchases-summary-tbody"></tbody>
@@ -3923,13 +3921,11 @@ function renderPurchaseSummary() {
     }
     const isPillar = ['0056', '00919', '00878'].includes(etf);
     const tr = document.createElement('tr');
-    tr.innerHTML = `
+   tr.innerHTML = `
       <td><span class="etf-input ${getEtfClass(etf)}" style="cursor:default;">${etf}</span></td>
       <td>${fmt2(s.totalLots)}</td>
       <td>${fmt(s.totalCost)}</td>
-      <td>${fmt2(s.avgPrice)}</td>
       <td>${latestPrice ? fmt2(latestPrice) : '<span style="color:var(--text-dim);">—</span>'}</td>
-      <td class="${profitClass}">${profitText}</td>
       <td>
         <div class="summary-row-actions">
           ${isPillar ? `<button class="summary-btn" data-action="apply-share" data-etf="${etf}">套用張數</button>` : ''}

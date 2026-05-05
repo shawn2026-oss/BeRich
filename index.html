@@ -2553,7 +2553,6 @@ details[open] .loan-card-summary::after { content: '−'; }
               <th>標的</th>
               <th>累計張數</th>
               <th>總成本</th>
-              <th>最新股價</th>
                           <th>操作</th>
             </tr>
           </thead>
@@ -3921,15 +3920,13 @@ function renderPurchaseSummary() {
     }
     const isPillar = ['0056', '00919', '00878'].includes(etf);
     const tr = document.createElement('tr');
-   tr.innerHTML = `
+  tr.innerHTML = `
       <td><span class="etf-input ${getEtfClass(etf)}" style="cursor:default;">${etf}</span></td>
       <td>${fmt2(s.totalLots)}</td>
       <td>${fmt(s.totalCost)}</td>
-      <td>${latestPrice ? fmt2(latestPrice) : '<span style="color:var(--text-dim);">—</span>'}</td>
       <td>
         <div class="summary-row-actions">
           ${isPillar ? `<button class="summary-btn" data-action="apply-share" data-etf="${etf}">套用張數</button>` : ''}
-          ${isPillar && latestPrice ? `<button class="summary-btn" data-action="apply-price" data-etf="${etf}">套用股價</button>` : ''}
         </div>
       </td>
     `;

@@ -3132,9 +3132,9 @@ const YAHOO_TICKERS = {
 };
 
 const DEFAULT_PILLARS = {
-  '0056':  { shares: 59943,  dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
-  '00919': { shares: 99323,  dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
-  '00878': { shares: 112136, dca: 14000, price: 25, dividend: 0.42, dividendMonths: [3, 6, 9, 12] }
+  '0056':  { shares: 59943,  dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11], myCost: 0 },
+  '00919': { shares: 99323,  dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10], myCost: 0 },
+  '00878': { shares: 112136, dca: 14000, price: 25, dividend: 0.42, dividendMonths: [3, 6, 9, 12], myCost: 0 }
 };
 
 const DEFAULT_RECORDS = [
@@ -3457,6 +3457,13 @@ function renderPillars() {
         <input type="number" data-etf="${etf}" data-field="shares" value="${data.shares}" min="0" step="1">
       </div>
       <div class="field">
+        <div class="field-label">
+          <span>我的成本（永豐）</span>
+          <span style="font-size:10px; color:var(--text-dim); font-style:italic;">填永豐 App 顯示的成本，0 = 用配息紀錄推</span>
+        </div>
+        <input type="number" data-etf="${etf}" data-field="myCost" value="${data.myCost || 0}" min="0" step="0.01">
+      </div>
+      <div class="field">
         <div class="field-label">本季每股配息（元）</div>
         <input type="number" data-etf="${etf}" data-field="dividend" value="${data.dividend}" min="0" step="0.01">
       </div>
@@ -3470,11 +3477,23 @@ function renderPillars() {
           <span class="pillar-output-value" data-output="annual">${fmt(annual)} 元</span>
         </div>
         ${(() => {
-          const recs = (state.records || [])
-            .filter(r => r.etf === etf && r.costPrice > 0)
-            .sort((a, b) => b.date.localeCompare(a.date));
-          if (recs.length === 0 || !est || est.sampleCount === 0) return '';
-          const cost = recs[0].costPrice;
+          // 優先用「我的成本」，沒填才從配息紀錄推
+          const myCost = data.myCost || 0;
+          let cost = 0;
+          let costSource = '';
+          if (myCost > 0) {
+            cost = myCost;
+            costSource = '我填的（永豐 App）';
+          } else {
+            const recs = (state.records || [])
+              .filter(r => r.etf === etf && r.costPrice > 0)
+              .sort((a, b) => b.date.localeCompare(a.date));
+            if (recs.length > 0) {
+              cost = recs[0].costPrice;
+              costSource = `配息紀錄 ${recs[0].date}`;
+            }
+          }
+          if (cost === 0 || !est || est.sampleCount === 0) return '';
           const annualPerShare = est.annualPerShare;
           const yieldPct = annualPerShare / cost * 100;
           const curPrice = state.latestPrices[etf] || data.price;
@@ -3488,7 +3507,7 @@ function renderPillars() {
               <span class="pillar-output-value" style="color: var(--success); font-weight: 700;">${fmt2(yieldPct)}%</span>
             </div>
             <div class="pillar-output-source" style="font-size: 10px;">
-              年配 ${fmt2(annualPerShare)} ÷ 成本 ${fmt2(cost)}（${recs[0].date}）
+              年配 ${fmt2(annualPerShare)} ÷ 成本 ${fmt2(cost)}（${costSource}）
             </div>
             <div class="pillar-output-row">
               <span class="pillar-output-label">帳面獲利</span>

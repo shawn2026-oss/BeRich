@@ -2538,10 +2538,13 @@ details[open] .loan-card-summary::after { content: '−'; }
       <button class="btn-cta btn-cta-primary" id="add-purchase" style="margin-left:auto;">＋ 自訂一筆買入</button>
     </div>
     
+    <!-- 年份切換 tab -->
+    <div id="purchases-year-tabs" class="records-year-tabs" style="display:none; margin-top: 16px;"></div>
+    
     <!-- 摘要區（有資料才顯示）-->
-    <div id="purchases-summary-wrap" style="display:none; margin-top: 16px;">
+    <div id="purchases-summary-wrap" style="display:none; margin-top: 12px;">
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-        <div class="subsection-label" style="margin-bottom:0;">📊 自動摘要（按標的分組）</div>
+        <div class="subsection-label" style="margin-bottom:0;">📊 自動摘要（僅統計選中年份）</div>
         <button class="btn refresh-prices-btn" data-trigger="purchases" style="font-size:11px; padding:5px 10px;">↻ 更新股價</button>
         <span class="price-time-mini" data-time-display></span>
       </div>
@@ -2550,7 +2553,7 @@ details[open] .loan-card-summary::after { content: '−'; }
          <thead>
             <tr>
               <th>標的</th>
-              <th>累計張數</th>
+              <th>累計股數</th>
               <th>總成本</th>
                           <th>操作</th>
             </tr>
@@ -2561,7 +2564,7 @@ details[open] .loan-card-summary::after { content: '−'; }
     </div>
     
     <!-- 明細表 -->
-    <div class="subsection-label" style="margin-top: 16px;">📋 明細紀錄</div>
+    <div class="subsection-label" style="margin-top: 16px;">📋 明細紀錄（僅顯示選中年份）</div>
     <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
       <table class="records-table" style="min-width: 720px;">
         <thead>
@@ -3055,6 +3058,23 @@ function saveStateTouch() {
   saveState();
 }
 
+// === 簡易 Toast 提示 ===
+function showToast(msg, type) {
+  type = type || 'success';
+  let toast = document.getElementById('app-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'app-toast';
+    toast.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 20px; background:#fff; border:1.5px solid #4a9d5e; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); font-size:14px; font-weight:700; color:#1f2230; z-index:9999; transition:opacity 0.3s; max-width:90vw; pointer-events:none; font-family:"Noto Serif TC", serif;';
+    document.body.appendChild(toast);
+  }
+  toast.style.borderColor = type === 'success' ? '#4a9d5e' : type === 'warn' ? '#c97a4a' : '#c95757';
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+}
+
 let state = loadState();
 
 const fmt = n => Math.round(n).toLocaleString('en-US');
@@ -3162,6 +3182,11 @@ function renderPillars() {
           const cost = recs[0].costPrice;
           const annualPerShare = est.annualPerShare;
           const yieldPct = annualPerShare / cost * 100;
+          const curPrice = state.latestPrices[etf] || data.price;
+          const profitPct = curPrice > 0 ? ((curPrice - cost) / cost * 100) : 0;
+          const profitAmount = (curPrice - cost) * data.shares;
+          const profitCls = profitAmount >= 0 ? 'profit-pos' : 'profit-neg';
+          const profitSign = profitAmount >= 0 ? '+' : '';
           return `
             <div class="pillar-output-row" style="border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 4px;">
               <span class="pillar-output-label">個人殖利率</span>
@@ -3169,6 +3194,13 @@ function renderPillars() {
             </div>
             <div class="pillar-output-source" style="font-size: 10px;">
               年配 ${fmt2(annualPerShare)} ÷ 成本 ${fmt2(cost)}（${recs[0].date}）
+            </div>
+            <div class="pillar-output-row">
+              <span class="pillar-output-label">帳面獲利</span>
+              <span class="pillar-output-value ${profitCls}" style="font-weight: 700;">${profitSign}$${fmt(profitAmount)} (${profitSign}${fmt2(profitPct)}%)</span>
+            </div>
+            <div class="pillar-output-source" style="font-size: 10px;">
+              現價 ${curPrice > 0 ? fmt2(curPrice) : '—'} × 股數 ${fmt(data.shares)}
             </div>
           `;
         })()}
@@ -3825,11 +3857,45 @@ function renderRecords() {
 
 
 // === 買入紀錄 ===
+// 當前選中的買入紀錄年份（預設今年）
+let _currentPurchaseYear = String(new Date().getFullYear());
+
 function renderPurchases() {
   const tbody = document.getElementById('purchases-tbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
   
-  const sorted = [...state.purchases].sort((a, b) => a.date.localeCompare(b.date));
+  // 收集所有年份
+  const allYears = [...new Set(state.purchases.map(p => p.date.substring(0, 4)))].sort();
+  
+  // 渲染年份 tab
+  const tabsWrap = document.getElementById('purchases-year-tabs');
+  if (tabsWrap) {
+    if (allYears.length === 0) {
+      tabsWrap.style.display = 'none';
+    } else {
+      tabsWrap.style.display = 'flex';
+      // 確保 _currentPurchaseYear 是有效年份
+      if (!allYears.includes(_currentPurchaseYear)) {
+        _currentPurchaseYear = allYears[allYears.length - 1];
+      }
+      tabsWrap.innerHTML = allYears.map(y => 
+        `<button class="year-tab ${y === _currentPurchaseYear ? 'active' : ''}" data-year="${y}">${y}</button>`
+      ).join('');
+      tabsWrap.querySelectorAll('.year-tab').forEach(btn => {
+        btn.addEventListener('click', e => {
+          _currentPurchaseYear = e.target.dataset.year;
+          renderPurchases();
+          renderPurchaseSummary();
+        });
+      });
+    }
+  }
+  
+  // 篩選當前年份的紀錄
+  const filtered = state.purchases.filter(p => p.date.startsWith(_currentPurchaseYear + '-'));
+  const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
+  
   sorted.forEach(p => {
     const i = state.purchases.indexOf(p);
     const cost = p.shares * p.price;
@@ -3849,6 +3915,10 @@ function renderPurchases() {
   if (state.purchases.length === 0) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">尚無買入紀錄。點「+ 新增買入」開始記錄。</td>`;
+    tbody.appendChild(tr);
+  } else if (filtered.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">${_currentPurchaseYear} 年尚無紀錄</td>`;
     tbody.appendChild(tr);
   }
   
@@ -3873,15 +3943,17 @@ function renderPurchases() {
         saveState();
         renderPurchases();
         renderPurchaseSummary();
+        renderWatchlist();
       }
     });
   });
 }
 
 function computePurchaseSummary() {
-  // 按 ETF 分組
+  // 只統計當前選中年份的紀錄
   const grouped = {};
   state.purchases.forEach(p => {
+    if (!p.date.startsWith(_currentPurchaseYear + '-')) return;
     if (!grouped[p.etf]) grouped[p.etf] = { totalShares: 0, totalCost: 0, count: 0 };
     grouped[p.etf].totalShares += p.shares;
     grouped[p.etf].totalCost += p.shares * p.price;
@@ -3925,23 +3997,16 @@ function renderPurchaseSummary() {
   
   const PILLAR_ORDER = { '0056': 1, '00919': 2, '00878': 3 };
   Object.entries(summary).sort(([a], [b]) => (PILLAR_ORDER[a] || 99) - (PILLAR_ORDER[b] || 99) || a.localeCompare(b)).forEach(([etf, s]) => {
-    const latestPrice = state.latestPrices[etf];
-    let profitText = '—';
-    let profitClass = '';
-    if (latestPrice && s.avgPrice > 0) {
-      const profitPct = (latestPrice - s.avgPrice) / s.avgPrice * 100;
-      profitText = (profitPct >= 0 ? '+' : '') + fmt2(profitPct) + '%';
-      profitClass = profitPct >= 0 ? 'profit-pos' : 'profit-neg';
-    }
     const isPillar = ['0056', '00919', '00878'].includes(etf);
     const tr = document.createElement('tr');
-  tr.innerHTML = `
+    // 累計股數 = totalShares（精確值，整數）
+    tr.innerHTML = `
       <td><span class="etf-input ${getEtfClass(etf)}" style="cursor:default;">${etf}</span></td>
-      <td>${fmt2(s.totalLots)}</td>
+      <td>${fmt(s.totalShares)} 股<br><span style="font-size:10px;color:var(--text-dim);">(${fmt2(s.totalLots)} 張)</span></td>
       <td>${fmt(s.totalCost)}</td>
       <td>
         <div class="summary-row-actions">
-          ${isPillar ? `<button class="summary-btn" data-action="apply-share" data-etf="${etf}">套用張數</button>` : ''}
+          ${isPillar ? `<button class="summary-btn" data-action="recalibrate" data-etf="${etf}" title="把買入累計的股數覆蓋目前三本柱現有股數（用於校準，例如懷疑自動同步有差異時）">🔁 重新校準</button>` : ''}
         </div>
       </td>
     `;
@@ -3953,12 +4018,22 @@ function renderPurchaseSummary() {
       const action = e.target.dataset.action;
       const etf = e.target.dataset.etf;
       const summary = computePurchaseSummary();
-      if (action === 'apply-share' && summary[etf]) {
-        state.pillars[etf].shares = summary[etf].totalLots;
+      if (action === 'recalibrate' && summary[etf]) {
+        const cur = state.pillars[etf].shares;
+        const target = summary[etf].totalShares;
+        if (!confirm(
+          `🔁 重新校準 ${etf}\n\n` +
+          `目前三本柱：${fmt(cur)} 股（${fmt2(cur/1000)} 張）\n` +
+          `${_currentPurchaseYear} 年買入累計：${fmt(target)} 股（${fmt2(target/1000)} 張）\n\n` +
+          `⚠️ 注意：摘要只統計選中年份。若你想用「歷年買入總和」校準，請小心目前不會包含其他年份。\n\n` +
+          `用買入累計覆蓋目前三本柱？`
+        )) return;
+        state.pillars[etf].shares = target;
         saveState();
         renderPillars();
         renderSimPillars();
         updateAll();
+        showToast(`✓ ${etf} 已校準為 ${fmt(target)} 股`);
       } else if (action === 'apply-price' && state.latestPrices[etf]) {
         state.pillars[etf].price = state.latestPrices[etf];
         saveState();
@@ -4306,16 +4381,21 @@ function renderWatchlist() {
     let returnHtml = '';
     if (stat && stat.avgPrice > 0 && price) {
       const profit = ((price - stat.avgPrice) / stat.avgPrice * 100);
+      const profitAmount = (price - stat.avgPrice) * stat.totalShares;
       const cls = profit >= 0 ? 'profit-pos' : 'profit-neg';
       const sign = profit >= 0 ? '+' : '';
       returnHtml = `
         <div class="watch-stat-row">
-          <span class="watch-stat-label">持有 ${fmt2(stat.totalLots)} 張</span>
+          <span class="watch-stat-label">持有 ${fmt(stat.totalShares)} 股</span>
           <span class="watch-stat-value ${cls}">${sign}${fmt2(profit)}%</span>
         </div>
         <div class="watch-stat-row">
           <span class="watch-stat-label">平均成本</span>
           <span class="watch-stat-value">$${fmt2(stat.avgPrice)}</span>
+        </div>
+        <div class="watch-stat-row" style="border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 4px;">
+          <span class="watch-stat-label">帳面獲利</span>
+          <span class="watch-stat-value ${cls}" style="font-weight: 700;">${sign}$${fmt(profitAmount)}</span>
         </div>
       `;
     }

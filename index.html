@@ -2563,27 +2563,34 @@ details[open] .loan-card-summary::after { content: '−'; }
       </div>
     </div>
     
-    <!-- 明細表 -->
-    <div class="subsection-label" style="margin-top: 16px;">📋 明細紀錄（僅顯示選中年份）</div>
-    <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
-      <table class="records-table" style="min-width: 720px;">
-        <thead>
-          <tr>
-            <th style="width:40px;"></th>
-            <th>日期</th>
-            <th>標的</th>
-            <th>買入股數</th>
-            <th>買入單價</th>
-            <th>成本</th>
-            <th>備註</th>
-          </tr>
-        </thead>
-        <tbody id="purchases-tbody"></tbody>
-      </table>
-    </div>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-      <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空買入紀錄</button>
-    </div>
+    <!-- 明細表（預設折疊，避免一年下來 48 筆 DCA 太雜） -->
+    <details style="margin-top: 16px;">
+      <summary style="cursor: pointer; padding: 10px 14px; background: var(--bg-input); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>📋 看明細紀錄（僅顯示選中年份）</span>
+        <span style="font-size: 16px; color: var(--accent);">▾</span>
+      </summary>
+      <div style="margin-top: 10px;">
+        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+          <table class="records-table" style="min-width: 720px;">
+            <thead>
+              <tr>
+                <th style="width:40px;"></th>
+                <th>日期</th>
+                <th>標的</th>
+                <th>買入股數</th>
+                <th>買入單價</th>
+                <th>成本</th>
+                <th>備註</th>
+              </tr>
+            </thead>
+            <tbody id="purchases-tbody"></tbody>
+          </table>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空買入紀錄</button>
+        </div>
+      </div>
+    </details>
   </section>
 
   <!-- ============ 觀察股清單 ============ -->

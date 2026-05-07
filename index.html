@@ -2313,7 +2313,7 @@ details[open] .loan-card-summary::after { content: '−'; }
   <header class="header">
     <div class="header-eyebrow">Three-Pillar Dashboard · 2026</div>
     <h1>三本柱<span class="accent">儀表板</span></h1>
-    <p class="header-sub">輸入「現有張數」與「本季每股配息」，自動推算每月可領、年化收入與目標達成進度。資料自動保存於瀏覽器。</p>
+    <p class="header-sub">輸入「現有股數」與「本季每股配息」，自動推算每月可領、年化收入與目標達成進度。資料自動保存於瀏覽器。</p>
   </header>
 
   <section class="section">
@@ -2787,7 +2787,7 @@ details[open] .loan-card-summary::after { content: '−'; }
       </div>
     </details>
     <div style="margin-top: 14px; padding: 12px 16px; background: var(--accent-bg); border-radius: 8px; font-size: 12px; line-height: 1.6; color: var(--text);">
-      <strong>下方卡片代表：</strong>依「現有張數＋每月 DCA 加碼＋配息再投入」的累積速度，預估三支ETF 都達到下列每月配息目標的時間點。<br>
+      <strong>下方卡片代表：</strong>依「現有股數＋每月 DCA 加碼＋配息再投入」的累積速度，預估三支ETF 都達到下列每月配息目標的時間點。<br>
       <span style="color: var(--text-muted);">會員自由調整目標金額或 DCA 金額，數字會即時重算。</span>
     </div>
     <div class="results-grid" id="results-grid" style="margin-top: 14px;"></div>
@@ -2847,9 +2847,9 @@ const YAHOO_TICKERS = {
 };
 
 const DEFAULT_PILLARS = {
-  '0056':  { shares: 59.943, dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
-  '00919': { shares: 99.323, dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
-  '00878': { shares: 112.136, dca: 14000, price: 25, dividend: 0.42, dividendMonths: [3, 6, 9, 12] }
+  '0056':  { shares: 59943,  dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
+  '00919': { shares: 99323,  dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
+  '00878': { shares: 112136, dca: 14000, price: 25, dividend: 0.42, dividendMonths: [3, 6, 9, 12] }
 };
 
 const DEFAULT_RECORDS = [
@@ -3141,13 +3141,13 @@ function renderPillars() {
   ['0056', '00919', '00878'].forEach(etf => {
     const data = state.pillars[etf];
     const months = data.dividendMonths.join('、') + '月';
-    const quarterly = data.shares * 1000 * data.dividend;
+    const quarterly = data.shares * data.dividend;
     
     // 從歷史推估年配息
     const est = estimateAnnualDividendPerShare(etf);
     let annual, annualSource;
     if (est && est.sampleCount > 0) {
-      annual = data.shares * 1000 * est.annualPerShare;
+      annual = data.shares * est.annualPerShare;
       if (est.isComplete) {
         annualSource = `<span class="annual-est-info">${est.year} 全年實際 ${est.sampleCount}/${est.expectedCount} 季 = ${fmt2(est.annualPerShare)} 元/股 ✓</span>`;
       } else {
@@ -3165,8 +3165,11 @@ function renderPillars() {
       <div class="pillar-name">${etf}</div>
       <div class="pillar-month">配息月：${months}</div>
       <div class="field">
-        <div class="field-label">現有張數</div>
-        <input type="number" data-etf="${etf}" data-field="shares" value="${data.shares}" min="0" step="0.001">
+        <div class="field-label">
+          <span>現有股數</span>
+          <span class="share-as-lots" data-etf-lots="${etf}" style="font-family:'JetBrains Mono', monospace; font-weight:700;">≈ ${fmt2(data.shares / 1000)} 張</span>
+        </div>
+        <input type="number" data-etf="${etf}" data-field="shares" value="${data.shares}" min="0" step="1">
       </div>
       <div class="field">
         <div class="field-label">本季每股配息（元）</div>
@@ -3175,11 +3178,11 @@ function renderPillars() {
       <div class="pillar-output">
         <div class="pillar-output-row">
           <span class="pillar-output-label">本季配息</span>
-          <span class="pillar-output-value">${fmt(quarterly)} 元</span>
+          <span class="pillar-output-value" data-output="quarterly">${fmt(quarterly)} 元</span>
         </div>
         <div class="pillar-output-row highlight">
           <span class="pillar-output-label">年配息推估</span>
-          <span class="pillar-output-value">${fmt(annual)} 元</span>
+          <span class="pillar-output-value" data-output="annual">${fmt(annual)} 元</span>
         </div>
         ${(() => {
           const recs = (state.records || [])
@@ -3234,19 +3237,21 @@ function renderPillars() {
       state.pillars[etf][field] = parseFloat(e.target.value) || 0;
       saveState();
       
-      // 即時更新本卡片的「本季配息」「年配息推估」
+      // 即時更新本卡片的「本季配息」「年配息推估」「≈ X 張」
       const card = e.target.closest('.pillar-card');
       if (card) {
         const data = state.pillars[etf];
-        const quarterly = data.shares * 1000 * data.dividend;
-        // 年配息優先用歷史推估
+        const quarterly = data.shares * data.dividend;
         const est = estimateAnnualDividendPerShare(etf);
         const annual = est && est.sampleCount > 0
-          ? data.shares * 1000 * est.annualPerShare
+          ? data.shares * est.annualPerShare
           : quarterly * 4;
-        const outputs = card.querySelectorAll('.pillar-output-value');
-        if (outputs[0]) outputs[0].textContent = fmt(quarterly) + ' 元';
-        if (outputs[1]) outputs[1].textContent = fmt(annual) + ' 元';
+        const qOut = card.querySelector('[data-output="quarterly"]');
+        const aOut = card.querySelector('[data-output="annual"]');
+        const lotsOut = card.querySelector(`[data-etf-lots="${etf}"]`);
+        if (qOut) qOut.textContent = fmt(quarterly) + ' 元';
+        if (aOut) aOut.textContent = fmt(annual) + ' 元';
+        if (lotsOut && field === 'shares') lotsOut.textContent = `≈ ${fmt2(data.shares / 1000)} 張`;
       }
       
       updateAll();
@@ -3295,14 +3300,14 @@ function updateDashboard() {
   let totalA = 0;
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
-    totalQ += p.shares * 1000 * p.dividend;
+    totalQ += p.shares * p.dividend;
     
     // 年配息：優先用歷史推估，沒紀錄才退回 ×4
     const est = estimateAnnualDividendPerShare(etf);
     if (est && est.sampleCount > 0) {
-      totalA += p.shares * 1000 * est.annualPerShare;
+      totalA += p.shares * est.annualPerShare;
     } else {
-      totalA += p.shares * 1000 * p.dividend * 4;
+      totalA += p.shares * p.dividend * 4;
     }
   });
   const monthly = totalA / 12;
@@ -3410,7 +3415,7 @@ function updateGoals(monthly) {
             <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
             <td colspan="2" style="color: var(--success); font-weight: 600; font-size:12px;">
               ✓ 已達標<br>
-              <span style="color:var(--text-muted); font-weight:normal;">現有 ${fmt2(e.current)} ≥ 目標 ${fmt2(e.required)} 張</span>
+              <span style="color:var(--text-muted); font-weight:normal;">現有 ${fmt2(e.current / 1000)} ≥ 目標 ${fmt2(e.required / 1000)} 張</span>
             </td>
             <td colspan="2" style="text-align:right; color: var(--success);">—</td>
           </tr>`;
@@ -3418,11 +3423,11 @@ function updateGoals(monthly) {
         return `<tr>
           <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
           <td style="font-size:12px;">
-            現有 <strong>${fmt2(e.current)}</strong> 張<br>
-            <span style="color:var(--text-muted);">目標 ${fmt2(e.required)} 張</span>
+            現有 <strong>${fmt2(e.current / 1000)}</strong> 張<br>
+            <span style="color:var(--text-muted);">目標 ${fmt2(e.required / 1000)} 張</span>
           </td>
           <td>
-            差 <strong>${fmt2(e.gap)}</strong> 張<br>
+            差 <strong>${fmt2(e.gap / 1000)}</strong> 張<br>
             <span style="color:var(--text-dim);font-size:10px;">(${fmt2(e.pct)}%)</span>
           </td>
           <td>× $${fmt2(e.price)}<br><span style="color:var(--text-dim);font-size:10px;">(${priceSrc})</span></td>
@@ -3495,10 +3500,11 @@ function computeDCATime(targetMonthly, maxYears = 30) {
   const targetShares = {};
   etfs.forEach(etf => {
     const p = state.pillars[etf];
-    targetShares[etf] = p.dividend > 0 ? targetMonthly / (1000 * p.dividend) : 999;
+    // 內部單位「股」：目標股數 = 月配額 / 每股配息
+    targetShares[etf] = p.dividend > 0 ? targetMonthly / p.dividend : 999999;
   });
   
-  // shares 單位：張
+  // shares 單位：股
   const shares = {};
   etfs.forEach(etf => shares[etf] = state.pillars[etf].shares);
   
@@ -3509,19 +3515,20 @@ function computeDCATime(targetMonthly, maxYears = 30) {
     const monthInYear = ((m - 1) % 12) + 1;
     etfs.forEach(etf => {
       const p = state.pillars[etf];
-      if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
+      // DCA 金額 / 股價 = 買到的股數
+      if (p.price > 0) shares[etf] += p.dca / p.price;
       if (p.dividendMonths.includes(monthInYear)) {
         if (state.reinvestDividend) {
-          const dividendCash = shares[etf] * 1000 * p.dividend;
-          if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
+          const dividendCash = shares[etf] * p.dividend;
+          if (p.price > 0) shares[etf] += dividendCash / p.price;
         }
         if (state.quarterlyBoost > 0 && p.price > 0) {
-          shares[etf] += state.quarterlyBoost / (p.price * 1000);
+          shares[etf] += state.quarterlyBoost / p.price;
         }
       }
     });
     if (monthInYear === 12 && state.annualBonus > 0 && state.pillars['00878'].price > 0) {
-      shares['00878'] += state.annualBonus / (state.pillars['00878'].price * 1000);
+      shares['00878'] += state.annualBonus / state.pillars['00878'].price;
     }
     if (etfs.every(e => shares[e] >= targetShares[e])) {
       return m;
@@ -3530,7 +3537,7 @@ function computeDCATime(targetMonthly, maxYears = 30) {
   return -1;
 }
 
-// === 計算達到目標的張數缺口、成本、整體進度 ===
+// === 計算達到目標的股數缺口、成本、整體進度 ===
 function computeGoalProgress(targetMonthly) {
   const result = {};
   let totalCost = 0;
@@ -3540,21 +3547,23 @@ function computeGoalProgress(targetMonthly) {
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
     const price = state.latestPrices[etf] || p.price;
-    const requiredShares = p.dividend > 0 ? targetMonthly / (1000 * p.dividend) : 0;
+    // 內部單位「股」：所需股數 = 月配額 / 每股配息
+    const requiredShares = p.dividend > 0 ? targetMonthly / p.dividend : 0;
     const gap = requiredShares - p.shares;
     const reached = gap <= 0;
-    const gapCost = reached ? 0 : gap * 1000 * price;
+    // gap 是股數，× 每股價 = 元
+    const gapCost = reached ? 0 : gap * price;
     const pct = requiredShares > 0 ? Math.min(100, (p.shares / requiredShares) * 100) : 100;
     
     if (!reached) allReached = false;
     if (pct < minPct) minPct = pct;
     
     result[etf] = { 
-      required: requiredShares, 
-      current: p.shares,
-      gap: Math.max(0, gap), 
+      required: requiredShares,  // 股
+      current: p.shares,          // 股
+      gap: Math.max(0, gap),      // 股
       price, 
-      cost: gapCost, 
+      cost: gapCost,              // 元
       reached,
       pct
     };
@@ -3567,7 +3576,7 @@ function computeGoalProgress(targetMonthly) {
 // === 試算引擎 ===
 function simulate(maxYears = 30) {
   const etfs = ['0056', '00919', '00878'];
-  // shares 單位：張（1 張 = 1000 股）
+  // shares 單位：股
   const shares = {};
   etfs.forEach(e => shares[e] = state.pillars[e].shares);
   const history = [{ month: 0, shares: { ...shares } }];
@@ -3586,24 +3595,20 @@ function simulate(maxYears = 30) {
     const monthInYear = ((m - 1) % 12) + 1;
     etfs.forEach(etf => {
       const p = state.pillars[etf];
-      // 每月 DCA：用金額除以「股價×1000」得到買入的張數
-      if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
-      // 配息月：配息 = 張數 × 1000 × 每股配息
+      // DCA 金額 ÷ 股價 = 買到的股數
+      if (p.price > 0) shares[etf] += p.dca / p.price;
       if (p.dividendMonths.includes(monthInYear)) {
         if (state.reinvestDividend) {
-          // 配息再投入買回張數
-          const dividendCash = shares[etf] * 1000 * p.dividend;
-          if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
+          const dividendCash = shares[etf] * p.dividend;
+          if (p.price > 0) shares[etf] += dividendCash / p.price;
         }
-        // 除息後機動加碼（不論是否再投入都會加碼）
         if (state.quarterlyBoost > 0 && p.price > 0) {
-          shares[etf] += state.quarterlyBoost / (p.price * 1000);
+          shares[etf] += state.quarterlyBoost / p.price;
         }
       }
     });
-    // 年終獎金一次性投入 00878
     if (monthInYear === 12 && state.annualBonus > 0 && state.pillars['00878'].price > 0) {
-      shares['00878'] += state.annualBonus / (state.pillars['00878'].price * 1000);
+      shares['00878'] += state.annualBonus / state.pillars['00878'].price;
     }
     history.push({ month: m, shares: { ...shares } });
     
@@ -3614,14 +3619,13 @@ function simulate(maxYears = 30) {
 }
 
 function computeTargetShares(monthlyTarget) {
-  // 每月各支ETF獨立配息要達到 monthlyTarget
-  // 0056 在2/5/8/11月配息，每次配 shares × 1000 × dividend = monthlyTarget
-  // 所以 shares = monthlyTarget / (1000 × dividend)
+  // 內部單位「股」：每月各支ETF獨立配息要達到 monthlyTarget
+  // 配息 = shares × dividend = monthlyTarget → shares = monthlyTarget / dividend
   const t = {};
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
     if (p.dividend > 0) {
-      t[etf] = monthlyTarget / (1000 * p.dividend);
+      t[etf] = monthlyTarget / p.dividend;  // 股
     } else {
       t[etf] = 999; // 不可能達標
     }
@@ -3695,7 +3699,7 @@ function updateSimulation() {
       </div>
       <div class="result-detail" style="margin-top:10px;font-size:12px;border-top:1px dashed var(--border);padding-top:10px;">
         <strong style="color:var(--text);">達標需要張數：</strong><br>
-        0056 ≥ ${fmt1(g.target['0056'])} 張　·　00919 ≥ ${fmt1(g.target['00919'])} 張　·　00878 ≥ ${fmt1(g.target['00878'])} 張
+        0056 ≥ ${fmt1(g.target['0056'] / 1000)} 張　·　00919 ≥ ${fmt1(g.target['00919'] / 1000)} 張　·　00878 ≥ ${fmt1(g.target['00878'] / 1000)} 張
       </div>
       ${bn ? `<div class="result-bottleneck"><strong>主要瓶頸：${bn}</strong>（最後一支達標的ETF）</div>` : ''}
     `;
@@ -3714,22 +3718,24 @@ function updateSimulation() {
     const idx = y * 12;
     if (idx >= sim.history.length) break;
     const s = sim.history[idx].shares;
+    // s[etf] 是股數；月配息 = (股數 × 每股配息 × 4 季) / 12 個月
     const monthly = (
       s['0056'] * state.pillars['0056'].dividend * 4 +
       s['00919'] * state.pillars['00919'].dividend * 4 +
       s['00878'] * state.pillars['00878'].dividend * 4
-    ) * 1000 / 12;
+    ) / 12;
     const tr = document.createElement('tr');
     if (sim.reachedA >= 0 && y === Math.ceil(sim.reachedA / 12)) tr.classList.add('milestone-a');
     if (sim.reachedB >= 0 && y === Math.ceil(sim.reachedB / 12)) tr.classList.add('milestone-b');
     const c1 = s['0056'] >= sim.targetA['0056'] ? 'cell-reached' : '';
     const c2 = s['00919'] >= sim.targetA['00919'] ? 'cell-reached' : '';
     const c3 = s['00878'] >= sim.targetA['00878'] ? 'cell-reached' : '';
+    // 顯示「張」：股 / 1000
     tr.innerHTML = `
       <td>${y === 0 ? '今天' : '第 ' + y + ' 年'}</td>
-      <td class="${c1}">${fmt1(s['0056'])}</td>
-      <td class="${c2}">${fmt1(s['00919'])}</td>
-      <td class="${c3}">${fmt1(s['00878'])}</td>
+      <td class="${c1}">${fmt1(s['0056'] / 1000)}</td>
+      <td class="${c2}">${fmt1(s['00919'] / 1000)}</td>
+      <td class="${c3}">${fmt1(s['00878'] / 1000)}</td>
       <td>${fmt(monthly)}</td>
     `;
     tbody.appendChild(tr);
@@ -6083,29 +6089,18 @@ function promptSyncShares(newPurchases) {
   
   if (Object.keys(grouped).length === 0) return;
   
-  // 組成提示文字
-  const lines = Object.entries(grouped).map(([etf, sharesAdded]) => {
-    const cur = state.pillars[etf].shares;
-    const lotsAdded = sharesAdded / 1000;
-    const newTotal = cur + lotsAdded;
-    return `${etf}: ${fmt2(cur)} → ${fmt2(newTotal)} 張（+${fmt2(lotsAdded)}）`;
+  // 直接同步股數（內部單位是股，不需要 ÷1000）
+  Object.entries(grouped).forEach(([etf, sharesAdded]) => {
+    state.pillars[etf].shares = (state.pillars[etf].shares || 0) + sharesAdded;
   });
+  saveState();
+  renderPillars();
+  renderSimPillars();
+  updateAll();
   
-  if (confirm(
-    `✓ 已登記 ${newPurchases.length} 筆買入\n\n` +
-    `是否同步更新三本柱「現有張數」？\n\n` +
-    lines.join('\n') + '\n\n' +
-    `（按「確定」更新；按「取消」只保留買入紀錄不更新張數）`
-  )) {
-    Object.entries(grouped).forEach(([etf, sharesAdded]) => {
-      const newShares = state.pillars[etf].shares + sharesAdded / 1000;
-      state.pillars[etf].shares = Math.round(newShares * 1000) / 1000;
-    });
-    saveState();
-    renderPillars();
-    renderSimPillars();
-    updateAll();
-  }
+  // 用 toast 取代 confirm，省得每次按一次
+  const lines = Object.entries(grouped).map(([etf, s]) => `${etf} +${fmt(s)} 股`);
+  showToast(`✓ 已同步三本柱：${lines.join('、')}`);
 }
 
   // 質押系統

@@ -3541,7 +3541,18 @@ function renderPillars() {
       state.pillars[etf][field] = parseFloat(e.target.value) || 0;
       saveState();
       
-      // 即時更新本卡片的「本季配息」「年配息推估」「≈ X 張」
+      // myCost 改變 → 個人殖利率/帳面獲利 那一整段是 IIFE 生成的，
+      // 需要重畫整個三本柱才會反映。defer 一下避免打斷使用者輸入。
+      if (field === 'myCost') {
+        clearTimeout(window._myCostRedrawTimer);
+        window._myCostRedrawTimer = setTimeout(() => {
+          renderPillars();
+          updateAll();
+        }, 400);
+        return;
+      }
+      
+      // 其他欄位（shares、dividend、dca、price）即時更新本卡片的可變欄位
       const card = e.target.closest('.pillar-card');
       if (card) {
         const data = state.pillars[etf];

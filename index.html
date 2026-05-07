@@ -2292,7 +2292,287 @@ details[open] .loan-card-summary::after { content: '−'; }
   font-size: 14px;
   color: var(--accent);
   flex-shrink: 0;
+}/* ============================================
+ * 視覺加強層（V2）：放大字體 + 重點數字突出
+ * 加在最後面，覆蓋原本樣式
+ * ============================================ */
+
+/* === 全域基準字體 === */
+html, body {
+  font-size: 18px !important;
 }
+
+/* === 標題加粗加大 === */
+.header h1 {
+  font-size: clamp(32px, 5vw, 44px) !important;
+}
+.section-title {
+  font-size: 15px !important;
+  letter-spacing: 0.2em;
+}
+.annual-section-title {
+  font-size: 18px !important;
+}
+details.collapsible summary {
+  font-size: 18px !important;
+}
+
+/* === 三本柱卡片：重點數字放大上色 === */
+.pillar-card {
+  padding: 24px !important;
+}
+.pillar-name {
+  font-size: 26px !important;
+}
+.pillar-output {
+  font-size: 14px;
+}
+.pillar-output-row {
+  padding: 4px 0;
+  align-items: center;
+}
+.pillar-output-label {
+  font-size: 13px;
+}
+.pillar-output-value {
+  font-size: 16px !important;
+}
+
+/* 主要指標：本季配息、年配息推估、個人殖利率、帳面獲利 */
+.pillar-output-row.highlight .pillar-output-value {
+  font-size: 22px !important;
+  letter-spacing: -0.01em;
+}
+
+/* 年配息推估 - 主色突出 */
+.pillar-card[data-etf="0056"] .pillar-output-row.highlight .pillar-output-value {
+  color: var(--p-0056) !important;
+  font-weight: 800 !important;
+}
+.pillar-card[data-etf="00919"] .pillar-output-row.highlight .pillar-output-value {
+  color: var(--p-00919) !important;
+  font-weight: 800 !important;
+}
+.pillar-card[data-etf="00878"] .pillar-output-row.highlight .pillar-output-value {
+  color: var(--p-00878) !important;
+  font-weight: 800 !important;
+}
+
+/* 個人殖利率：最重要的指標，更大更鮮豔 */
+.pillar-output-row .pillar-output-value[style*="success"] {
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, #4a9d5e 0%, #6ab874 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 帳面獲利：跟個人殖利率一樣分量 */
+.pillar-output-row .pillar-output-value.profit-pos {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: var(--success) !important;
+}
+.pillar-output-row .pillar-output-value.profit-neg {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: var(--danger) !important;
+}
+
+/* === 月配息儀表板 === */
+.dash-card {
+  padding: 26px 22px !important;
+}
+.dash-label {
+  font-size: 13px !important;
+}
+.dash-value {
+  font-size: 38px !important;
+}
+.dash-card-main .dash-value {
+  font-size: 56px !important;
+}
+.dash-detail {
+  font-size: 14px !important;
+}
+
+/* === 月領目標進度卡 === */
+.goal-card {
+  padding: 18px 22px !important;
+}
+.goal-card-title {
+  font-size: 18px !important;
+}
+.goal-card-pct {
+  font-size: 28px !important;
+}
+.goal-card-meta {
+  font-size: 13px !important;
+}
+
+/* === 觀察股卡片 === */
+.watch-card {
+  padding: 18px 20px !important;
+}
+.watch-name {
+  font-size: 16px !important;
+  padding: 4px 12px !important;
+}
+.watch-price-num {
+  font-size: 32px !important;
+}
+.watch-stat-row {
+  font-size: 14px !important;
+  padding: 3px 0;
+}
+.watch-stat-label {
+  font-size: 13px !important;
+}
+.watch-stat-value {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+/* 觀察股獲利數字突出 */
+.watch-stat-value.profit-pos {
+  color: var(--success) !important;
+  font-weight: 800 !important;
+}
+.watch-stat-value.profit-neg {
+  color: var(--danger) !important;
+  font-weight: 800 !important;
+}
+/* 觀察股最後那行「帳面獲利」放大 */
+.watch-card .watch-stat-row:last-child .watch-stat-value {
+  font-size: 18px !important;
+}
+
+/* === 質押系統總結卡 === */
+.lsum-ratio-num {
+  font-size: 72px !important;
+}
+.lsum-stat-label {
+  font-size: 14px !important;
+}
+.lsum-stat-value {
+  font-size: 18px !important;
+}
+.lsum-stress-text {
+  font-size: 15px !important;
+}
+
+/* === 配息紀錄摘要 === */
+.records-summary-label {
+  font-size: 13px !important;
+}
+.records-summary-value {
+  font-size: 30px !important;
+}
+.records-summary-value.secondary {
+  font-size: 24px !important;
+}
+
+/* === 表格內字體 === */
+.records-table {
+  font-size: 15px !important;
+}
+.records-table th {
+  font-size: 13px !important;
+}
+.records-table td {
+  padding: 11px 10px !important;
+}
+.progress-table {
+  font-size: 14px !important;
+}
+.progress-table th {
+  font-size: 12px !important;
+}
+.loan-table {
+  font-size: 14px !important;
+}
+
+/* === 試算結果卡 === */
+.result-headline .big-num {
+  font-size: 48px !important;
+}
+.result-target {
+  font-size: 13px !important;
+}
+.result-detail {
+  font-size: 14px !important;
+}
+
+/* === 年度對比卡 === */
+.annual-card-year {
+  font-size: 14px !important;
+}
+.annual-card-total {
+  font-size: 34px !important;
+}
+.annual-card-meta {
+  font-size: 13px !important;
+}
+.growth-badge {
+  font-size: 13px !important;
+}
+
+/* === 成就徽章 === */
+.achievement-label {
+  font-size: 12px !important;
+}
+.badge-achieved, .badge-loose {
+  font-size: 13px !important;
+  padding: 6px 14px !important;
+}
+.next-milestone-name {
+  font-size: 18px !important;
+}
+.next-milestone-pct {
+  font-size: 16px !important;
+}
+
+/* === 質押各支撐起的維持率 === */
+.cpower-info {
+  font-size: 14px !important;
+}
+.cpower-pct {
+  font-size: 16px !important;
+}
+.cpower-alone {
+  font-size: 13px !important;
+}
+.cpower-alone strong {
+  font-size: 15px !important;
+}
+
+/* === 借款卡片 === */
+.loan-card-amount {
+  font-size: 20px !important;
+}
+.loan-card-summary-line2 {
+  font-size: 13px !important;
+}
+.loan-mini-value {
+  font-size: 20px !important;
+}
+
+/* === DCA 預估時間 === */
+.dca-time {
+  font-size: 18px !important;
+}
+
+/* === 現金流卡片 === */
+.cashflow-label {
+  font-size: 13px !important;
+}
+.cashflow-value {
+  font-size: 26px !important;
+}
+.cashflow-meta {
+  font-size: 13px !important;
+}
+
 </style>
 </head>
 <body>

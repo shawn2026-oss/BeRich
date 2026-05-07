@@ -2821,27 +2821,32 @@ details.collapsible summary {
     <!-- 年份切換 tab -->
     <div id="purchases-year-tabs" class="records-year-tabs" style="display:none; margin-top: 16px;"></div>
     
-    <!-- 摘要區（有資料才顯示）-->
-    <div id="purchases-summary-wrap" style="display:none; margin-top: 12px;">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-        <div class="subsection-label" style="margin-bottom:0;">📊 自動摘要（僅統計選中年份）</div>
-        <button class="btn refresh-prices-btn" data-trigger="purchases" style="font-size:11px; padding:5px 10px;">↻ 更新股價</button>
-        <span class="price-time-mini" data-time-display></span>
+    <!-- 摘要區（有資料才顯示，預設折疊）-->
+    <details id="purchases-summary-wrap" style="margin-top: 12px; display:none;">
+      <summary style="cursor: pointer; padding: 10px 14px; background: var(--bg-input); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>📊 看自動摘要（僅統計選中年份）</span>
+        <span style="font-size: 16px; color: var(--accent);">▾</span>
+      </summary>
+      <div style="margin-top: 10px;">
+        <div style="display:flex; justify-content:flex-end; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+          <button class="btn refresh-prices-btn" data-trigger="purchases" style="font-size:11px; padding:5px 10px;">↻ 更新股價</button>
+          <span class="price-time-mini" data-time-display></span>
+        </div>
+        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+          <table class="records-table" style="min-width: 720px;">
+           <thead>
+              <tr>
+                <th>標的</th>
+                <th>累計股數</th>
+                <th>總成本</th>
+                            <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="purchases-summary-tbody"></tbody>
+          </table>
+        </div>
       </div>
-      <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
-        <table class="records-table" style="min-width: 720px;">
-         <thead>
-            <tr>
-              <th>標的</th>
-              <th>累計股數</th>
-              <th>總成本</th>
-                          <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="purchases-summary-tbody"></tbody>
-        </table>
-      </div>
-    </div>
+    </details>
     
     <!-- 明細表（預設折疊，避免一年下來 48 筆 DCA 太雜） -->
     <details style="margin-top: 16px;">
@@ -4286,7 +4291,8 @@ function renderPurchaseSummary() {
     if (wrap) wrap.style.display = 'none';
     return;
   }
- if (wrap) wrap.style.display = 'block';
+  // 用 '' 還原預設 (details 元素的 display 是 block，但摺疊由 [open] 屬性控制)
+  if (wrap) wrap.style.display = '';
   
   const PILLAR_ORDER = { '0056': 1, '00919': 2, '00878': 3 };
   Object.entries(summary).sort(([a], [b]) => (PILLAR_ORDER[a] || 99) - (PILLAR_ORDER[b] || 99) || a.localeCompare(b)).forEach(([etf, s]) => {

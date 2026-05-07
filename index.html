@@ -2522,75 +2522,65 @@ details[open] .loan-card-summary::after { content: '−'; }
     <div class="pillars-grid" id="pillars-grid"></div>
   </section>
 
-  <!-- ============ 買入登記（摺疊式）============ -->
+  <!-- ============ 買入登記（合併區）============ -->
   <section class="section">
-    <details class="collapsible" id="purchases-section">
-      <summary>📝 買入登記（DCA／加碼／一次性買進）</summary>
-      <div class="collapsible-body" style="padding-bottom: 0;">
-        
-        <!-- 快捷加碼按鈕區 -->
-        <div class="quick-buy-row">
-          <span class="quick-buy-label">⚡ 快捷登記：</span>
-          <button class="quick-btn quick-0056" data-quick="0056">0056 月投 $10,000</button>
-          <button class="quick-btn quick-00919" data-quick="00919">00919 月投 $8,000</button>
-          <button class="quick-btn quick-00878" data-quick="00878">00878 月投 $14,000</button>
-          <button class="quick-btn quick-all" data-quick="all">📅 本月全套 DCA $32,000</button>
-          <button class="btn-cta btn-cta-primary" id="add-purchase" style="margin-left:auto;">＋ 自訂一筆買入</button>
-        </div>
-        
-        <!-- 年份切換 tab -->
-        <div id="purchases-year-tabs" class="records-year-tabs" style="display:none; margin-top: 16px;"></div>
-        
-        <!-- 摘要區（有資料才顯示，僅統計選中年份）-->
-        <div id="purchases-summary-wrap" style="display:none; margin-top: 12px;">
-          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-            <div class="subsection-label" style="margin-bottom:0;">📊 自動摘要（僅統計選中年份）</div>
-            <button class="btn refresh-prices-btn" data-trigger="purchases" style="font-size:11px; padding:5px 10px;">↻ 更新股價</button>
-            <span class="price-time-mini" data-time-display></span>
-          </div>
-          <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
-            <table class="records-table" style="min-width: 600px;">
-              <thead>
-                <tr>
-                  <th>標的</th>
-                  <th>累計股數</th>
-                  <th>總成本</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody id="purchases-summary-tbody"></tbody>
-            </table>
-          </div>
-        </div>
-        
-        <!-- 明細表（僅顯示選中年份）-->
-        <div class="subsection-label" style="margin-top: 16px;">📋 明細紀錄（僅顯示選中年份）</div>
-        <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
-          <table class="records-table" style="min-width: 720px;">
-            <thead>
-              <tr>
-                <th style="width:40px;"></th>
-                <th>日期</th>
-                <th>標的</th>
-                <th>買入股數</th>
-                <th>買入單價</th>
-                <th>成本</th>
-                <th>備註</th>
-              </tr>
-            </thead>
-            <tbody id="purchases-tbody"></tbody>
-          </table>
-        </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-          <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空所有買入紀錄</button>
-        </div>
-        
-        <!-- 機制說明 -->
-        <div style="margin-top: 16px; padding: 10px 14px; background: rgba(74, 157, 94, 0.06); border-left: 3px solid var(--success); border-radius: 0 6px 6px 0; font-size: 11px; line-height: 1.7; color: var(--text-muted);">
-          💡 <strong style="color:var(--text);">自動同步：</strong>登記三本柱（0056/00919/00878）的買入會自動加到對應的「現有股數」；刪除買入紀錄會自動扣回。如果懷疑數字有差，按摘要表的「🔁 重新校準」可用買入累計覆蓋現況。
-        </div>
+    <div class="section-row">
+      <div class="section-title">📝 買入登記（DCA／加碼／一次性買進）</div>
+    </div>
+    
+    <!-- 快捷加碼按鈕區 -->
+    <div class="quick-buy-row">
+      <span class="quick-buy-label">⚡ 快捷登記：</span>
+      <button class="quick-btn quick-0056" data-quick="0056">0056 月投 $10,000</button>
+      <button class="quick-btn quick-00919" data-quick="00919">00919 月投 $8,000</button>
+      <button class="quick-btn quick-00878" data-quick="00878">00878 月投 $14,000</button>
+      <button class="quick-btn quick-all" data-quick="all">📅 本月全套 DCA $32,000</button>
+      <button class="btn-cta btn-cta-primary" id="add-purchase" style="margin-left:auto;">＋ 自訂一筆買入</button>
+    </div>
+    
+    <!-- 摘要區（有資料才顯示）-->
+    <div id="purchases-summary-wrap" style="display:none; margin-top: 16px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+        <div class="subsection-label" style="margin-bottom:0;">📊 自動摘要（按標的分組）</div>
+        <button class="btn refresh-prices-btn" data-trigger="purchases" style="font-size:11px; padding:5px 10px;">↻ 更新股價</button>
+        <span class="price-time-mini" data-time-display></span>
       </div>
-    </details>
+      <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+        <table class="records-table" style="min-width: 720px;">
+         <thead>
+            <tr>
+              <th>標的</th>
+              <th>累計張數</th>
+              <th>總成本</th>
+                          <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="purchases-summary-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- 明細表 -->
+    <div class="subsection-label" style="margin-top: 16px;">📋 明細紀錄</div>
+    <div class="records-scroll" style="border: 1px solid var(--border); border-radius: 8px;">
+      <table class="records-table" style="min-width: 720px;">
+        <thead>
+          <tr>
+            <th style="width:40px;"></th>
+            <th>日期</th>
+            <th>標的</th>
+            <th>買入股數</th>
+            <th>買入單價</th>
+            <th>成本</th>
+            <th>備註</th>
+          </tr>
+        </thead>
+        <tbody id="purchases-tbody"></tbody>
+      </table>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+      <button class="btn" id="clear-purchases" style="margin-left:auto;color:var(--danger);">↺ 清空買入紀錄</button>
+    </div>
   </section>
 
   <!-- ============ 觀察股清單 ============ -->
@@ -2847,9 +2837,9 @@ const YAHOO_TICKERS = {
 };
 
 const DEFAULT_PILLARS = {
-  '0056':  { shares: 59943,  dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
-  '00919': { shares: 99323,  dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
-  '00878': { shares: 112136, dca: 14000, price: 25, dividend: 0.42, dividendMonths: [3, 6, 9, 12] }
+  '0056':  { shares: 59.943, dca: 10000, price: 39, dividend: 1.00, dividendMonths: [2, 5, 8, 11] },
+  '00919': { shares: 99.323, dca: 8000,  price: 20, dividend: 0.78, dividendMonths: [1, 4, 7, 10] },
+  '00878': { shares: 112.136, dca: 14000, price: 25, dividend: 0.42, dividendMonths: [3, 6, 9, 12] }
 };
 
 const DEFAULT_RECORDS = [
@@ -2966,78 +2956,6 @@ const DEFAULT_LOANS = [
 // 舊版獨立擔保品清單預設值（不再使用，保留以防還有 reference）
 const DEFAULT_COLLATERALS = [];
 
-// === 自動同步買入紀錄到三本柱（內部單位：股）===
-function autoSyncToPillars(newPurchases) {
-  const PILLAR_ETFS = ['0056', '00919', '00878'];
-  const synced = {};
-  newPurchases.forEach(p => {
-    if (PILLAR_ETFS.includes(p.etf)) {
-      synced[p.etf] = (synced[p.etf] || 0) + p.shares;
-    }
-  });
-  Object.entries(synced).forEach(([etf, addedShares]) => {
-    state.pillars[etf].shares = (state.pillars[etf].shares || 0) + addedShares;
-  });
-  return synced;
-}
-
-function deductFromPillars(removedPurchase) {
-  const PILLAR_ETFS = ['0056', '00919', '00878'];
-  if (!PILLAR_ETFS.includes(removedPurchase.etf)) return false;
-  const cur = state.pillars[removedPurchase.etf].shares || 0;
-  state.pillars[removedPurchase.etf].shares = Math.max(0, cur - removedPurchase.shares);
-  return true;
-}
-
-// === 簡易 Toast 提示 ===
-function showToast(msg, type) {
-  type = type || 'success';
-  let toast = document.getElementById('app-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'app-toast';
-    toast.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); padding:12px 20px; background:#fff; border:1.5px solid #4a9d5e; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); font-size:14px; font-weight:700; color:#1f2230; z-index:9999; transition:opacity 0.3s; max-width:90vw; pointer-events:none; font-family:"Noto Serif TC", serif;';
-    document.body.appendChild(toast);
-  }
-  toast.style.borderColor = type === 'success' ? '#4a9d5e' : type === 'warn' ? '#c97a4a' : '#c95757';
-  toast.textContent = msg;
-  toast.style.opacity = '1';
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
-}
-
-// === 資料遷移 v1 → v2：張 → 股 ===
-function migrateSharesV2(parsed) {
-  if (parsed.schemaVersion >= 2) return false;
-  if (!parsed.pillars) {
-    parsed.schemaVersion = 2;
-    return false;
-  }
-  const PILLAR_ETFS = ['0056', '00919', '00878'];
-  let needMigration = false;
-  PILLAR_ETFS.forEach(etf => {
-    const s = parsed.pillars[etf] && parsed.pillars[etf].shares;
-    if (typeof s === 'number' && s > 0 && s < 10000 && s !== Math.floor(s)) {
-      needMigration = true;
-    }
-  });
-  if (needMigration) {
-    console.log('=========================================');
-    console.log('Schema migration v1 -> v2 (張 -> 股)');
-    console.log('migration backup:', JSON.stringify(parsed));
-    console.log('=========================================');
-    PILLAR_ETFS.forEach(etf => {
-      if (parsed.pillars[etf] && typeof parsed.pillars[etf].shares === 'number') {
-        const oldVal = parsed.pillars[etf].shares;
-        parsed.pillars[etf].shares = Math.round(oldVal * 1000);
-        console.log('  ' + etf + ': ' + oldVal + ' 張 -> ' + parsed.pillars[etf].shares + ' 股');
-      }
-    });
-  }
-  parsed.schemaVersion = 2;
-  return needMigration;
-}
-
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -3051,8 +2969,6 @@ function loadState() {
           }
         });
       }
-      // 資料遷移 v1 → v2：張 → 股
-      migrateSharesV2(parsed);
       return {
         pillars: parsed.pillars || JSON.parse(JSON.stringify(DEFAULT_PILLARS)),
         records: parsed.records || JSON.parse(JSON.stringify(DEFAULT_RECORDS)),
@@ -3077,9 +2993,7 @@ function loadState() {
         watchlist: parsed.watchlist || ['0050', '台積電'],
         loans: parsed.loans || JSON.parse(JSON.stringify(DEFAULT_LOANS)),
         collaterals: parsed.collaterals || JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
-        loanSettings: parsed.loanSettings || { warningRatio: 130 },
-        schemaVersion: parsed.schemaVersion || 2,
-        lastModified: parsed.lastModified || null
+        loanSettings: parsed.loanSettings || { warningRatio: 130 }
       };
     }
   } catch(e) { console.warn(e); }
@@ -3107,9 +3021,7 @@ function loadState() {
     watchlist: ['0050', '台積電'],
     loans: JSON.parse(JSON.stringify(DEFAULT_LOANS)),
     collaterals: JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
-    loanSettings: { warningRatio: 130 },
-    schemaVersion: 2,
-    lastModified: null
+    loanSettings: { warningRatio: 130 }
   };
 }
 
@@ -3202,14 +3114,13 @@ function renderPillars() {
   ['0056', '00919', '00878'].forEach(etf => {
     const data = state.pillars[etf];
     const months = data.dividendMonths.join('、') + '月';
-    // 內部單位是「股」：本季配息 = shares × dividend
-    const quarterly = data.shares * data.dividend;
+    const quarterly = data.shares * 1000 * data.dividend;
     
     // 從歷史推估年配息
     const est = estimateAnnualDividendPerShare(etf);
     let annual, annualSource;
     if (est && est.sampleCount > 0) {
-      annual = data.shares * est.annualPerShare;
+      annual = data.shares * 1000 * est.annualPerShare;
       if (est.isComplete) {
         annualSource = `<span class="annual-est-info">${est.year} 全年實際 ${est.sampleCount}/${est.expectedCount} 季 = ${fmt2(est.annualPerShare)} 元/股 ✓</span>`;
       } else {
@@ -3227,11 +3138,8 @@ function renderPillars() {
       <div class="pillar-name">${etf}</div>
       <div class="pillar-month">配息月：${months}</div>
       <div class="field">
-        <div class="field-label">
-          <span>現有股數</span>
-          <span class="share-as-lots" data-etf-lots="${etf}" style="font-family:'JetBrains Mono', monospace; font-weight:700;">≈ ${fmt2(data.shares / 1000)} 張</span>
-        </div>
-        <input type="number" data-etf="${etf}" data-field="shares" value="${data.shares}" min="0" step="1">
+        <div class="field-label">現有張數</div>
+        <input type="number" data-etf="${etf}" data-field="shares" value="${data.shares}" min="0" step="0.001">
       </div>
       <div class="field">
         <div class="field-label">本季每股配息（元）</div>
@@ -3240,11 +3148,11 @@ function renderPillars() {
       <div class="pillar-output">
         <div class="pillar-output-row">
           <span class="pillar-output-label">本季配息</span>
-          <span class="pillar-output-value" data-output="quarterly">${fmt(quarterly)} 元</span>
+          <span class="pillar-output-value">${fmt(quarterly)} 元</span>
         </div>
         <div class="pillar-output-row highlight">
           <span class="pillar-output-label">年配息推估</span>
-          <span class="pillar-output-value" data-output="annual">${fmt(annual)} 元</span>
+          <span class="pillar-output-value">${fmt(annual)} 元</span>
         </div>
         ${(() => {
           const recs = (state.records || [])
@@ -3287,21 +3195,19 @@ function renderPillars() {
       state.pillars[etf][field] = parseFloat(e.target.value) || 0;
       saveState();
       
-      // 即時更新本卡片的「本季配息」「年配息推估」「≈ X 張」
+      // 即時更新本卡片的「本季配息」「年配息推估」
       const card = e.target.closest('.pillar-card');
       if (card) {
         const data = state.pillars[etf];
-        const quarterly = data.shares * data.dividend;
+        const quarterly = data.shares * 1000 * data.dividend;
+        // 年配息優先用歷史推估
         const est = estimateAnnualDividendPerShare(etf);
         const annual = est && est.sampleCount > 0
-          ? data.shares * est.annualPerShare
+          ? data.shares * 1000 * est.annualPerShare
           : quarterly * 4;
-        const qOut = card.querySelector('[data-output="quarterly"]');
-        const aOut = card.querySelector('[data-output="annual"]');
-        const lotsOut = card.querySelector(`[data-etf-lots="${etf}"]`);
-        if (qOut) qOut.textContent = fmt(quarterly) + ' 元';
-        if (aOut) aOut.textContent = fmt(annual) + ' 元';
-        if (lotsOut && field === 'shares') lotsOut.textContent = `≈ ${fmt2(data.shares / 1000)} 張`;
+        const outputs = card.querySelectorAll('.pillar-output-value');
+        if (outputs[0]) outputs[0].textContent = fmt(quarterly) + ' 元';
+        if (outputs[1]) outputs[1].textContent = fmt(annual) + ' 元';
       }
       
       updateAll();
@@ -3350,14 +3256,14 @@ function updateDashboard() {
   let totalA = 0;
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
-    // 內部已是「股」：直接 shares × dividend
-    totalQ += p.shares * p.dividend;
+    totalQ += p.shares * 1000 * p.dividend;
     
+    // 年配息：優先用歷史推估，沒紀錄才退回 ×4
     const est = estimateAnnualDividendPerShare(etf);
     if (est && est.sampleCount > 0) {
-      totalA += p.shares * est.annualPerShare;
+      totalA += p.shares * 1000 * est.annualPerShare;
     } else {
-      totalA += p.shares * p.dividend * 4;
+      totalA += p.shares * 1000 * p.dividend * 4;
     }
   });
   const monthly = totalA / 12;
@@ -3442,6 +3348,7 @@ function updateGoals(monthly) {
     const pct = info.overallPct;
     const reached = info.allReached;
     
+    // 找最弱的 ETF
     let weakest = '0056';
     Object.entries(info.etfs).forEach(([etf, e]) => {
       if (!e.reached && e.pct < info.etfs[weakest].pct) weakest = etf;
@@ -3456,7 +3363,6 @@ function updateGoals(monthly) {
     if (reached) {
       detailHtml = `<div class="reached-banner">✨ 三本柱張數均已達標，每月皆能配出 $${fmt(g.target)} ✨</div>`;
     } else {
-      // e.current / e.required / e.gap 都是「股」；顯示「張」要 / 1000
       const rows = ['0056', '00919', '00878'].map(etf => {
         const e = info.etfs[etf];
         const priceSrc = state.latestPrices[etf] ? '最新' : '假設';
@@ -3465,7 +3371,7 @@ function updateGoals(monthly) {
             <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
             <td colspan="2" style="color: var(--success); font-weight: 600; font-size:12px;">
               ✓ 已達標<br>
-              <span style="color:var(--text-muted); font-weight:normal;">現有 ${fmt2(e.current / 1000)} ≥ 目標 ${fmt2(e.required / 1000)} 張</span>
+              <span style="color:var(--text-muted); font-weight:normal;">現有 ${fmt2(e.current)} ≥ 目標 ${fmt2(e.required)} 張</span>
             </td>
             <td colspan="2" style="text-align:right; color: var(--success);">—</td>
           </tr>`;
@@ -3473,11 +3379,11 @@ function updateGoals(monthly) {
         return `<tr>
           <td><span class="etf-mini ${getEtfClass(etf)}">${etf}</span></td>
           <td style="font-size:12px;">
-            現有 <strong>${fmt2(e.current / 1000)}</strong> 張<br>
-            <span style="color:var(--text-muted);">目標 ${fmt2(e.required / 1000)} 張</span>
+            現有 <strong>${fmt2(e.current)}</strong> 張<br>
+            <span style="color:var(--text-muted);">目標 ${fmt2(e.required)} 張</span>
           </td>
           <td>
-            差 <strong>${fmt2(e.gap / 1000)}</strong> 張<br>
+            差 <strong>${fmt2(e.gap)}</strong> 張<br>
             <span style="color:var(--text-dim);font-size:10px;">(${fmt2(e.pct)}%)</span>
           </td>
           <td>× $${fmt2(e.price)}<br><span style="color:var(--text-dim);font-size:10px;">(${priceSrc})</span></td>
@@ -3485,6 +3391,7 @@ function updateGoals(monthly) {
         </tr>`;
       }).join('');
       
+      // DCA 達標時間預估
       const dcaMonths = computeDCATime(g.target);
       const totalDCA = state.pillars['0056'].dca + state.pillars['00919'].dca + state.pillars['00878'].dca;
       const reinvestNote = state.reinvestDividend ? '含配息再投入複利' : '配息不再投入';
@@ -3549,11 +3456,10 @@ function computeDCATime(targetMonthly, maxYears = 30) {
   const targetShares = {};
   etfs.forEach(etf => {
     const p = state.pillars[etf];
-    // 內部單位「股」：目標股數 = 月配額 / 每股配息
-    targetShares[etf] = p.dividend > 0 ? targetMonthly / p.dividend : 999999;
+    targetShares[etf] = p.dividend > 0 ? targetMonthly / (1000 * p.dividend) : 999;
   });
   
-  // shares 單位：股
+  // shares 單位：張
   const shares = {};
   etfs.forEach(etf => shares[etf] = state.pillars[etf].shares);
   
@@ -3564,20 +3470,19 @@ function computeDCATime(targetMonthly, maxYears = 30) {
     const monthInYear = ((m - 1) % 12) + 1;
     etfs.forEach(etf => {
       const p = state.pillars[etf];
-      // DCA 金額 / 股價 = 買到的股數
-      if (p.price > 0) shares[etf] += p.dca / p.price;
+      if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
       if (p.dividendMonths.includes(monthInYear)) {
         if (state.reinvestDividend) {
-          const dividendCash = shares[etf] * p.dividend;
-          if (p.price > 0) shares[etf] += dividendCash / p.price;
+          const dividendCash = shares[etf] * 1000 * p.dividend;
+          if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
         }
         if (state.quarterlyBoost > 0 && p.price > 0) {
-          shares[etf] += state.quarterlyBoost / p.price;
+          shares[etf] += state.quarterlyBoost / (p.price * 1000);
         }
       }
     });
     if (monthInYear === 12 && state.annualBonus > 0 && state.pillars['00878'].price > 0) {
-      shares['00878'] += state.annualBonus / state.pillars['00878'].price;
+      shares['00878'] += state.annualBonus / (state.pillars['00878'].price * 1000);
     }
     if (etfs.every(e => shares[e] >= targetShares[e])) {
       return m;
@@ -3586,7 +3491,7 @@ function computeDCATime(targetMonthly, maxYears = 30) {
   return -1;
 }
 
-// === 計算達到目標的股數缺口、成本、整體進度 ===
+// === 計算達到目標的張數缺口、成本、整體進度 ===
 function computeGoalProgress(targetMonthly) {
   const result = {};
   let totalCost = 0;
@@ -3596,23 +3501,21 @@ function computeGoalProgress(targetMonthly) {
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
     const price = state.latestPrices[etf] || p.price;
-    // 內部單位「股」：所需股數 = 月配額 / 每股配息
-    const requiredShares = p.dividend > 0 ? targetMonthly / p.dividend : 0;
+    const requiredShares = p.dividend > 0 ? targetMonthly / (1000 * p.dividend) : 0;
     const gap = requiredShares - p.shares;
     const reached = gap <= 0;
-    // gap 是股數，× 每股價 = 元
-    const gapCost = reached ? 0 : gap * price;
+    const gapCost = reached ? 0 : gap * 1000 * price;
     const pct = requiredShares > 0 ? Math.min(100, (p.shares / requiredShares) * 100) : 100;
     
     if (!reached) allReached = false;
     if (pct < minPct) minPct = pct;
     
     result[etf] = { 
-      required: requiredShares,  // 股
-      current: p.shares,          // 股
-      gap: Math.max(0, gap),      // 股
+      required: requiredShares, 
+      current: p.shares,
+      gap: Math.max(0, gap), 
       price, 
-      cost: gapCost,              // 元
+      cost: gapCost, 
       reached,
       pct
     };
@@ -3625,17 +3528,18 @@ function computeGoalProgress(targetMonthly) {
 // === 試算引擎 ===
 function simulate(maxYears = 30) {
   const etfs = ['0056', '00919', '00878'];
-  // shares 單位：股
+  // shares 單位：張（1 張 = 1000 股）
   const shares = {};
   etfs.forEach(e => shares[e] = state.pillars[e].shares);
   const history = [{ month: 0, shares: { ...shares } }];
   
-  // 兩個自訂目標的股數要求
+  // 兩個自訂目標的張數要求
   const targetA = computeTargetShares(state.goals.a * 10000);
   const targetB = computeTargetShares(state.goals.b * 10000);
   
   let reachedA = -1, reachedB = -1;
   
+  // 已達標的初始檢查
   if (etfs.every(e => shares[e] >= targetA[e])) reachedA = 0;
   if (etfs.every(e => shares[e] >= targetB[e])) reachedB = 0;
   
@@ -3643,20 +3547,24 @@ function simulate(maxYears = 30) {
     const monthInYear = ((m - 1) % 12) + 1;
     etfs.forEach(etf => {
       const p = state.pillars[etf];
-      // DCA 金額 ÷ 股價 = 買到的股數
-      if (p.price > 0) shares[etf] += p.dca / p.price;
+      // 每月 DCA：用金額除以「股價×1000」得到買入的張數
+      if (p.price > 0) shares[etf] += p.dca / (p.price * 1000);
+      // 配息月：配息 = 張數 × 1000 × 每股配息
       if (p.dividendMonths.includes(monthInYear)) {
         if (state.reinvestDividend) {
-          const dividendCash = shares[etf] * p.dividend;
-          if (p.price > 0) shares[etf] += dividendCash / p.price;
+          // 配息再投入買回張數
+          const dividendCash = shares[etf] * 1000 * p.dividend;
+          if (p.price > 0) shares[etf] += dividendCash / (p.price * 1000);
         }
+        // 除息後機動加碼（不論是否再投入都會加碼）
         if (state.quarterlyBoost > 0 && p.price > 0) {
-          shares[etf] += state.quarterlyBoost / p.price;
+          shares[etf] += state.quarterlyBoost / (p.price * 1000);
         }
       }
     });
+    // 年終獎金一次性投入 00878
     if (monthInYear === 12 && state.annualBonus > 0 && state.pillars['00878'].price > 0) {
-      shares['00878'] += state.annualBonus / state.pillars['00878'].price;
+      shares['00878'] += state.annualBonus / (state.pillars['00878'].price * 1000);
     }
     history.push({ month: m, shares: { ...shares } });
     
@@ -3667,15 +3575,16 @@ function simulate(maxYears = 30) {
 }
 
 function computeTargetShares(monthlyTarget) {
-  // 內部單位「股」：每月各支ETF獨立配息要達到 monthlyTarget
-  // 配息 = shares × dividend = monthlyTarget → shares = monthlyTarget / dividend
+  // 每月各支ETF獨立配息要達到 monthlyTarget
+  // 0056 在2/5/8/11月配息，每次配 shares × 1000 × dividend = monthlyTarget
+  // 所以 shares = monthlyTarget / (1000 × dividend)
   const t = {};
   ['0056', '00919', '00878'].forEach(etf => {
     const p = state.pillars[etf];
     if (p.dividend > 0) {
-      t[etf] = monthlyTarget / p.dividend;  // 股
+      t[etf] = monthlyTarget / (1000 * p.dividend);
     } else {
-      t[etf] = 999999; // 不可能達標
+      t[etf] = 999; // 不可能達標
     }
   });
   return t;
@@ -3737,7 +3646,6 @@ function updateSimulation() {
         ? '依目前 DCA 加碼幅度，30 年內無法達成。請增加月定期定額或調整目標。'
         : '依目前 DCA、股價與配息率推估，達到三支ETF都有足夠張數的時間點。';
     
-    // g.target 內部是「股」；顯示「張」需要 / 1000
     card.innerHTML = `
       <div class="result-target">${g.label}</div>
       <div class="result-headline" style="line-height:1.1;margin: 8px 0 12px;">
@@ -3748,7 +3656,7 @@ function updateSimulation() {
       </div>
       <div class="result-detail" style="margin-top:10px;font-size:12px;border-top:1px dashed var(--border);padding-top:10px;">
         <strong style="color:var(--text);">達標需要張數：</strong><br>
-        0056 ≥ ${fmt1(g.target['0056'] / 1000)} 張　·　00919 ≥ ${fmt1(g.target['00919'] / 1000)} 張　·　00878 ≥ ${fmt1(g.target['00878'] / 1000)} 張
+        0056 ≥ ${fmt1(g.target['0056'])} 張　·　00919 ≥ ${fmt1(g.target['00919'])} 張　·　00878 ≥ ${fmt1(g.target['00878'])} 張
       </div>
       ${bn ? `<div class="result-bottleneck"><strong>主要瓶頸：${bn}</strong>（最後一支達標的ETF）</div>` : ''}
     `;
@@ -3767,24 +3675,22 @@ function updateSimulation() {
     const idx = y * 12;
     if (idx >= sim.history.length) break;
     const s = sim.history[idx].shares;
-    // s[etf] 是股數；月配息 = (股數 × 每股配息 × 4 季) / 12 個月
     const monthly = (
       s['0056'] * state.pillars['0056'].dividend * 4 +
       s['00919'] * state.pillars['00919'].dividend * 4 +
       s['00878'] * state.pillars['00878'].dividend * 4
-    ) / 12;
+    ) * 1000 / 12;
     const tr = document.createElement('tr');
     if (sim.reachedA >= 0 && y === Math.ceil(sim.reachedA / 12)) tr.classList.add('milestone-a');
     if (sim.reachedB >= 0 && y === Math.ceil(sim.reachedB / 12)) tr.classList.add('milestone-b');
     const c1 = s['0056'] >= sim.targetA['0056'] ? 'cell-reached' : '';
     const c2 = s['00919'] >= sim.targetA['00919'] ? 'cell-reached' : '';
     const c3 = s['00878'] >= sim.targetA['00878'] ? 'cell-reached' : '';
-    // 顯示「張」：股 / 1000
     tr.innerHTML = `
       <td>${y === 0 ? '今天' : '第 ' + y + ' 年'}</td>
-      <td class="${c1}">${fmt1(s['0056'] / 1000)}</td>
-      <td class="${c2}">${fmt1(s['00919'] / 1000)}</td>
-      <td class="${c3}">${fmt1(s['00878'] / 1000)}</td>
+      <td class="${c1}">${fmt1(s['0056'])}</td>
+      <td class="${c2}">${fmt1(s['00919'])}</td>
+      <td class="${c3}">${fmt1(s['00878'])}</td>
       <td>${fmt(monthly)}</td>
     `;
     tbody.appendChild(tr);
@@ -3919,54 +3825,17 @@ function renderRecords() {
 
 
 // === 買入紀錄 ===
-// 當前選中的買入紀錄年份（預設今年）
-let _currentPurchaseYear = String(new Date().getFullYear());
-
 function renderPurchases() {
   const tbody = document.getElementById('purchases-tbody');
-  if (!tbody) return;
   tbody.innerHTML = '';
   
-  // 收集所有年份
-  const allYears = [...new Set(state.purchases.map(p => p.date.substring(0, 4)))].sort();
-  
-  // 渲染年份 tab
-  const tabsWrap = document.getElementById('purchases-year-tabs');
-  if (tabsWrap) {
-    if (allYears.length === 0) {
-      tabsWrap.style.display = 'none';
-    } else if (allYears.length === 1) {
-      tabsWrap.style.display = 'flex';
-      _currentPurchaseYear = allYears[0];
-      tabsWrap.innerHTML = `<button class="year-tab active" data-year="${allYears[0]}">${allYears[0]}</button>`;
-    } else {
-      tabsWrap.style.display = 'flex';
-      if (!allYears.includes(_currentPurchaseYear)) {
-        _currentPurchaseYear = allYears[allYears.length - 1];
-      }
-      tabsWrap.innerHTML = allYears.map(y => 
-        `<button class="year-tab ${y === _currentPurchaseYear ? 'active' : ''}" data-year="${y}">${y}</button>`
-      ).join('');
-      tabsWrap.querySelectorAll('.year-tab').forEach(btn => {
-        btn.addEventListener('click', e => {
-          _currentPurchaseYear = e.target.dataset.year;
-          renderPurchases();
-          renderPurchaseSummary();
-        });
-      });
-    }
-  }
-  
-  // 篩選當前年份的紀錄
-  const filtered = state.purchases.filter(p => p.date.startsWith(_currentPurchaseYear + '-'));
-  const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
-  
+  const sorted = [...state.purchases].sort((a, b) => a.date.localeCompare(b.date));
   sorted.forEach(p => {
     const i = state.purchases.indexOf(p);
     const cost = p.shares * p.price;
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="row-actions"><button class="delete-btn" data-pidx="${i}" title="刪除（會從三本柱扣回）">×</button></td>
+      <td class="row-actions"><button class="delete-btn" data-pidx="${i}" title="刪除">×</button></td>
       <td><input type="date" value="${p.date}" data-pidx="${i}" data-field="date"></td>
       <td><input type="text" list="etf-options" value="${p.etf}" class="etf-input ${getEtfClass(p.etf)}" data-pidx="${i}" data-field="etf"></td>
       <td><input type="number" step="1" value="${p.shares}" data-pidx="${i}" data-field="shares"></td>
@@ -3979,15 +3848,10 @@ function renderPurchases() {
   
   if (state.purchases.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">尚無買入紀錄。點「+ 自訂一筆買入」或「⚡ 快捷登記」開始記錄。</td>`;
-    tbody.appendChild(tr);
-  } else if (filtered.length === 0) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">${_currentPurchaseYear} 年尚無紀錄</td>`;
+    tr.innerHTML = `<td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">尚無買入紀錄。點「+ 新增買入」開始記錄。</td>`;
     tbody.appendChild(tr);
   }
   
-  // 編輯（注意：股數欄位編輯不會自動同步到三本柱，避免誤觸；如需校準請用摘要表的「🔁 重新校準」）
   tbody.querySelectorAll('input[data-pidx]').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = parseInt(e.target.dataset.pidx);
@@ -4001,41 +3865,40 @@ function renderPurchases() {
       renderPurchaseSummary();
     });
   });
-  
-  // 刪除：自動從三本柱扣回對應股數
   tbody.querySelectorAll('.delete-btn').forEach(b => {
     b.addEventListener('click', e => {
       const i = parseInt(e.target.dataset.pidx);
-      const removed = state.purchases[i];
-      const isPillar = ['0056','00919','00878'].includes(removed.etf);
-      const confirmMsg = isPillar 
-        ? `刪除這筆買入紀錄？\n\n${removed.date}　${removed.etf}　${fmt(removed.shares)} 股\n\n會自動從三本柱「${removed.etf}」扣回 ${fmt(removed.shares)} 股。`
-        : `刪除這筆買入紀錄？\n\n${removed.date}　${removed.etf}　${fmt(removed.shares)} 股`;
-      if (!confirm(confirmMsg)) return;
-      
-      let deducted = false;
-      if (isPillar) deducted = deductFromPillars(removed);
-      state.purchases.splice(i, 1);
-      saveState();
-      renderPurchases();
-      renderPurchaseSummary();
-      if (deducted) {
-        renderPillars();
-        renderSimPillars();
-        updateAll();
-        showToast(`✓ 已刪除並從 ${removed.etf} 扣回 ${fmt(removed.shares)} 股`);
-      } else {
-        showToast(`✓ 已刪除`);
+      if (confirm('刪除這筆買入紀錄？')) {
+        state.purchases.splice(i, 1);
+        saveState();
+        renderPurchases();
+        renderPurchaseSummary();
       }
     });
   });
 }
 
 function computePurchaseSummary() {
-  // 只統計當前選中年份的紀錄
+  // 按 ETF 分組
   const grouped = {};
   state.purchases.forEach(p => {
-    if (!p.date.startsWith(_currentPurchaseYear + '-')) return;
+    if (!grouped[p.etf]) grouped[p.etf] = { totalShares: 0, totalCost: 0, count: 0 };
+    grouped[p.etf].totalShares += p.shares;
+    grouped[p.etf].totalCost += p.shares * p.price;
+    grouped[p.etf].count += 1;
+  });
+  // 計算平均成本
+  Object.values(grouped).forEach(g => {
+    g.avgPrice = g.totalShares > 0 ? g.totalCost / g.totalShares : 0;
+    g.totalLots = g.totalShares / 1000;
+  });
+  return grouped;
+}
+
+// 觀察股清單專用：永遠抓全部年份（即使未來 computePurchaseSummary 加了年份過濾，這個也保證抓全部）
+function computePurchaseSummaryAllYears() {
+  const grouped = {};
+  state.purchases.forEach(p => {
     if (!grouped[p.etf]) grouped[p.etf] = { totalShares: 0, totalCost: 0, count: 0 };
     grouped[p.etf].totalShares += p.shares;
     grouped[p.etf].totalCost += p.shares * p.price;
@@ -4051,7 +3914,6 @@ function computePurchaseSummary() {
 function renderPurchaseSummary() {
   const tbody = document.getElementById('purchases-summary-tbody');
   const wrap = document.getElementById('purchases-summary-wrap');
-  if (!tbody) return;
   tbody.innerHTML = '';
   const summary = computePurchaseSummary();
   
@@ -4059,20 +3921,27 @@ function renderPurchaseSummary() {
     if (wrap) wrap.style.display = 'none';
     return;
   }
-  if (wrap) wrap.style.display = 'block';
+ if (wrap) wrap.style.display = 'block';
   
   const PILLAR_ORDER = { '0056': 1, '00919': 2, '00878': 3 };
   Object.entries(summary).sort(([a], [b]) => (PILLAR_ORDER[a] || 99) - (PILLAR_ORDER[b] || 99) || a.localeCompare(b)).forEach(([etf, s]) => {
+    const latestPrice = state.latestPrices[etf];
+    let profitText = '—';
+    let profitClass = '';
+    if (latestPrice && s.avgPrice > 0) {
+      const profitPct = (latestPrice - s.avgPrice) / s.avgPrice * 100;
+      profitText = (profitPct >= 0 ? '+' : '') + fmt2(profitPct) + '%';
+      profitClass = profitPct >= 0 ? 'profit-pos' : 'profit-neg';
+    }
     const isPillar = ['0056', '00919', '00878'].includes(etf);
     const tr = document.createElement('tr');
-    // 累計股數 = totalShares（精確值，整數）
-    tr.innerHTML = `
+  tr.innerHTML = `
       <td><span class="etf-input ${getEtfClass(etf)}" style="cursor:default;">${etf}</span></td>
-      <td>${fmt(s.totalShares)} 股<br><span style="font-size:10px;color:var(--text-dim);">(${fmt2(s.totalLots)} 張)</span></td>
+      <td>${fmt2(s.totalLots)}</td>
       <td>${fmt(s.totalCost)}</td>
       <td>
         <div class="summary-row-actions">
-          ${isPillar ? `<button class="summary-btn" data-action="recalibrate" data-etf="${etf}" title="把買入累計的股數覆蓋目前三本柱現有股數（用於校準，例如懷疑自動同步有差異時）">🔁 重新校準</button>` : ''}
+          ${isPillar ? `<button class="summary-btn" data-action="apply-share" data-etf="${etf}">套用張數</button>` : ''}
         </div>
       </td>
     `;
@@ -4084,22 +3953,17 @@ function renderPurchaseSummary() {
       const action = e.target.dataset.action;
       const etf = e.target.dataset.etf;
       const summary = computePurchaseSummary();
-      if (action === 'recalibrate' && summary[etf]) {
-        const cur = state.pillars[etf].shares;
-        const target = summary[etf].totalShares;
-        if (!confirm(
-          `🔁 重新校準 ${etf}\n\n` +
-          `目前三本柱：${fmt(cur)} 股（${fmt2(cur/1000)} 張）\n` +
-          `${_currentPurchaseYear} 年買入累計：${fmt(target)} 股（${fmt2(target/1000)} 張）\n\n` +
-          `⚠️ 注意：摘要只統計選中年份。若你想用「歷年買入總和」校準，請小心目前不會包含其他年份。\n\n` +
-          `用買入累計覆蓋目前三本柱？`
-        )) return;
-        state.pillars[etf].shares = target;
+      if (action === 'apply-share' && summary[etf]) {
+        state.pillars[etf].shares = summary[etf].totalLots;
         saveState();
         renderPillars();
         renderSimPillars();
         updateAll();
-        showToast(`✓ ${etf} 已校準為 ${fmt(target)} 股`);
+      } else if (action === 'apply-price' && state.latestPrices[etf]) {
+        state.pillars[etf].price = state.latestPrices[etf];
+        saveState();
+        renderSimPillars();
+        updateAll();
       }
     });
   });
@@ -4430,8 +4294,8 @@ function renderWatchlist() {
     return;
   }
   
-  // 計算每支標的的買入累計（如果有買入紀錄就顯示含息報酬）
-  const purchaseStats = computePurchaseSummary();
+  // 計算每支標的的買入累計（用全部年份，不受年份 tab 影響）
+  const purchaseStats = computePurchaseSummaryAllYears();
   
   state.watchlist.forEach((etf, idx) => {
     const price = state.latestPrices[etf];
@@ -6118,7 +5982,206 @@ function init() {
     reader.readAsText(file);
   });
   
-// === 買入登記：自訂一筆 ===
+// === 提示是否同步張數到三本柱 ===
+function promptSyncShares(newPurchases) {
+  // 只同步三本柱（0056/00919/00878）
+  const pillarEtfs = ['0056', '00919', '00878'];
+  const grouped = {};
+  newPurchases.forEach(p => {
+    if (pillarEtfs.includes(p.etf)) {
+      if (!grouped[p.etf]) grouped[p.etf] = 0;
+      grouped[p.etf] += p.shares;
+    }
+  });
+  
+  if (Object.keys(grouped).length === 0) return;
+  
+  // 組成提示文字
+  const lines = Object.entries(grouped).map(([etf, sharesAdded]) => {
+    const cur = state.pillars[etf].shares;
+    const lotsAdded = sharesAdded / 1000;
+    const newTotal = cur + lotsAdded;
+    return `${etf}: ${fmt2(cur)} → ${fmt2(newTotal)} 張（+${fmt2(lotsAdded)}）`;
+  });
+  
+  if (confirm(
+    `✓ 已登記 ${newPurchases.length} 筆買入\n\n` +
+    `是否同步更新三本柱「現有張數」？\n\n` +
+    lines.join('\n') + '\n\n' +
+    `（按「確定」更新；按「取消」只保留買入紀錄不更新張數）`
+  )) {
+    Object.entries(grouped).forEach(([etf, sharesAdded]) => {
+      const newShares = state.pillars[etf].shares + sharesAdded / 1000;
+      state.pillars[etf].shares = Math.round(newShares * 1000) / 1000;
+    });
+    saveState();
+    renderPillars();
+    renderSimPillars();
+    updateAll();
+  }
+}
+
+  // 質押系統
+  document.getElementById('add-loan').addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    const amountStr = prompt('🏦 新增借款\n\n步驟 1/4：借款金額？（元）', '500000');
+    if (!amountStr) return;
+    const amount = parseFloat(amountStr);
+    if (!amount || amount <= 0) { alert('金額無效'); return; }
+    
+    const dateStr = prompt('步驟 2/4：借款日期？', today);
+    if (!dateStr) return;
+    
+    const rateStr = prompt('步驟 3/4：年利率（%）？\n\n2.5 = 舊借款利率\n2.88 = 永豐目前新借款利率', '2.5');
+    if (!rateStr) return;
+    const rate = parseFloat(rateStr);
+    if (!rate || rate <= 0) { alert('利率無效'); return; }
+    
+    const collateralStr = prompt(
+      '步驟 4/4：質押內容\n格式：標的×張數，多筆用 + 連接\n例如：0056×12 + 00878×39 + 00919×28\n\n（可留空，之後再到借款卡片內新增）',
+      ''
+    );
+    if (collateralStr === null) return;
+    
+    // 解析擔保品字串
+    const collaterals = [];
+    if (collateralStr.trim()) {
+      collateralStr.split('+').forEach(part => {
+        const m = part.trim().match(/^(\S+?)[×x*](\d+(?:\.\d+)?)$/);
+        if (m) {
+          collaterals.push({ etf: m[1], shares: parseFloat(m[2]), pledgePrice: 0 });
+        }
+      });
+    }
+    
+    const newLoan = {
+      id: 'loan' + Date.now(),
+      borrowDate: dateStr,
+      amount: amount,
+      rate: rate,
+      extendedTimes: 0,
+      maxExtensions: 2,
+      note: '',
+      collaterals: collaterals
+    };
+    
+    const summary = collaterals.length > 0 
+      ? collaterals.map(c => `${c.etf}×${c.shares}`).join(' + ')
+      : '(無擔保品，可之後再加)';
+    
+    if (!confirm(
+      `確認新增借款：\n` +
+      `日期：${dateStr}\n` +
+      `金額：$${fmt(amount)}\n` +
+      `利率：${rate}%\n` +
+      `擔保品：${summary}\n` +
+      `月利息：$${fmt(amount * rate / 100 / 12)}\n\n` +
+      `提示：新增後可點「🔍 自動抓質押日股價」帶入歷史股價。`
+    )) return;
+    
+    state.loans.push(newLoan);
+    saveState();
+    renderLoans();
+  });
+  
+  document.getElementById('reset-loans').addEventListener('click', () => {
+    if (confirm('將借款資料重設為預設值（你的 4 筆 305.6 萬）？\n目前資料會被覆蓋。')) {
+      state.loans = JSON.parse(JSON.stringify(DEFAULT_LOANS));
+      saveState();
+      renderLoans();
+    }
+  });
+  
+  // 抓質押日股價（用借款的 borrowDate 對每筆借款的擔保品抓那天的價格）
+  document.getElementById('fetch-pledge-prices').addEventListener('click', async () => {
+    if (!state.customProxy) {
+      alert('需要先設定 Cloudflare Worker URL（在「自訂 CORS Proxy」區）才能抓歷史股價。');
+      return;
+    }
+    
+    // 收集所有「需要抓的」（pledgePrice 為 0 或未設）
+    const tasks = [];
+    state.loans.forEach((loan, lidx) => {
+      (loan.collaterals || []).forEach((c, cidx) => {
+        if (!c.pledgePrice || c.pledgePrice === 0) {
+          tasks.push({ lidx, cidx, etf: c.etf, date: loan.borrowDate });
+        }
+      });
+    });
+    
+    if (tasks.length === 0) {
+      if (!confirm('所有擔保品都已有質押當時價。\n要重新抓取（會覆蓋現有值）？')) return;
+      // 重新抓所有
+      state.loans.forEach((loan, lidx) => {
+        (loan.collaterals || []).forEach((c, cidx) => {
+          tasks.push({ lidx, cidx, etf: c.etf, date: loan.borrowDate });
+        });
+      });
+    }
+    
+    const btn = document.getElementById('fetch-pledge-prices');
+    btn.disabled = true;
+    btn.textContent = '抓取中…';
+    
+    let successCount = 0;
+    const failures = [];
+    for (const t of tasks) {
+      btn.textContent = `抓取 ${t.etf} (${t.date})…`;
+      const result = await fetchHistoricalPrice(t.etf, t.date);
+      if (result) {
+        state.loans[t.lidx].collaterals[t.cidx].pledgePrice = result.price;
+        successCount++;
+        console.log(`✓ 借款#${t.lidx+1} ${t.etf} ${t.date}: $${result.price}`);
+      } else {
+        failures.push(`${t.etf}(借款#${t.lidx+1})`);
+      }
+    }
+    
+    saveState();
+    renderLoans();
+    
+    btn.disabled = false;
+    btn.textContent = '🔍 自動抓質押日股價';
+    
+    if (failures.length === 0) {
+      alert(`✓ 已成功抓取 ${successCount} 筆擔保品的質押當時股價。`);
+    } else {
+      alert(`⚠ ${successCount} 成功，${failures.length} 失敗：${failures.join(', ')}\n\n失敗可能原因：API 暫時故障。請稍後重試或手動填入。`);
+    }
+  });
+  
+  // 觀察股清單
+  document.getElementById('add-watchlist').addEventListener('click', () => {
+    const etf = prompt(
+      '📡 新增觀察股\n\n' +
+      '請輸入標的代號或名稱：\n' +
+      '範例：0050、台積電、00891、中華電、聯發科、鴻海\n\n' +
+      '（注意：不在內建清單的標的可能無法抓股價）',
+      ''
+    );
+    if (!etf || !etf.trim()) return;
+    const cleanEtf = etf.trim();
+    
+    if (state.watchlist.includes(cleanEtf)) {
+      alert(`${cleanEtf} 已在觀察清單。`);
+      return;
+    }
+    
+    if (!YAHOO_TICKERS[cleanEtf]) {
+      if (!confirm(`「${cleanEtf}」不在內建抓股價清單，加入後可能顯示為「—」（無股價）。\n\n要繼續加入嗎？`)) return;
+    }
+    
+    state.watchlist.push(cleanEtf);
+    saveState();
+    renderWatchlist();
+    
+    // 提示需要更新股價
+    if (YAHOO_TICKERS[cleanEtf] && !state.latestPrices[cleanEtf]) {
+      alert(`✓ 已加入 ${cleanEtf}。\n\n股價會在下次按「↻ 更新股價」時抓取。`);
+    }
+  });
+
+  // 買入紀錄：自訂一筆（依序問標的、日期、股數、單價、備註）
   document.getElementById('add-purchase').addEventListener('click', () => {
     const today = new Date().toISOString().split('T')[0];
     
@@ -6132,7 +6195,8 @@ function init() {
     const etfClean = etf.trim();
     
     const dateStr = prompt(
-      `標的：${etfClean}\n\n步驟 2/4：買入日期？`,
+      `標的：${etfClean}\n\n` +
+      '步驟 2/4：買入日期？',
       today
     );
     if (dateStr === null || !dateStr.trim()) return;
@@ -6144,25 +6208,32 @@ function init() {
     );
     if (sharesStr === null) return;
     const shares = parseFloat(sharesStr);
-    if (!shares || shares <= 0) { alert('股數無效'); return; }
+    if (!shares || shares <= 0) {
+      alert('股數無效');
+      return;
+    }
     
-    const defaultPrice = state.latestPrices[etfClean] || (state.pillars[etfClean] && state.pillars[etfClean].price) || '';
+    // 嘗試帶預設股價
+    const defaultPrice = state.latestPrices[etfClean] || state.pillars[etfClean]?.price || '';
     const priceStr = prompt(
-      `標的：${etfClean}　日期：${dateStr}　股數：${fmt(shares)}\n\n步驟 4/4：買入單價？`,
+      `標的：${etfClean}　日期：${dateStr}　股數：${fmt(shares)}\n\n` +
+      '步驟 4/4：買入單價？',
       defaultPrice ? fmt2(defaultPrice) : ''
     );
     if (priceStr === null) return;
     const price = parseFloat(priceStr);
-    if (!price || price <= 0) { alert('單價無效'); return; }
+    if (!price || price <= 0) {
+      alert('單價無效');
+      return;
+    }
     
-    const note = prompt('備註？（可留空）\n例如：除息加碼、年終獎金、機動加碼', '');
-    if (note === null) return;
+    const note = prompt(
+      '備註？（可留空）\n例如：除息加碼、年終獎金、機動加碼',
+      ''
+    );
+    if (note === null) return; // 取消
     
     const cost = shares * price;
-    const isPillar = ['0056','00919','00878'].includes(etfClean);
-    const syncMsg = isPillar 
-      ? `\n\n✓ 將自動同步到「${etfClean}」三本柱（+${fmt(shares)} 股）` 
-      : '';
     if (!confirm(
       `確認登記：\n` +
       `日期：${dateStr}\n` +
@@ -6170,188 +6241,162 @@ function init() {
       `股數：${fmt(shares)} 股（${fmt2(shares/1000)} 張）\n` +
       `單價：$${fmt2(price)}\n` +
       `成本：$${fmt(cost)}` +
-      (note ? `\n備註：${note}` : '') +
-      syncMsg
+      (note ? `\n備註：${note}` : '')
     )) return;
     
-    const newPurchase = { date: dateStr, etf: etfClean, shares, price, note };
-    state.purchases.push(newPurchase);
-    
-    // 自動同步到三本柱（若是 0056/00919/00878）
-    const synced = autoSyncToPillars([newPurchase]);
-    
+    state.purchases.push({
+      date: dateStr,
+      etf: etfClean,
+      shares: shares,
+      price: price,
+      note: note
+    });
     saveState();
     renderPurchases();
     renderPurchaseSummary();
-    if (Object.keys(synced).length > 0) {
-      renderPillars();
-      renderSimPillars();
-      updateAll();
-      showToast(`✓ 已登記並同步到 ${etfClean} 三本柱`);
-    } else {
-      showToast(`✓ 已登記 ${etfClean}（非三本柱，未同步）`);
-    }
+    promptSyncShares([{ etf: etfClean, shares: shares }]);
   });
   
-  // === 快捷登記按鈕 ===
+  // 快捷登記按鈕
   document.querySelectorAll('.quick-btn[data-quick]').forEach(btn => {
     btn.addEventListener('click', e => {
       const which = e.currentTarget.dataset.quick;
+      
       if (which === 'all') {
+        // 全套 DCA：開啟對話框讓使用者填三支實際成交價
         openQuickAllDialog();
       } else {
+        // 單支 DCA
         openQuickSingleDialog(which);
       }
     });
   });
+
+function openQuickSingleDialog(etf) {
+  const p = state.pillars[etf];
+  const today = new Date().toISOString().split('T')[0];
+  const monthStr = today.substring(0, 7);
+  const defaultPrice = state.latestPrices[etf] || p.price;
   
-  function openQuickSingleDialog(etf) {
+  const priceStr = prompt(
+    `登記 ${etf} 月投 $${fmt(p.dca)}\n\n` +
+    `請輸入「實際買入單價」：\n` +
+    `（預設帶最新股價 $${fmt2(defaultPrice)}，可改成你實際成交的股價）`,
+    fmt2(defaultPrice)
+  );
+  if (priceStr === null) return; // 使用者取消
+  
+  const price = parseFloat(priceStr);
+  if (!price || price <= 0) {
+    alert('股價輸入無效');
+    return;
+  }
+  
+  const dateStr = prompt(
+    `買入日期？\n（預設今天 ${today}，可改）`,
+    today
+  );
+  if (dateStr === null) return;
+  
+  const shares = Math.floor(p.dca / price);
+  if (shares <= 0) {
+    alert('股價過高或DCA金額過低，無法買到任何股數');
+    return;
+  }
+  const actualCost = shares * price;
+  
+  if (!confirm(
+    `確認登記：\n` +
+    `日期：${dateStr}\n` +
+    `標的：${etf}\n` +
+    `買入單價：$${fmt2(price)}\n` +
+    `買入股數：${fmt(shares)} 股\n` +
+    `實際成本：$${fmt(actualCost)}（預算 $${fmt(p.dca)}）\n` +
+    `剩餘現金：$${fmt(p.dca - actualCost)}`
+  )) return;
+  
+  state.purchases.push({
+    date: dateStr,
+    etf: etf,
+    shares: shares,
+    price: price,
+    note: `DCA ${monthStr.replace('-', '/')}`
+  });
+  saveState();
+  renderPurchases();
+  renderPurchaseSummary();
+  promptSyncShares([{ etf: etf, shares: shares }]);
+}
+
+function openQuickAllDialog() {
+  const today = new Date().toISOString().split('T')[0];
+  const monthStr = today.substring(0, 7);
+  
+  const dateStr = prompt(
+    `登記本月全套 DCA $${fmt(state.pillars['0056'].dca + state.pillars['00919'].dca + state.pillars['00878'].dca)}\n\n` +
+    `買入日期？（預設今天 ${today}）`,
+    today
+  );
+  if (dateStr === null) return;
+  
+  const newPurchases = [];
+  for (const etf of ['0056', '00919', '00878']) {
     const p = state.pillars[etf];
-    const today = new Date().toISOString().split('T')[0];
-    const monthStr = today.substring(0, 7);
     const defaultPrice = state.latestPrices[etf] || p.price;
-    
     const priceStr = prompt(
-      `登記 ${etf} 月投 $${fmt(p.dca)}\n\n` +
-      `請輸入「實際買入單價」：\n` +
-      `（預設帶最新股價 $${fmt2(defaultPrice)}，可改成你實際成交的股價）`,
+      `${etf}：請輸入「實際買入單價」\n` +
+      `月 DCA：$${fmt(p.dca)}\n` +
+      `預設帶最新股價 $${fmt2(defaultPrice)}`,
       fmt2(defaultPrice)
     );
-    if (priceStr === null) return;
-    const price = parseFloat(priceStr);
-    if (!price || price <= 0) { alert('股價輸入無效'); return; }
-    
-    const dateStr = prompt(`買入日期？\n（預設今天 ${today}，可改）`, today);
-    if (dateStr === null) return;
-    
-    const shares = Math.floor(p.dca / price);
-    if (shares <= 0) { alert('股價過高或DCA金額過低，無法買到任何股數'); return; }
-    const actualCost = shares * price;
-    
-    if (!confirm(
-      `確認登記：\n` +
-      `日期：${dateStr}\n` +
-      `標的：${etf}\n` +
-      `買入單價：$${fmt2(price)}\n` +
-      `買入股數：${fmt(shares)} 股\n` +
-      `實際成本：$${fmt(actualCost)}（預算 $${fmt(p.dca)}）\n` +
-      `剩餘現金：$${fmt(p.dca - actualCost)}\n\n` +
-      `✓ 將自動同步到「${etf}」三本柱（+${fmt(shares)} 股）`
-    )) return;
-    
-    const newPurchase = {
-      date: dateStr, etf, shares, price,
-      note: `DCA ${monthStr.replace('-', '/')}`
-    };
-    state.purchases.push(newPurchase);
-    autoSyncToPillars([newPurchase]);
-    
-    saveState();
-    renderPurchases();
-    renderPurchaseSummary();
-    renderPillars();
-    renderSimPillars();
-    updateAll();
-    showToast(`✓ 已登記並同步到 ${etf} 三本柱（+${fmt(shares)} 股）`);
-  }
-  
-  function openQuickAllDialog() {
-    const today = new Date().toISOString().split('T')[0];
-    const monthStr = today.substring(0, 7);
-    const totalDca = state.pillars['0056'].dca + state.pillars['00919'].dca + state.pillars['00878'].dca;
-    
-    const dateStr = prompt(
-      `登記本月全套 DCA $${fmt(totalDca)}\n\n買入日期？（預設今天 ${today}）`,
-      today
-    );
-    if (dateStr === null) return;
-    
-    const newPurchases = [];
-    for (const etf of ['0056', '00919', '00878']) {
-      const p = state.pillars[etf];
-      const defaultPrice = state.latestPrices[etf] || p.price;
-      const priceStr = prompt(
-        `${etf}：請輸入「實際買入單價」\n` +
-        `月 DCA：$${fmt(p.dca)}\n` +
-        `預設帶最新股價 $${fmt2(defaultPrice)}`,
-        fmt2(defaultPrice)
-      );
-      if (priceStr === null) {
-        if (newPurchases.length > 0) {
-          if (confirm(`已輸入 ${newPurchases.length} 筆，要儲存已輸入的嗎？\n（按取消則放棄全部）`)) break;
+    if (priceStr === null) {
+      if (newPurchases.length > 0) {
+        if (confirm(`已輸入 ${newPurchases.length} 筆，要儲存已輸入的嗎？\n（按取消則放棄全部）`)) {
+          break;
         }
-        return;
       }
-      const price = parseFloat(priceStr);
-      if (!price || price <= 0) { alert(`${etf} 股價無效，跳過`); continue; }
-      const shares = Math.floor(p.dca / price);
-      if (shares > 0) {
-        newPurchases.push({
-          date: dateStr, etf, shares, price,
-          note: `DCA ${monthStr.replace('-', '/')}`
-        });
-      }
+      return;
     }
-    
-    if (newPurchases.length === 0) return;
-    
-    const summary = newPurchases.map(p => 
-      `${p.etf}: ${fmt(p.shares)} 股 × $${fmt2(p.price)} = $${fmt(p.shares * p.price)}`
-    ).join('\n');
-    const totalCost = newPurchases.reduce((s, p) => s + p.shares * p.price, 0);
-    
-    if (!confirm(
-      `確認登記 ${newPurchases.length} 筆：\n\n${summary}\n\n` +
-      `總成本：$${fmt(totalCost)}\n\n` +
-      `✓ 將自動同步到三本柱（${newPurchases.map(p=>p.etf).join('、')}）`
-    )) return;
-    
-    state.purchases.push(...newPurchases);
-    const synced = autoSyncToPillars(newPurchases);
-    
-    saveState();
-    renderPurchases();
-    renderPurchaseSummary();
-    renderPillars();
-    renderSimPillars();
-    updateAll();
-    showToast(`✓ 已登記 ${newPurchases.length} 筆並同步到 ${Object.keys(synced).join('、')}`);
+    const price = parseFloat(priceStr);
+    if (!price || price <= 0) {
+      alert(`${etf} 股價無效，跳過`);
+      continue;
+    }
+    const shares = Math.floor(p.dca / price);
+    if (shares > 0) {
+      newPurchases.push({
+        date: dateStr,
+        etf: etf,
+        shares: shares,
+        price: price,
+        note: `DCA ${monthStr.replace('-', '/')}`
+      });
+    }
   }
   
-  // === 清空所有買入紀錄（同時從三本柱扣回）===
-  document.getElementById('clear-purchases').addEventListener('click', () => {
+  if (newPurchases.length === 0) return;
+  
+  const summary = newPurchases.map(p => 
+    `${p.etf}: ${fmt(p.shares)} 股 × $${fmt2(p.price)} = $${fmt(p.shares * p.price)}`
+  ).join('\n');
+  const totalCost = newPurchases.reduce((s, p) => s + p.shares * p.price, 0);
+  
+  if (!confirm(`確認登記 ${newPurchases.length} 筆：\n\n${summary}\n\n總成本：$${fmt(totalCost)}`)) return;
+  
+  state.purchases.push(...newPurchases);
+  saveState();
+  renderPurchases();
+  renderPurchaseSummary();
+  promptSyncShares(newPurchases);
+}
+     document.getElementById('clear-purchases').addEventListener('click', () => {
     if (state.purchases.length === 0) return;
-    
-    const PILLAR_ETFS = ['0056', '00919', '00878'];
-    const toDeduct = {};
-    state.purchases.forEach(p => {
-      if (PILLAR_ETFS.includes(p.etf)) {
-        toDeduct[p.etf] = (toDeduct[p.etf] || 0) + p.shares;
-      }
-    });
-    
-    const deductMsg = Object.keys(toDeduct).length > 0
-      ? '\n\n會同時從三本柱扣回：\n' + Object.entries(toDeduct).map(([etf, s]) => `  ${etf}: -${fmt(s)} 股`).join('\n')
-      : '';
-    
-    if (!confirm(
-      `清空所有買入紀錄（共 ${state.purchases.length} 筆）？` +
-      deductMsg +
-      `\n\n此動作無法復原（除非有JSON備份）`
-    )) return;
-    
-    Object.entries(toDeduct).forEach(([etf, s]) => {
-      const cur = state.pillars[etf].shares || 0;
-      state.pillars[etf].shares = Math.max(0, cur - s);
-    });
-    state.purchases = [];
-    saveState();
-    renderPurchases();
-    renderPurchaseSummary();
-    renderPillars();
-    renderSimPillars();
-    updateAll();
-    showToast('✓ 已清空買入紀錄' + (Object.keys(toDeduct).length > 0 ? '並從三本柱扣回' : ''));
+    if (confirm('清空所有買入紀錄？此動作無法復原（除非有JSON備份）')) {
+      state.purchases = [];
+      saveState();
+      renderPurchases();
+      renderPurchaseSummary();
+    }
   });
   
   // 股價更新（頂部按鈕和試算參數區的按鈕都觸發同一個函數）

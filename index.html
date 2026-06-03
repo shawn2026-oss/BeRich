@@ -4101,7 +4101,7 @@ function renderRecords() {
   const sorted = [...filtered].sort((a, b) => a.date.localeCompare(b.date));
   sorted.forEach(rec => {
     const td = rec.shares * rec.divPerShare;
-    const yp = rec.costPrice > 0 ? (rec.divPerShare * 4 / rec.costPrice * 100) : 0;
+  const yp = (() => { if (rec.costPrice <= 0) return 0; const sameEtf = filtered.filter(r => r.etf === rec.etf); const avgDiv = sameEtf.reduce((s, r) => s + r.divPerShare, 0) / sameEtf.length; const freq = state.pillars[rec.etf]?.dividendMonths?.length || 4; return avgDiv * freq / rec.costPrice * 100; })();
     total += td;
     cumulative[rec.etf] = (cumulative[rec.etf] || 0) + td;
     const m = parseInt(rec.date.split('-')[1]);

@@ -3285,6 +3285,7 @@ function loadState() {
         jsonbinKey: parsed.jsonbinKey || '',
         jsonbinAutoSync: parsed.jsonbinAutoSync !== false,
         lastJsonbinSync: parsed.lastJsonbinSync || null,
+        lastModified: parsed.lastModified || null,
         watchlist: parsed.watchlist || ['0050', '台積電'],
         loans: parsed.loans || JSON.parse(JSON.stringify(DEFAULT_LOANS)),
         collaterals: parsed.collaterals || JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
@@ -3313,6 +3314,7 @@ function loadState() {
     jsonbinKey: '',
     jsonbinAutoSync: true,
     lastJsonbinSync: null,
+    lastModified: null,
     watchlist: ['0050', '台積電'],
     loans: JSON.parse(JSON.stringify(DEFAULT_LOANS)),
     collaterals: JSON.parse(JSON.stringify(DEFAULT_COLLATERALS)),
@@ -4774,10 +4776,57 @@ async function pushToGist(showAlert = false) {
   }
   if (_gistSyncInProgress) return false;
   _gistSyncInProgress = true;
-  
-  setSyncStatus('上傳中…', 'var(--text-muted)');
-  
+
+  setSyncStatus('檢查雲端版本…', 'var(--text-muted)');
+
   try {
+    // === 上傳前防護：先讀 Gist 的 lastModified，舊資料不准覆蓋新資料 ===
+    const checkRes = await fetch(`https://api.github.com/gists/${state.gistId}`, {
+      headers: {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': `Bearer ${state.githubToken}`
+      }
+    });
+    if (checkRes.ok) {
+      const checkGist = await checkRes.json();
+      const checkContent = checkGist.files?.['berich-data.json']?.content;
+      let remoteCheck = null;
+      if (checkContent) {
+        try { remoteCheck = JSON.parse(checkContent); } catch(e) { remoteCheck = null; }
+      }
+      const remoteTime = (remoteCheck && !remoteCheck.placeholder && remoteCheck.lastModified) ? new Date(remoteCheck.lastModified) : null;
+      const localTime = state.lastModified ? new Date(state.lastModified) : null;
+      if (remoteTime && localTime && remoteTime > localTime) {
+        const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        if (showAlert) {
+          // 手動上傳：跳 confirm 讓使用者自己選要不要強制覆蓋
+          if (!confirm(`⚠️ Gist 雲端有更新版本！\n本機：${fmtT(localTime)}\n雲端：${fmtT(remoteTime)}\n\n確定要「強制上傳」用本機（舊）覆蓋雲端（新）？`)) {
+            setSyncStatus('已取消（雲端較新）', 'var(--text-muted)');
+            _gistSyncInProgress = false;
+            return false;
+          }
+          // 使用者選擇強制上傳 → 繼續往下走
+        } else {
+          // 自動上傳：嚴格擋下，改成自動載入雲端新版 + 顯示明顯警告
+          showSyncConflictBanner(localTime, remoteTime);
+          applyRemoteState(remoteCheck, 'gist');
+          setSyncStatus('☁ 雲端較新，已自動載入（未上傳）', 'var(--warning)');
+          _gistSyncInProgress = false;
+          return false;
+        }
+      }
+    } else if (checkRes.status !== 404) {
+      // 讀不到雲端版本 → 保守處理：自動上傳直接中止；手動上傳可選擇強制
+      const force = showAlert && confirm(`無法確認 Gist 雲端版本（HTTP ${checkRes.status}）。\n仍要強制上傳（可能覆蓋雲端較新資料）？`);
+      if (!force) {
+        setSyncStatus(`⚠ 無法確認雲端版本，未上傳 (${checkRes.status})`, 'var(--warning)');
+        _gistSyncInProgress = false;
+        return false;
+      }
+    }
+    // 404 或 Gist 是空的/無時間戳 → 照常上傳
+
+    setSyncStatus('上傳中…', 'var(--text-muted)');
     const payload = {
       files: {
         'berich-data.json': {
@@ -4866,31 +4915,23 @@ async function pullFromGist(showAlert = false) {
       return false;
     }
     
-    // 保留本地的 token、gistId、customProxy（避免被覆蓋）
-    const localToken = state.githubToken;
-    const localGistId = state.gistId;
-    const localProxy = state.customProxy;
-    
-    state = remoteData;
-    if (!state.githubToken) state.githubToken = localToken;
-    if (!state.gistId) state.gistId = localGistId;
-    if (!state.customProxy && localProxy) state.customProxy = localProxy;
-    state.lastGistSync = new Date().toISOString();
-    
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
-    
+    // 比對時間：雲端比本機舊就警告
+    const localTime = state.lastModified ? new Date(state.lastModified) : null;
+    const remoteTime = remoteData.lastModified ? new Date(remoteData.lastModified) : null;
+    if (localTime && remoteTime && remoteTime < localTime) {
+      const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+      if (!confirm(`⚠️ 警告：Gist 雲端資料比本機舊！\n本機：${fmtT(localTime)}\n雲端：${fmtT(remoteTime)}\n\n用「舊」覆蓋「新」？`)) {
+        _gistSyncInProgress = false;
+        setSyncStatus('已取消', 'var(--text-muted)');
+        return false;
+      }
+    }
+
+    applyRemoteState(remoteData, 'gist');
+
     const tStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
     setSyncStatus(`☁ 已同步 ${tStr}`, 'var(--success)');
-    
-    // 重新渲染所有
-    renderPillars();
-    renderSimPillars();
-    renderRecords();
-    renderPurchases();
-    renderPurchaseSummary();
-    renderLoans();
-    updateAll();
-    
+
     if (showAlert) alert('✓ 已從 Gist 下載最新資料');
     _gistSyncInProgress = false;
     return true;
@@ -4916,6 +4957,79 @@ function setJsonbinStatus(text, color) {
   });
 }
 
+// 套用雲端資料到本機（保留本地設定 + 較新股價），並重繪畫面
+// source: 'jsonbin' 或 'gist'，決定要更新哪個同步時間欄位
+function applyRemoteState(remoteData, source) {
+  const localJsonbinId = state.jsonbinId;
+  const localJsonbinKey = state.jsonbinKey;
+  const localGistId = state.gistId;
+  const localProxy = state.customProxy;
+  const localToken = state.githubToken;
+  const localPrices = state.latestPrices ? { ...state.latestPrices } : {};
+  const localPriceUpdatedAt = state.priceUpdatedAt;
+
+  state = remoteData;
+  if (!state.jsonbinId) state.jsonbinId = localJsonbinId;
+  if (!state.jsonbinKey) state.jsonbinKey = localJsonbinKey;
+  if (!state.gistId) state.gistId = localGistId;
+  if (!state.customProxy && localProxy) state.customProxy = localProxy;
+  if (!state.githubToken && localToken) state.githubToken = localToken;
+  // 股價保留本地較新的（避免雲端舊股價覆蓋剛抓的最新）
+  if (!state.latestPrices) state.latestPrices = {};
+  Object.entries(localPrices).forEach(([sym, price]) => {
+    if (typeof price === 'number' && price > 0) {
+      state.latestPrices[sym] = price;
+    }
+  });
+  if (localPriceUpdatedAt && (!state.priceUpdatedAt || new Date(localPriceUpdatedAt) > new Date(state.priceUpdatedAt))) {
+    state.priceUpdatedAt = localPriceUpdatedAt;
+  }
+  ['0056', '00919', '00878'].forEach(etf => {
+    if (state.latestPrices[etf] && state.pillars[etf]) {
+      state.pillars[etf].price = state.latestPrices[etf];
+    }
+  });
+  if (source === 'gist') state.lastGistSync = new Date().toISOString();
+  else state.lastJsonbinSync = new Date().toISOString();
+
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
+
+  // 重新渲染所有
+  renderPillars();
+  renderSimPillars();
+  renderRecords();
+  renderPurchases();
+  renderPurchaseSummary();
+  if (typeof renderLoans === 'function') renderLoans();
+  updateAll();
+  renderLastModified();
+  document.getElementById('goal-a').value = state.goals.a;
+  document.getElementById('goal-b').value = state.goals.b;
+  document.getElementById('goal-c').value = state.goals.c;
+}
+
+// 拒絕上傳時的明顯警告橫幅（不會自動消失，需手動按 ✕ 關閉）
+function showSyncConflictBanner(localTime, remoteTime) {
+  const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+  let banner = document.getElementById('sync-conflict-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sync-conflict-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--warning);color:#fff;padding:12px 44px 12px 16px;font-size:14px;line-height:1.5;box-shadow:0 2px 8px rgba(0,0,0,.25);';
+    const close = document.createElement('button');
+    close.textContent = '✕';
+    close.style.cssText = 'position:absolute;top:8px;right:10px;background:none;border:none;color:#fff;font-size:16px;cursor:pointer;';
+    close.onclick = () => banner.remove();
+    banner.appendChild(close);
+    const msg = document.createElement('div');
+    msg.id = 'sync-conflict-banner-msg';
+    banner.appendChild(msg);
+    document.body.appendChild(banner);
+  }
+  document.getElementById('sync-conflict-banner-msg').textContent =
+    `⚠️ 這台裝置的資料是舊版（本機 ${fmtT(localTime)} < 雲端 ${fmtT(remoteTime)}）。已拒絕上傳並自動載入雲端新版本。`;
+}
+
 // === JSONbin 雲端同步 ===
 let _jsonbinSyncInProgress = false;
 let _jsonbinDebounceTimer = null;
@@ -4927,9 +5041,49 @@ async function pushToJsonbin(showAlert = false) {
   }
   if (_jsonbinSyncInProgress) return false;
   _jsonbinSyncInProgress = true;
-  setJsonbinStatus('上傳中…', 'var(--text-muted)');
-  
+  setJsonbinStatus('檢查雲端版本…', 'var(--text-muted)');
+
   try {
+    // === 上傳前防護：先讀雲端 lastModified，舊資料不准覆蓋新資料 ===
+    const checkRes = await fetch(`https://api.jsonbin.io/v3/b/${state.jsonbinId}/latest`, {
+      headers: { 'X-Master-Key': state.jsonbinKey }
+    });
+    if (checkRes.ok) {
+      const checkData = await checkRes.json();
+      const remoteCheck = checkData.record;
+      const remoteTime = (remoteCheck && remoteCheck.lastModified) ? new Date(remoteCheck.lastModified) : null;
+      const localTime = state.lastModified ? new Date(state.lastModified) : null;
+      if (remoteTime && localTime && remoteTime > localTime) {
+        const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+        if (showAlert) {
+          // 手動上傳：跳 confirm 讓使用者自己選要不要強制覆蓋
+          if (!confirm(`⚠️ 雲端有更新版本！\n本機：${fmtT(localTime)}\n雲端：${fmtT(remoteTime)}\n\n確定要「強制上傳」用本機（舊）覆蓋雲端（新）？`)) {
+            setJsonbinStatus('已取消（雲端較新）', 'var(--text-muted)');
+            _jsonbinSyncInProgress = false;
+            return false;
+          }
+          // 使用者選擇強制上傳 → 繼續往下走
+        } else {
+          // 自動上傳：嚴格擋下，改成自動載入雲端新版 + 顯示明顯警告
+          showSyncConflictBanner(localTime, remoteTime);
+          applyRemoteState(remoteCheck, 'jsonbin');
+          setJsonbinStatus('☁ 雲端較新，已自動載入（未上傳）', 'var(--warning)');
+          _jsonbinSyncInProgress = false;
+          return false;
+        }
+      }
+    } else if (checkRes.status !== 404) {
+      // 讀不到雲端版本 → 保守處理：自動上傳直接中止；手動上傳可選擇強制
+      const force = showAlert && confirm(`無法確認雲端版本（HTTP ${checkRes.status}）。\n仍要強制上傳（可能覆蓋雲端較新資料）？`);
+      if (!force) {
+        setJsonbinStatus(`⚠ 無法確認雲端版本，未上傳 (${checkRes.status})`, 'var(--warning)');
+        _jsonbinSyncInProgress = false;
+        return false;
+      }
+    }
+    // 404（bin 不存在）或雲端是空的/無時間戳 → 照常上傳
+
+    setJsonbinStatus('上傳中…', 'var(--text-muted)');
     const res = await fetch(`https://api.jsonbin.io/v3/b/${state.jsonbinId}`, {
       method: 'PUT',
       headers: {
@@ -5010,54 +5164,11 @@ async function pullFromJsonbin(showAlert = false) {
       }
     }
     
-    // 保留本地的設定 + 最新股價（避免雲端舊股價覆蓋剛抓的最新）
-    const localJsonbinId = state.jsonbinId;
-    const localJsonbinKey = state.jsonbinKey;
-    const localProxy = state.customProxy;
-    const localToken = state.githubToken;
-    const localPrices = state.latestPrices ? { ...state.latestPrices } : {};
-    const localPriceUpdatedAt = state.priceUpdatedAt;
-    
-    state = remoteData;
-    if (!state.jsonbinId) state.jsonbinId = localJsonbinId;
-    if (!state.jsonbinKey) state.jsonbinKey = localJsonbinKey;
-    if (!state.customProxy && localProxy) state.customProxy = localProxy;
-    if (!state.githubToken && localToken) state.githubToken = localToken;
-    // 股價保留本地較新的
-    if (!state.latestPrices) state.latestPrices = {};
-    Object.entries(localPrices).forEach(([sym, price]) => {
-      if (typeof price === 'number' && price > 0) {
-        state.latestPrices[sym] = price;
-      }
-    });
-    if (localPriceUpdatedAt && (!state.priceUpdatedAt || new Date(localPriceUpdatedAt) > new Date(state.priceUpdatedAt))) {
-      state.priceUpdatedAt = localPriceUpdatedAt;
-    }
-    ['0056', '00919', '00878'].forEach(etf => {
-      if (state.latestPrices[etf] && state.pillars[etf]) {
-        state.pillars[etf].price = state.latestPrices[etf];
-      }
-    });
-    state.lastJsonbinSync = new Date().toISOString();
-    
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
-    
+    applyRemoteState(remoteData, 'jsonbin');
+
     const tStr = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
     setJsonbinStatus(`☁ 已同步 ${tStr}`, 'var(--success)');
-    
-    // 重新渲染所有
-    renderPillars();
-    renderSimPillars();
-    renderRecords();
-    renderPurchases();
-    renderPurchaseSummary();
-    if (typeof renderLoans === 'function') renderLoans();
-    updateAll();
-    renderLastModified();
-    document.getElementById('goal-a').value = state.goals.a;
-    document.getElementById('goal-b').value = state.goals.b;
-    document.getElementById('goal-c').value = state.goals.c;
-    
+
     if (showAlert) alert('✓ 已從 JSONbin 下載最新資料');
     _jsonbinSyncInProgress = false;
     return true;
@@ -7024,62 +7135,18 @@ async function autoCheckJsonbinOnLoad() {
       if (!localTime || remoteTime > localTime) {
         const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
         console.log(`☁ 雲端較新（${fmtT(remoteTime)}）→ 自動覆蓋本地（${localTime ? fmtT(localTime) : '無'}）`);
-        
-        // 保留本地的設定 + 最新股價（避免被雲端的舊股價覆蓋）
-        const localJsonbinId = state.jsonbinId;
-        const localJsonbinKey = state.jsonbinKey;
-        const localProxy = state.customProxy;
-        const localToken = state.githubToken;
-        const localPrices = state.latestPrices ? { ...state.latestPrices } : {};
-        const localPriceUpdatedAt = state.priceUpdatedAt;
-        
-        state = remoteData;
-        if (!state.jsonbinId) state.jsonbinId = localJsonbinId;
-        if (!state.jsonbinKey) state.jsonbinKey = localJsonbinKey;
-        if (!state.customProxy && localProxy) state.customProxy = localProxy;
-        if (!state.githubToken && localToken) state.githubToken = localToken;
-        // 股價：本地較新就用本地的（避免雲端舊股價覆蓋剛抓的最新）
-        if (!state.latestPrices) state.latestPrices = {};
-        Object.entries(localPrices).forEach(([sym, price]) => {
-          // 本地有抓到價就保留
-          if (typeof price === 'number' && price > 0) {
-            state.latestPrices[sym] = price;
-          }
-        });
-        // priceUpdatedAt 用較新的
-        if (localPriceUpdatedAt && (!state.priceUpdatedAt || new Date(localPriceUpdatedAt) > new Date(state.priceUpdatedAt))) {
-          state.priceUpdatedAt = localPriceUpdatedAt;
-        }
-        // 也要把三本柱卡片的 price 同步成最新（pillars.{etf}.price 是試算用的）
-        ['0056', '00919', '00878'].forEach(etf => {
-          if (state.latestPrices[etf] && state.pillars[etf]) {
-            state.pillars[etf].price = state.latestPrices[etf];
-          }
-        });
-        state.lastJsonbinSync = new Date().toISOString();
-        
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
-        
-        // 重新渲染所有
-        renderPillars();
-        renderSimPillars();
-        renderRecords();
-        renderPurchases();
-        renderPurchaseSummary();
-        if (typeof renderLoans === 'function') renderLoans();
-        updateAll();
-        renderLastModified();
-        document.getElementById('goal-a').value = state.goals.a;
-        document.getElementById('goal-b').value = state.goals.b;
-        document.getElementById('goal-c').value = state.goals.c;
-        
+
+        applyRemoteState(remoteData, 'jsonbin');
+
         setJsonbinStatus(`☁ 已自動載入雲端 (${fmtT(remoteTime)})`, 'var(--success)');
+        showToast(`☁ 偵測到雲端有更新版本（${fmtT(remoteTime)}），已自動載入`);
       } else if (remoteTime.getTime() === localTime.getTime()) {
         setJsonbinStatus('☁ 已是最新', 'var(--success)');
       } else {
-        // 本機較新 → 不動，等你動資料時自動上傳
+        // 本機較新 → 保留本機，提醒可手動上傳
         const fmtT = dt => dt.toLocaleString('zh-TW', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
         setJsonbinStatus(`本機較新 (${fmtT(localTime)})`, 'var(--text-muted)');
+        showToast(`本機資料比雲端新（${fmtT(localTime)}），已保留本機。可按「☁ 手動上傳」同步到雲端`);
       }
     } catch (e) {
       console.warn('Auto-check JSONbin failed:', e);
